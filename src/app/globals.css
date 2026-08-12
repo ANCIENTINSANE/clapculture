@@ -1,0 +1,142 @@
+@import "tailwindcss";
+
+
+@theme {
+  --color-tertiary-fixed: #ffd9e4;
+  --color-electric-blue: #4C7DFF;
+  --color-on-secondary-fixed-variant: #5d00c2;
+  --color-surface-container-highest: #353534;
+  --color-on-secondary: #41008b;
+  --color-tertiary: #ffffff;
+  --color-secondary-fixed: #ebdcff;
+  --color-surface-container-lowest: #0e0e0e;
+  --color-surface: #131313;
+  --color-surface-bright: #3a3939;
+  --color-inverse-surface: #e5e2e1;
+  --color-soft-charcoal: #181818;
+  --color-on-primary-fixed-variant: #414c00;
+  --color-inverse-on-surface: #313030;
+  --color-outline-variant: #454932;
+  --color-on-secondary-container: #d7bfff;
+  --color-surface-container: #201f1f;
+  --color-surface-container-high: #2a2a2a;
+  --color-on-tertiary: #640037;
+  --color-error: #ffb4ab;
+  --color-charcoal: #111111;
+  --color-error-container: #93000a;
+  --color-tertiary-fixed-dim: #ffb0cc;
+  --color-on-error-container: #ffdad6;
+  --color-secondary-container: #6f04e3;
+  --color-inverse-primary: #576500;
+  --color-outline: #909378;
+  --color-on-tertiary-fixed-variant: #8d0050;
+  --color-primary-container: #d2f000;
+  --color-surface-variant: #353534;
+  --color-on-surface: #e5e2e1;
+  --color-surface-container-low: #1c1b1b;
+  --color-on-primary-fixed: #191e00;
+  --color-on-tertiary-fixed: #3e0020;
+  --color-on-tertiary-container: #c30071;
+  --color-deep-black: #090909;
+  --color-primary: #ffffff;
+  --color-secondary-fixed-dim: #d4bbff;
+  --color-grey: #8A8A8A;
+  --color-background: #131313;
+  --color-primary-fixed-dim: #b8d300;
+  --color-on-background: #e5e2e1;
+  --color-on-secondary-fixed: #270058;
+  --color-muted-white: #D0D0D0;
+  --color-surface-tint: #b8d300;
+  --color-on-error: #690005;
+  --color-secondary: #d4bbff;
+  --color-tertiary-container: #ffd9e4;
+  --color-on-primary: #2c3400;
+  --color-primary-fixed: #d2f000;
+  --color-on-surface-variant: #c6c9ab;
+  --color-on-primary-container: #5d6b00;
+  --color-surface-dim: #131313;
+  --color-electric-lime: #d2f000;
+  --radius: 0.25rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+  --radius-full: 9999px;
+  --spacing-margin-desktop: 4%;
+  --spacing-card-gap: 20px;
+  --spacing-base: 8px;
+  --spacing-section-gap-lg: 120px;
+  --spacing-margin-mobile: 16px;
+  --spacing-section-gap-sm: 64px;
+  --spacing-gutter: 24px;
+  --font-headline-xl: "Bebas Neue";
+  --font-body-lg: Inter;
+  --font-hero-lg: "Bebas Neue";
+  --font-hero-lg-mobile: "Bebas Neue";
+  --font-headline-xl-mobile: "Bebas Neue";
+  --font-nav-link: Inter;
+  --font-body-sm: Inter;
+  --font-label-caps: "Space Grotesk";
+  --font-subheading: Inter;
+  --font-headline-md: "Bebas Neue";
+  --text-headline-xl: 80px;
+  --text-headline-xl--line-height: 80px;
+  --text-headline-xl--font-weight: 700;
+  --text-body-lg: 16px;
+  --text-body-lg--line-height: 24px;
+  --text-body-lg--font-weight: 400;
+  --text-hero-lg: 120px;
+  --text-hero-lg--line-height: 110px;
+  --text-hero-lg--font-weight: 700;
+  --text-hero-lg--letter-spacing: -0.02em;
+  --text-hero-lg-mobile: 64px;
+  --text-hero-lg-mobile--line-height: 60px;
+  --text-hero-lg-mobile--font-weight: 700;
+  --text-headline-xl-mobile: 48px;
+  --text-headline-xl-mobile--line-height: 48px;
+  --text-headline-xl-mobile--font-weight: 700;
+  --text-nav-link: 14px;
+  --text-nav-link--line-height: 16px;
+  --text-nav-link--font-weight: 500;
+  --text-body-sm: 14px;
+  --text-body-sm--line-height: 20px;
+  --text-body-sm--font-weight: 400;
+  --text-label-caps: 12px;
+  --text-label-caps--line-height: 14px;
+  --text-label-caps--font-weight: 700;
+  --text-label-caps--letter-spacing: 0.1em;
+  --text-subheading: 20px;
+  --text-subheading--line-height: 28px;
+  --text-subheading--font-weight: 500;
+  --text-headline-md: 40px;
+  --text-headline-md--line-height: 42px;
+  --text-headline-md--font-weight: 700;
+}
+
+body {
+  background: var(--color-background);
+  color: var(--color-on-background);
+}
+
+.noise-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+html {
+  scroll-behavior: smooth;
+}
