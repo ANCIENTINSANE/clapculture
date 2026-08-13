@@ -2,34 +2,30 @@
 
 import { useState } from 'react';
 
-const MOCK_DATA = {
+const MOCK_DATA: {
+  hero: { imageUrl: string; heading: string; subheading: string; ctaText: string; ctaLink: string };
+  featuredCollections: string[];
+  newArrivals: string[];
+  limitedDrop: { imageUrl: string; linkedItem: string; ctaText: string };
+  promos: { id: number; image: string; text: string; link: string }[];
+  instagram: string[];
+} = {
   hero: {
-    imageUrl: 'https://placehold.co/1200x800/262626/a3a3a3?text=Hero+Banner',
-    heading: 'STREETWEAR REINVENTED',
-    subheading: 'Discover the latest drops in our summer collection.',
-    ctaText: 'SHOP NOW',
-    ctaLink: '/collections/summer',
+    imageUrl: '',
+    heading: '',
+    subheading: '',
+    ctaText: '',
+    ctaLink: '',
   },
-  featuredCollections: ['summer-24', 'essentials', 'footwear'],
-  newArrivals: ['prod-1', 'prod-2', 'prod-3', 'prod-4'],
+  featuredCollections: [],
+  newArrivals: [],
   limitedDrop: {
-    imageUrl: 'https://placehold.co/600x600/262626/a3a3a3?text=Limited+Drop',
-    linkedItem: 'prod-99',
-    ctaText: 'GET IT BEFORE IT\'S GONE',
+    imageUrl: '',
+    linkedItem: '',
+    ctaText: '',
   },
-  promos: [
-    { id: 1, image: 'https://placehold.co/400x400/262626/a3a3a3?text=Promo+1', text: 'Free Shipping', link: '/shipping' },
-    { id: 2, image: 'https://placehold.co/400x400/262626/a3a3a3?text=Promo+2', text: 'Member Exclusive', link: '/members' },
-    { id: 3, image: 'https://placehold.co/400x400/262626/a3a3a3?text=Promo+3', text: 'Gift Cards', link: '/gift' },
-  ],
-  instagram: [
-    'https://placehold.co/400x400/262626/a3a3a3?text=IG+1',
-    'https://placehold.co/400x400/262626/a3a3a3?text=IG+2',
-    'https://placehold.co/400x400/262626/a3a3a3?text=IG+3',
-    'https://placehold.co/400x400/262626/a3a3a3?text=IG+4',
-    'https://placehold.co/400x400/262626/a3a3a3?text=IG+5',
-    'https://placehold.co/400x400/262626/a3a3a3?text=IG+6',
-  ]
+  promos: [],
+  instagram: []
 };
 
 const COLLECTIONS = [

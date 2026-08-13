@@ -12,17 +12,7 @@ interface Notification {
   read: boolean;
 }
 
-const mockNotifications: Notification[] = [
-  { id: '1', type: 'order', title: 'New order #CLAP10245', description: 'Alex ordered 2 items totaling $140.00', timestamp: '2 mins ago', read: false },
-  { id: '2', type: 'payment', title: 'Payment received', description: 'Payment of $140.00 for #CLAP10245 verified', timestamp: '5 mins ago', read: false },
-  { id: '3', type: 'stock', title: 'Low stock warning', description: 'CLAP OVERSIZED TEE (Black, M) is low on stock (2 left)', timestamp: '1 hour ago', read: false },
-  { id: '4', type: 'customer', title: 'New customer registration', description: 'Sam joined ClapCulture', timestamp: '2 hours ago', read: true },
-  { id: '5', type: 'order', title: 'Order #CLAP10244 shipped', description: 'Tracking #TRK987654321 added', timestamp: 'Yesterday', read: true },
-  { id: '6', type: 'system', title: 'System maintenance scheduled', description: 'Downtime expected on Sunday at 2 AM', timestamp: 'Yesterday', read: true },
-  { id: '7', type: 'payment', title: 'Refund processed', description: 'Refund of $45.00 for #CLAP10230 completed', timestamp: '2 days ago', read: true },
-  { id: '8', type: 'order', title: 'New order #CLAP10243', description: 'Jordan ordered 1 item totaling $65.00', timestamp: '2 days ago', read: true },
-  { id: '9', type: 'stock', title: 'Product restocked', description: 'CULTURE HOODIE (Grey, L) is back in stock', timestamp: '3 days ago', read: true },
-];
+const mockNotifications: Notification[] = [];
 
 export default function NotificationsPage() {
   const [notifications, setNotifications] = useState<Notification[]>(mockNotifications);

@@ -15,12 +15,7 @@ interface Discount {
   isActive: boolean;
 }
 
-const initialDiscounts: Discount[] = [
-  { id: '1', code: 'CLAP20', type: 'Percentage', value: 20, minOrder: 999, expiry: '2026-12-31', usageCount: 45, usageLimit: 100, isActive: true },
-  { id: '2', code: 'FIRST10', type: 'Flat', value: 100, minOrder: 500, expiry: '2026-10-31', usageCount: 120, usageLimit: 500, isActive: true },
-  { id: '3', code: 'FREESHIP', type: 'Free Shipping', value: 0, minOrder: 1500, expiry: '2026-12-31', usageCount: 300, usageLimit: null, isActive: true },
-  { id: '4', code: 'SUMMER50', type: 'Percentage', value: 50, minOrder: 2000, expiry: '2026-08-31', usageCount: 50, usageLimit: 50, isActive: false },
-];
+const initialDiscounts: Discount[] = [];
 
 export default function DiscountsPage() {
   const [discounts, setDiscounts] = useState<Discount[]>(initialDiscounts);

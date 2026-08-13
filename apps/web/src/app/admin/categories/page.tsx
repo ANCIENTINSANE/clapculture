@@ -11,14 +11,7 @@ type Category = {
   description: string;
 };
 
-const initialCategories: Category[] = [
-  { id: '1', name: 'T-Shirts', slug: 't-shirts', productCount: 45, createdAt: '2023-10-01', description: 'All t-shirts and tops.' },
-  { id: '2', name: 'Hoodies', slug: 'hoodies', productCount: 23, createdAt: '2023-10-05', description: 'Cozy hoodies and sweatshirts.' },
-  { id: '3', name: 'Bottoms', slug: 'bottoms', productCount: 30, createdAt: '2023-10-10', description: 'Pants, shorts, and jeans.' },
-  { id: '4', name: 'Accessories', slug: 'accessories', productCount: 15, createdAt: '2023-10-15', description: 'Hats, bags, and more.' },
-  { id: '5', name: 'Caps', slug: 'caps', productCount: 8, createdAt: '2023-11-01', description: 'Snapbacks and beanies.' },
-  { id: '6', name: 'Bags', slug: 'bags', productCount: 12, createdAt: '2023-11-10', description: 'Tote bags and backpacks.' },
-];
+const initialCategories: Category[] = [];
 
 export default function CategoriesPage() {
   const [categories, setCategories] = useState<Category[]>(initialCategories);

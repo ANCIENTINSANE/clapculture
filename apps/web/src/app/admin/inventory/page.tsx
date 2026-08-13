@@ -10,18 +10,7 @@ type InventoryItem = {
   stock: number;
 };
 
-const MOCK_INVENTORY: InventoryItem[] = [
-  { id: '1', product: 'Oversized Graphic Tee', sku: 'OGT-BLK-S', size: 'S', stock: 24 },
-  { id: '2', product: 'Oversized Graphic Tee', sku: 'OGT-BLK-M', size: 'M', stock: 12 },
-  { id: '3', product: 'Oversized Graphic Tee', sku: 'OGT-BLK-L', size: 'L', stock: 0 },
-  { id: '4', product: 'Cargo Pants v2', sku: 'CP2-OLV-30', size: '30', stock: 45 },
-  { id: '5', product: 'Cargo Pants v2', sku: 'CP2-OLV-32', size: '32', stock: 8 },
-  { id: '6', product: 'Utility Vest', sku: 'UV-TAN-M', size: 'M', stock: 0 },
-  { id: '7', product: 'Utility Vest', sku: 'UV-TAN-L', size: 'L', stock: 3 },
-  { id: '8', product: 'Chunky Sneakers', sku: 'CS-WHT-9', size: 'US 9', stock: 18 },
-  { id: '9', product: 'Chunky Sneakers', sku: 'CS-WHT-10', size: 'US 10', stock: 20 },
-  { id: '10', product: 'Limited Edition Hoodie', sku: 'LEH-GRY-XL', size: 'XL', stock: 1 },
-];
+const MOCK_INVENTORY: InventoryItem[] = [];
 
 export default function InventoryPage() {
   const [inventory, setInventory] = useState<InventoryItem[]>(MOCK_INVENTORY);

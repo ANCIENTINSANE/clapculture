@@ -12,16 +12,7 @@ type Collection = {
   heroImage: string;
 };
 
-const initialCollections: Collection[] = [
-  { id: '1', name: 'New Drop', slug: 'new-drop', description: 'Latest arrivals for this season.', productCount: 15, active: true, heroImage: '' },
-  { id: '2', name: 'Tollywood Collection', slug: 'tollywood-collection', description: 'Inspired by the local cinema.', productCount: 8, active: true, heroImage: '' },
-  { id: '3', name: 'T-Shirts', slug: 't-shirts', description: 'All kinds of tees.', productCount: 45, active: true, heroImage: '' },
-  { id: '4', name: 'Oversized Tees', slug: 'oversized-tees', description: 'Boxy, comfy, oversized.', productCount: 22, active: true, heroImage: '' },
-  { id: '5', name: 'Hoodies', slug: 'hoodies', description: 'Stay warm and stylish.', productCount: 18, active: false, heroImage: '' },
-  { id: '6', name: 'Accessories', slug: 'accessories', description: 'Complete your look.', productCount: 12, active: true, heroImage: '' },
-  { id: '7', name: 'Limited Edition', slug: 'limited-edition', description: 'Once they are gone, they are gone.', productCount: 5, active: false, heroImage: '' },
-  { id: '8', name: 'Best Sellers', slug: 'best-sellers', description: 'Our most popular items.', productCount: 30, active: true, heroImage: '' },
-];
+const initialCollections: Collection[] = [];
 
 export default function CollectionsPage() {
   const [collections, setCollections] = useState<Collection[]>(initialCollections);

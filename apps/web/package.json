@@ -7,7 +7,8 @@
     "build": "next build --webpack && node -e \"require('fs').rmSync('.next/cache', {recursive: true, force: true}); require('fs').rmSync('.next/dev', {recursive: true, force: true})\"",
     "pages:build": "npx @cloudflare/next-on-pages",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "db:setup": "node ../../scripts/setup-db.js && node ../../scripts/seed-admin.js"
   },
   "dependencies": {
     "@clapculture/shared": "*",

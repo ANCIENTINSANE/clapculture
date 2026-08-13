@@ -3,19 +3,10 @@
 import Link from 'next/link';
 import { useState } from 'react';
 
-const MOCK_ORDERS = [
-  { id: 'CLAP1247', customer: 'Rahul Sharma', email: 'rahul@example.com', phone: '+91 9876543210', amount: '₹4,598', paymentStatus: 'PENDING', orderStatus: 'PLACED', date: '2023-10-25' },
-  { id: 'CLAP1246', customer: 'Priya Patel', email: 'priya@example.com', phone: '+91 9876543211', amount: '₹2,299', paymentStatus: 'VERIFIED', orderStatus: 'CONFIRMED', date: '2023-10-25' },
-  { id: 'CLAP1245', customer: 'Amit Singh', email: 'amit@example.com', phone: '+91 9876543212', amount: '₹6,897', paymentStatus: 'VERIFIED', orderStatus: 'PROCESSING', date: '2023-10-24' },
-  { id: 'CLAP1244', customer: 'Neha Gupta', email: 'neha@example.com', phone: '+91 9876543213', amount: '₹2,299', paymentStatus: 'VERIFIED', orderStatus: 'SHIPPED', date: '2023-10-24' },
-  { id: 'CLAP1243', customer: 'Vikram Reddy', email: 'vikram@example.com', phone: '+91 9876543214', amount: '₹4,598', paymentStatus: 'VERIFIED', orderStatus: 'DELIVERED', date: '2023-10-23' },
-  { id: 'CLAP1242', customer: 'Anjali Desai', email: 'anjali@example.com', phone: '+91 9876543215', amount: '₹2,299', paymentStatus: 'REJECTED', orderStatus: 'CANCELLED', date: '2023-10-23' },
-  { id: 'CLAP1241', customer: 'Suresh Kumar', email: 'suresh@example.com', phone: '+91 9876543216', amount: '₹4,598', paymentStatus: 'SUBMITTED', orderStatus: 'PLACED', date: '2023-10-22' },
-];
-
 const TABS = ['All', 'Payment Pending', 'Payment Submitted', 'Verified', 'Confirmed', 'Processing', 'Shipped', 'Delivered', 'Cancelled'];
 
 export default function OrdersPage() {
+  const [orders, setOrders] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState('All');
   const [search, setSearch] = useState('');
 
@@ -41,6 +32,13 @@ export default function OrdersPage() {
       default: return 'bg-gray-500/10 text-gray-400 border-gray-500/20';
     }
   };
+
+  const filteredOrders = orders.filter(o => {
+    const matchesSearch = search === '' || 
+      o.id.toLowerCase().includes(search.toLowerCase()) || 
+      o.customer.toLowerCase().includes(search.toLowerCase());
+    return matchesSearch;
+  });
 
   return (
     <div className="space-y-6">
@@ -80,68 +78,64 @@ export default function OrdersPage() {
 
       {/* Table */}
       <div className="bg-[#141414] border border-[#262626] rounded-xl overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b border-[#262626] bg-[#1a1a1a]">
-                <th className="p-4 text-xs font-medium text-[#737373] uppercase tracking-wider">Order ID</th>
-                <th className="p-4 text-xs font-medium text-[#737373] uppercase tracking-wider">Customer</th>
-                <th className="p-4 text-xs font-medium text-[#737373] uppercase tracking-wider">Date</th>
-                <th className="p-4 text-xs font-medium text-[#737373] uppercase tracking-wider">Payment</th>
-                <th className="p-4 text-xs font-medium text-[#737373] uppercase tracking-wider">Status</th>
-                <th className="p-4 text-xs font-medium text-[#737373] uppercase tracking-wider">Amount</th>
-                <th className="p-4 text-xs font-medium text-[#737373] uppercase tracking-wider text-right">Action</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[#262626]">
-              {MOCK_ORDERS.map((order) => (
-                <tr key={order.id} className="hover:bg-[#1a1a1a] transition-colors">
-                  <td className="p-4">
-                    <Link href={`/admin/orders/${order.id}`} className="text-white font-medium hover:text-[#d2f000]">
-                      #{order.id}
-                    </Link>
-                  </td>
-                  <td className="p-4">
-                    <p className="text-sm text-white">{order.customer}</p>
-                    <p className="text-xs text-[#737373]">{order.email}</p>
-                  </td>
-                  <td className="p-4 text-sm text-[#a3a3a3]">{order.date}</td>
-                  <td className="p-4">
-                    <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium border ${getPaymentBadgeColor(order.paymentStatus)}`}>
-                      {order.paymentStatus}
-                    </span>
-                  </td>
-                  <td className="p-4">
-                    <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium border ${getOrderBadgeColor(order.orderStatus)}`}>
-                      {order.orderStatus}
-                    </span>
-                  </td>
-                  <td className="p-4 text-sm text-white font-medium">{order.amount}</td>
-                  <td className="p-4 text-right">
-                    <Link 
-                      href={`/admin/orders/${order.id}`}
-                      className="inline-flex items-center justify-center p-2 rounded-lg bg-[#262626] text-white hover:bg-[#333] transition-colors"
-                    >
-                      <span className="material-symbols-outlined text-[18px]">visibility</span>
-                    </Link>
-                  </td>
+        {filteredOrders.length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-[#262626] bg-[#1a1a1a]">
+                  <th className="p-4 text-xs font-medium text-[#737373] uppercase tracking-wider">Order ID</th>
+                  <th className="p-4 text-xs font-medium text-[#737373] uppercase tracking-wider">Customer</th>
+                  <th className="p-4 text-xs font-medium text-[#737373] uppercase tracking-wider">Date</th>
+                  <th className="p-4 text-xs font-medium text-[#737373] uppercase tracking-wider">Payment</th>
+                  <th className="p-4 text-xs font-medium text-[#737373] uppercase tracking-wider">Status</th>
+                  <th className="p-4 text-xs font-medium text-[#737373] uppercase tracking-wider">Amount</th>
+                  <th className="p-4 text-xs font-medium text-[#737373] uppercase tracking-wider text-right">Action</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        
-        {/* Pagination */}
-        <div className="p-4 border-t border-[#262626] flex items-center justify-between text-sm text-[#a3a3a3]">
-          <span>Showing 1 to 7 of 42 entries</span>
-          <div className="flex items-center gap-2">
-            <button className="px-3 py-1 rounded border border-[#262626] hover:bg-[#262626] disabled:opacity-50">Prev</button>
-            <button className="px-3 py-1 rounded bg-[#d2f000] text-black font-medium">1</button>
-            <button className="px-3 py-1 rounded border border-[#262626] hover:bg-[#262626]">2</button>
-            <button className="px-3 py-1 rounded border border-[#262626] hover:bg-[#262626]">3</button>
-            <button className="px-3 py-1 rounded border border-[#262626] hover:bg-[#262626]">Next</button>
+              </thead>
+              <tbody className="divide-y divide-[#262626]">
+                {filteredOrders.map((order) => (
+                  <tr key={order.id} className="hover:bg-[#1a1a1a] transition-colors">
+                    <td className="p-4">
+                      <Link href={`/admin/orders/${order.id}`} className="text-white font-medium hover:text-[#d2f000]">
+                        #{order.id}
+                      </Link>
+                    </td>
+                    <td className="p-4">
+                      <p className="text-sm text-white">{order.customer}</p>
+                      <p className="text-xs text-[#737373]">{order.email}</p>
+                    </td>
+                    <td className="p-4 text-sm text-[#a3a3a3]">{order.date}</td>
+                    <td className="p-4">
+                      <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium border ${getPaymentBadgeColor(order.paymentStatus)}`}>
+                        {order.paymentStatus}
+                      </span>
+                    </td>
+                    <td className="p-4">
+                      <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium border ${getOrderBadgeColor(order.orderStatus)}`}>
+                        {order.orderStatus}
+                      </span>
+                    </td>
+                    <td className="p-4 text-sm text-white font-medium">{order.amount}</td>
+                    <td className="p-4 text-right">
+                      <Link 
+                        href={`/admin/orders/${order.id}`}
+                        className="inline-flex items-center justify-center p-2 rounded-lg bg-[#262626] text-white hover:bg-[#333] transition-colors"
+                      >
+                        <span className="material-symbols-outlined text-[18px]">visibility</span>
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-        </div>
+        ) : (
+          <div className="py-16 text-center text-[#737373]">
+            <span className="material-symbols-outlined text-4xl mb-2 text-[#737373]">receipt_long</span>
+            <p className="text-white text-base font-medium">No orders found</p>
+            <p className="text-xs text-[#737373] mt-1">When customer orders are placed, they will appear in this list.</p>
+          </div>
+        )}
       </div>
     </div>
   );

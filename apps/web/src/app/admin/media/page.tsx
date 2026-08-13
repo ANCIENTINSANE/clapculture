@@ -10,16 +10,7 @@ type MediaItem = {
   date: string;
 };
 
-const MOCK_MEDIA: MediaItem[] = [
-  { id: '1', filename: 'hero-banner-summer.jpg', url: 'https://placehold.co/800x600/262626/a3a3a3?text=Hero', size: '2.4 MB', date: '2024-05-01' },
-  { id: '2', filename: 'product-tee-front.png', url: 'https://placehold.co/800x800/262626/a3a3a3?text=Tee+Front', size: '1.1 MB', date: '2024-05-02' },
-  { id: '3', filename: 'product-tee-back.png', url: 'https://placehold.co/800x800/262626/a3a3a3?text=Tee+Back', size: '1.2 MB', date: '2024-05-02' },
-  { id: '4', filename: 'collection-essentials.jpg', url: 'https://placehold.co/800x1200/262626/a3a3a3?text=Essentials', size: '3.1 MB', date: '2024-05-05' },
-  { id: '5', filename: 'promo-free-shipping.png', url: 'https://placehold.co/400x400/262626/a3a3a3?text=Promo', size: '450 KB', date: '2024-05-10' },
-  { id: '6', filename: 'shoes-side.jpg', url: 'https://placehold.co/800x800/262626/a3a3a3?text=Shoes', size: '1.8 MB', date: '2024-05-11' },
-  { id: '7', filename: 'pants-cargo-black.jpg', url: 'https://placehold.co/800x1000/262626/a3a3a3?text=Cargo', size: '2.1 MB', date: '2024-05-12' },
-  { id: '8', filename: 'logo-white.svg', url: 'https://placehold.co/400x150/262626/a3a3a3?text=Logo', size: '45 KB', date: '2024-05-15' },
-];
+const MOCK_MEDIA: MediaItem[] = [];
 
 export default function MediaLibrary() {
   const [media, setMedia] = useState<MediaItem[]>(MOCK_MEDIA);

@@ -8,22 +8,22 @@ export default function EditProductClient({ productId }: { productId: string }) 
   const router = useRouter();
 
   const [formData, setFormData] = useState({
-    name: 'Vintage Oversized Graphic Tee',
-    description: 'A premium heavy-weight cotton tee featuring a vintage inspired graphic print.',
+    name: '',
+    description: '',
     category: 'tees',
-    tags: 'oversized, vintage, streetwear',
-    price: '1499',
-    compareAtPrice: '1999',
-    isNew: true,
-    isBestSeller: true,
+    tags: '',
+    price: '',
+    compareAtPrice: '',
+    isNew: false,
+    isBestSeller: false,
     isLimited: false,
   });
 
   const [stockGrid, setStockGrid] = useState({
-    S: 15,
-    M: 25,
-    L: 30,
-    XL: 10,
+    S: 0,
+    M: 0,
+    L: 0,
+    XL: 0,
     XXL: 0,
   });
 

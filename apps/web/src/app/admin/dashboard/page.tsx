@@ -4,21 +4,15 @@ import Link from 'next/link';
 
 export default function DashboardPage() {
   const stats = [
-    { label: 'Total Orders', value: '1,247', icon: 'shopping_bag', color: 'text-blue-400' },
-    { label: 'Total Sales', value: '₹18,45,600', icon: 'payments', color: 'text-green-400' },
-    { label: 'Pending Payments', value: '23', icon: 'pending', color: 'text-yellow-400' },
-    { label: 'Confirmed Orders', value: '156', icon: 'check_circle', color: 'text-[#d2f000]' },
-    { label: 'Shipped', value: '89', icon: 'local_shipping', color: 'text-purple-400' },
-    { label: 'Delivered', value: '979', icon: 'inventory', color: 'text-gray-400' },
+    { label: 'Total Orders', value: '0', icon: 'shopping_bag', color: 'text-blue-400' },
+    { label: 'Total Sales', value: '₹0', icon: 'payments', color: 'text-green-400' },
+    { label: 'Pending Payments', value: '0', icon: 'pending', color: 'text-yellow-400' },
+    { label: 'Confirmed Orders', value: '0', icon: 'check_circle', color: 'text-[#d2f000]' },
+    { label: 'Shipped', value: '0', icon: 'local_shipping', color: 'text-purple-400' },
+    { label: 'Delivered', value: '0', icon: 'inventory', color: 'text-gray-400' },
   ];
 
-  const recentOrders = [
-    { id: '#CLAP1247', customer: 'Rahul Sharma', amount: '₹4,598', status: 'PENDING' },
-    { id: '#CLAP1246', customer: 'Priya Patel', amount: '₹2,299', status: 'CONFIRMED' },
-    { id: '#CLAP1245', customer: 'Amit Singh', amount: '₹6,897', status: 'PROCESSING' },
-    { id: '#CLAP1244', customer: 'Neha Gupta', amount: '₹2,299', status: 'SHIPPED' },
-    { id: '#CLAP1243', customer: 'Vikram Reddy', amount: '₹4,598', status: 'DELIVERED' },
-  ];
+  const recentOrders: any[] = [];
 
   return (
     <div className="space-y-6">
@@ -55,14 +49,10 @@ export default function DashboardPage() {
         {/* Chart Area */}
         <div className="lg:col-span-2 bg-[#141414] border border-[#262626] rounded-xl p-6">
           <h3 className="text-white font-medium mb-4">Revenue Overview</h3>
-          <div className="h-64 w-full bg-gradient-to-t from-[#262626] to-transparent rounded-lg flex items-end justify-between px-4 pb-4">
-            {/* Simple CSS bar chart representation */}
-            {[40, 70, 45, 90, 65, 85, 120].map((h, i) => (
-              <div key={i} className="w-1/12 bg-[#d2f000]/80 rounded-t-sm" style={{ height: `${(h/120)*100}%` }}></div>
-            ))}
-          </div>
-          <div className="flex justify-between text-xs text-[#737373] mt-2 px-4">
-            <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+          <div className="h-64 w-full bg-[#1a1a1a] rounded-lg flex flex-col items-center justify-center text-center p-6 border border-dashed border-[#262626]">
+            <span className="material-symbols-outlined text-4xl text-[#737373] mb-2">bar_chart</span>
+            <p className="text-white text-sm font-medium">No sales data recorded yet</p>
+            <p className="text-xs text-[#737373] mt-1">Revenue chart will populate automatically as orders are placed.</p>
           </div>
         </div>
 
@@ -72,20 +62,28 @@ export default function DashboardPage() {
             <h3 className="text-white font-medium">Recent Orders</h3>
             <Link href="/admin/orders" className="text-sm text-[#d2f000] hover:underline">View All</Link>
           </div>
-          <div className="space-y-4">
-            {recentOrders.map((order, i) => (
-              <div key={i} className="flex justify-between items-center p-3 hover:bg-[#1a1a1a] rounded-lg transition-colors border border-transparent hover:border-[#262626]">
-                <div>
-                  <Link href={`/admin/orders/${order.id.replace('#', '')}`} className="text-white font-medium hover:text-[#d2f000]">{order.id}</Link>
-                  <p className="text-sm text-[#737373]">{order.customer}</p>
+          {recentOrders.length > 0 ? (
+            <div className="space-y-4">
+              {recentOrders.map((order, i) => (
+                <div key={i} className="flex justify-between items-center p-3 hover:bg-[#1a1a1a] rounded-lg transition-colors border border-transparent hover:border-[#262626]">
+                  <div>
+                    <Link href={`/admin/orders/${order.id.replace('#', '')}`} className="text-white font-medium hover:text-[#d2f000]">{order.id}</Link>
+                    <p className="text-sm text-[#737373]">{order.customer}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-white text-sm">{order.amount}</p>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#262626] text-[#a3a3a3]">{order.status}</span>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-white text-sm">{order.amount}</p>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#262626] text-[#a3a3a3]">{order.status}</span>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <div className="py-12 text-center text-[#737373]">
+              <span className="material-symbols-outlined text-3xl mb-2 text-[#737373]">inbox</span>
+              <p className="text-white text-sm font-medium">No recent orders</p>
+              <p className="text-xs text-[#737373] mt-1">New customer orders will show up here.</p>
+            </div>
+          )}
         </div>
       </div>
     </div>
