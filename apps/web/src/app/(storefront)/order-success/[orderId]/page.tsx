@@ -7,6 +7,10 @@ export const metadata = {
   title: 'Order Confirmation | CLAPCULTURE',
 };
 
+export function generateStaticParams() {
+  return [{ orderId: 'CLAP10245' }];
+}
+
 export default async function OrderSuccessPage({ params }: { params: Promise<{ orderId: string }> }) {
   const { orderId } = await params;
   const cleanId = orderId.replace('#', '');

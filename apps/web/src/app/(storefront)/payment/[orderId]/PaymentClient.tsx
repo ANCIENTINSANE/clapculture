@@ -1,0 +1,153 @@
+'use client';
+
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { formatCurrency } from '@/lib/utils';
+import { useCart } from '@/components/cart/CartProvider';
+import { useOrderStore } from '@/lib/store';
+
+export default function PaymentClient({ orderId }: { orderId: string }) {
+  const router = useRouter();
+  const { clearCart } = useCart();
+  const { currentOrder, getOrder, updatePaymentInfo } = useOrderStore();
+  
+  const order = getOrder(orderId) || currentOrder;
+  const total = order?.total || 3498;
+
+  const [screenshotUrl, setScreenshotUrl] = useState('');
+  const [utrNumber, setUtrNumber] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [copiedUpi, setCopiedUpi] = useState(false);
+
+  const upiId = 'clapculture@upi';
+  const qrCodeUrl = 'https://placehold.co/400x400/0d0d0d/d2f000?text=UPI+QR+CODE';
+
+  const handleCopyUpi = () => {
+    navigator.clipboard.writeText(upiId);
+    setCopiedUpi(true);
+    setTimeout(() => setCopiedUpi(false), 2000);
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setScreenshotUrl(URL.createObjectURL(file));
+    }
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    if (order) {
+      updatePaymentInfo(utrNumber || 'UPI-REF-PENDING', screenshotUrl || 'https://placehold.co/600x800?text=Payment+Screenshot');
+    }
+
+    clearCart();
+
+    setTimeout(() => {
+      setIsSubmitting(false);
+      router.push(`/order-success/${orderId}`);
+    }, 1000);
+  };
+
+  return (
+    <div className="bg-deep-black min-h-screen text-white pt-24 pb-16 px-4 md:px-8">
+      <div className="max-w-2xl mx-auto border border-charcoal bg-[#141414] rounded-2xl p-6 md:p-10 shadow-2xl">
+        <div className="text-center mb-8 border-b border-charcoal pb-6">
+          <span className="font-label-caps text-xs text-electric-lime tracking-widest uppercase font-bold">STEP 2 OF 2</span>
+          <h1 className="text-3xl md:text-5xl font-headline-md tracking-wider mt-1">SCAN & PAY VIA UPI</h1>
+          <p className="text-sm text-gray-400 mt-2 font-body-sm">
+            Complete your payment using any UPI App (GPay, PhonePe, Paytm, CRED).
+          </p>
+        </div>
+
+        {/* Amount Card */}
+        <div className="bg-[#1a1a1a] border border-charcoal rounded-xl p-4 mb-8 flex justify-between items-center">
+          <div>
+            <span className="text-xs text-gray-400 font-label-caps">AMOUNT TO PAY</span>
+            <p className="text-3xl font-headline-md text-electric-lime">{formatCurrency(total)}</p>
+          </div>
+          <div className="text-right">
+            <span className="text-xs text-gray-400 font-label-caps">ORDER ID</span>
+            <p className="text-sm font-mono font-bold text-white">#{orderId}</p>
+          </div>
+        </div>
+
+        {/* QR Code & UPI ID Section */}
+        <div className="flex flex-col items-center bg-[#1a1a1a] border border-charcoal rounded-xl p-6 mb-8 text-center">
+          <div className="bg-white p-3 rounded-xl mb-4 border-2 border-electric-lime">
+            <img src={qrCodeUrl} alt="UPI QR Code" className="w-56 h-56 object-contain" />
+          </div>
+
+          <div className="w-full max-w-sm flex items-center justify-between bg-deep-black border border-charcoal rounded-lg p-3">
+            <div>
+              <span className="text-[10px] text-gray-500 font-label-caps uppercase block text-left">UPI ID</span>
+              <span className="text-sm font-mono font-bold text-white">{upiId}</span>
+            </div>
+            <button
+              onClick={handleCopyUpi}
+              className="bg-charcoal hover:bg-electric-lime hover:text-black text-white px-3 py-1.5 rounded text-xs font-label-caps uppercase font-bold transition-all"
+            >
+              {copiedUpi ? 'COPIED!' : 'COPY'}
+            </button>
+          </div>
+        </div>
+
+        {/* Payment Verification Form */}
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div>
+            <label className="block text-xs font-label-caps uppercase text-gray-300 mb-2">
+              1. UPLOAD PAYMENT SCREENSHOT *
+            </label>
+            <div className="border-2 border-dashed border-charcoal hover:border-electric-lime rounded-xl p-6 text-center cursor-pointer transition-all bg-[#1a1a1a]">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleFileUpload}
+                required
+                className="hidden"
+                id="screenshot-upload"
+              />
+              <label htmlFor="screenshot-upload" className="cursor-pointer block">
+                {screenshotUrl ? (
+                  <div className="flex flex-col items-center">
+                    <img src={screenshotUrl} alt="Preview" className="h-32 object-contain rounded mb-2 border border-electric-lime" />
+                    <span className="text-xs text-electric-lime font-bold">Click to change screenshot</span>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center">
+                    <span className="material-symbols-outlined text-4xl text-electric-lime mb-2">file_upload</span>
+                    <span className="text-sm text-white font-bold">Click to upload payment screenshot</span>
+                    <span className="text-xs text-gray-500 mt-1">Supports PNG, JPG, WebP</span>
+                  </div>
+                )}
+              </label>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-label-caps uppercase text-gray-300 mb-2">
+              2. ENTER 12-DIGIT UTR / REFERENCE NUMBER (OPTIONAL)
+            </label>
+            <input
+              type="text"
+              placeholder="e.g. 423987123984"
+              value={utrNumber}
+              onChange={(e) => setUtrNumber(e.target.value)}
+              className="w-full bg-[#1a1a1a] border border-charcoal rounded-lg p-3 text-white font-mono focus:border-electric-lime outline-none"
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={isSubmitting || !screenshotUrl}
+            className="w-full bg-electric-lime text-black font-label-caps font-bold text-base py-4 rounded-xl hover:bg-white transition-all disabled:opacity-50 uppercase tracking-widest"
+          >
+            {isSubmitting ? 'VERIFYING PAYMENT...' : 'CONFIRM PAYMENT & COMPLETE ORDER →'}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
