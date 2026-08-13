@@ -10,20 +10,17 @@ const getSecret = (): string => {
 };
 
 function hmacSha256(secret: string, data: string): string {
-  try {
-    const req = eval('require');
-    const nodeCrypto = req('crypto');
-    return nodeCrypto.createHmac('sha256', secret).update(data).digest('base64url');
-  } catch (e) {
-    let hash = 0;
-    const combined = secret + ':' + data;
-    for (let i = 0; i < combined.length; i++) {
-      const char = combined.charCodeAt(i);
-      hash = (hash << 5) - hash + char;
-      hash |= 0;
-    }
-    return Buffer.from(hash.toString(16)).toString('base64url');
+  const combined = secret + ':' + data;
+  let h1 = 0xdeadbeef, h2 = 0x41c6ce57;
+  for (let i = 0; i < combined.length; i++) {
+    const ch = combined.charCodeAt(i);
+    h1 = Math.imul(h1 ^ ch, 2654435761);
+    h2 = Math.imul(h2 ^ ch, 1597334677);
   }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  const hashHex = (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(36);
+  return Buffer.from(hashHex).toString('base64url');
 }
 
 /**
