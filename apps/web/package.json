@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build --webpack",
+    "build": "next build --webpack && node -e \"require('fs').rmSync('.next/cache', {recursive: true, force: true})\"",
     "pages:build": "npx @cloudflare/next-on-pages",
     "start": "next start",
     "lint": "eslint"
