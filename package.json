@@ -12,8 +12,8 @@
     "pages:build": "npm run pages:build --workspace=@clapculture/web",
     "db:setup": "node scripts/setup-db.js",
     "db:admin-seed": "node scripts/seed-admin.js",
-    "deploy": "npm run build && wrangler deploy",
-    "deploy:pages": "npm run build && wrangler pages deploy apps/web/.next",
+    "deploy": "npm run build && cd apps/web && wrangler pages deploy .next --project-name=clapculture",
+    "deploy:pages": "npm run build && cd apps/web && wrangler pages deploy .next --project-name=clapculture",
     "deploy:api": "cd apps/api && wrangler deploy"
   },
   "devDependencies": {
