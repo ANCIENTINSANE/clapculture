@@ -3,6 +3,8 @@ import { MOCK_PRODUCTS } from '@/lib/mock-data';
 import { notFound } from 'next/navigation';
 import ProductClient from './ProductClient';
 
+
+
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const product = MOCK_PRODUCTS.find(p => p.slug === slug);

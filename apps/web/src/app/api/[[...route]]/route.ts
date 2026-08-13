@@ -2,6 +2,8 @@ import { Hono } from 'hono';
 import { handle } from 'hono/vercel';
 import { configureCors } from '@/api/middleware/cors';
 
+
+
 import products from '@/api/routes/products';
 import categories from '@/api/routes/categories';
 import collections from '@/api/routes/collections';

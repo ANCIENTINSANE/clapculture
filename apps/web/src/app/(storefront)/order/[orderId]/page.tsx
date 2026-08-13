@@ -1,7 +1,9 @@
 'use client';
 
 import React, { use } from 'react';
+
 import Link from 'next/link';
+
 import { formatCurrency } from '@/lib/utils';
 import { useOrderStore } from '@/lib/store';
 import { MOCK_PRODUCTS } from '@/lib/mock-data';

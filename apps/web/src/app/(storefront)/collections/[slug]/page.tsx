@@ -1,7 +1,9 @@
 'use client';
 
 import React, { useState, useMemo, use } from 'react';
+
 import Link from 'next/link';
+
 import { MOCK_COLLECTIONS, MOCK_PRODUCTS, MOCK_CATEGORIES } from '@/lib/mock-data';
 import { ProductGrid } from '@/components/product/ProductGrid';
 import { ProductFilters, FilterState } from '@/components/product/ProductFilters';
