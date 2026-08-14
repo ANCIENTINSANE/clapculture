@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -323,7 +324,7 @@ export default function AddProductPage() {
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
                 {images.map((img, idx) => (
                   <div key={idx} className="relative aspect-3/4 bg-[#1a1a1a] border border-[#262626] rounded-lg overflow-hidden group">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
+
                     <img src={img} alt="" className="w-full h-full object-cover" />
                     <button
                       type="button"

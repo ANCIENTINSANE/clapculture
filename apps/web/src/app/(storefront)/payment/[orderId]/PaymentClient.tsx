@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 'use client';
 
 import React, { useState } from 'react';
@@ -120,7 +121,7 @@ export default function PaymentClient({ orderId }: { orderId: string }) {
         {/* QR Code & UPI ID Section */}
         <div className="flex flex-col items-center bg-[#1a1a1a] border border-charcoal rounded-xl p-6 mb-8 text-center">
           <div className="bg-white p-3 rounded-xl mb-4 border-2 border-electric-lime">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
+
             <img src={qrCodeUrl} alt="UPI QR Code" className="w-56 h-56 object-contain" />
           </div>
 
@@ -156,7 +157,7 @@ export default function PaymentClient({ orderId }: { orderId: string }) {
               <label htmlFor="screenshot-upload" className="cursor-pointer block">
                 {screenshotUrl ? (
                   <div className="flex flex-col items-center">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
+
                     <img src={screenshotUrl} alt="Preview" className="h-32 object-contain rounded mb-2 border border-electric-lime" />
                     <span className="text-xs text-electric-lime font-bold">Click to change screenshot</span>
                   </div>

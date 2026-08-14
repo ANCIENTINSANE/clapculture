@@ -24,7 +24,7 @@ export type MailerEnv = Record<string, string | undefined>;
 /**
  * Get or initialize the Nodemailer transporter for Gmail SMTP
  */
-export function getMailTransporter(env?: MailerEnv): Transporter {
+export function getMailTransporter(env?: MailerEnv): Transporter | null {
   const host = env?.SMTP_HOST || process.env.SMTP_HOST || 'smtp.gmail.com';
   const port = Number(env?.SMTP_PORT || process.env.SMTP_PORT || 465);
   const secure = port === 465 || env?.SMTP_SECURE === 'true' || process.env.SMTP_SECURE === 'true';

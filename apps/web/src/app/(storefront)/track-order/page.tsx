@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 'use client';
 
 import React, { useState, useEffect, useMemo, Suspense } from 'react';
@@ -257,7 +258,7 @@ function TrackOrderContent() {
                 {dbOrder.items.map((item, idx) => (
                   <div key={idx} className="flex justify-between items-center bg-black/40 p-3 rounded border border-gray-800 text-xs">
                     <div className="flex items-center gap-3">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
+
                       <img
                         src={item.image || '/stock/superstar-mockup1.webp'}
                         alt={item.name}
