@@ -18,12 +18,12 @@ import { useProducts, useCategories, useCollections } from '@/lib/use-api-data';
 const generateId = (prefix: string) => `${prefix}-${Math.random().toString(36).slice(2, 9)}`;
 
 const IMAGE_PRESETS = [
-  { label: 'Pawan Kalyan (Local)', url: '/pawankalyan.jpeg' },
-  { label: 'Mahesh Babu (Local)', url: '/mahesh-babu.jpeg' },
-  { label: 'Prabhas (Local)', url: '/prabhas.jpeg' },
-  { label: 'Allu Arjun (Local)', url: '/allu-arjun.jpeg' },
-  { label: 'Ram Charan (Local)', url: '/ramcharan.jpeg' },
-  { label: 'Jr NTR (Local)', url: '/ntr.jpeg' },
+  { label: 'Allu Arjun (Appwrite WebP)', url: '6a7fa5f5002dd6861328' },
+  { label: 'Mahesh Babu (Appwrite WebP)', url: '6a7fa5f700082ba1bbc3' },
+  { label: 'Pawan Kalyan (Appwrite WebP)', url: '6a7fa5f80010fcd2bc85' },
+  { label: 'Prabhas (Appwrite WebP)', url: '6a7fa5fb001234ea8799' },
+  { label: 'Ram Charan (Appwrite WebP)', url: '6a7fa5ff00162b33637d' },
+  { label: 'Jr NTR (Appwrite WebP)', url: '6a7fa6010011985f8642' },
   { label: 'Hero 1 (Black Graphic)', url: '/herobg1-desktop.png' },
   { label: 'Hero 2 (Vintage Grunge)', url: '/herobg2-desktop.png' },
   { label: 'Hero 3 (Neon Street)', url: '/herobg3-desktop.png' },

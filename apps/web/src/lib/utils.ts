@@ -60,11 +60,17 @@ export function resolveImageUrl(url: string | undefined | null): string {
     return url;
   }
   
-  // Extract the filename or file ID (strip any path prefixes like /stock/)
+  // Extract the filename or file ID
   const parts = url.split('/');
   const fileId = parts[parts.length - 1];
   
-  // Construct the Appwrite storage URL
+  // If the fileId contains a dot (e.g. .png, .jpg), it's a local asset (or a file with extension).
+  // Appwrite IDs generated via ID.unique() are 20 character strings without extensions.
+  if (fileId.includes('.')) {
+    return url.startsWith('/') ? url : `/${url}`;
+  }
+  
+  // Construct the Appwrite storage URL for Appwrite File IDs
   const endpoint = process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT || 'https://sgp.cloud.appwrite.io/v1';
   const projectId = process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID || '6a7dfa97003713198186';
   const bucketId = 'media';
