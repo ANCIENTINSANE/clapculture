@@ -39,7 +39,7 @@ export function getMailTransporter(env?: MailerEnv): Transporter | null {
 
   try {
     // Dynamic require to prevent edge Webpack build breakage
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const nodemailer = require('nodemailer');
     cachedTransporter = nodemailer.createTransport({
       host,
