@@ -118,7 +118,7 @@ export default function Home() {
           isLoading ? 'opacity-100 visible' : 'opacity-0 invisible pointer-events-none'
         }`}
       >
-        <div className="relative text-5xl md:text-8xl lg:text-[120px] font-headline-xl uppercase tracking-widest text-center px-4 select-none">
+        <div className="relative text-4xl sm:text-5xl md:text-8xl lg:text-[120px] font-headline-xl uppercase tracking-widest text-center px-4 select-none">
           {/* Base Text (Outline) */}
           <div className="text-transparent" style={{ WebkitTextStroke: '2px rgba(255,255,255,0.1)' }}>
             CLAPCULTURE
@@ -152,7 +152,7 @@ export default function Home() {
 
       {/* MAIN DYNAMIC STOREFRONT CONTENT */}
       <div
-        className={`min-h-screen bg-deep-black text-white font-body-sm flex flex-col transition-opacity duration-1000 delay-200 ${
+        className={`min-h-screen bg-deep-black text-white font-body-sm flex flex-col w-full max-w-[100vw] overflow-x-hidden transition-opacity duration-1000 delay-200 ${
           isLoading ? 'opacity-0 h-screen overflow-hidden' : 'opacity-100'
         }`}
       >
@@ -202,15 +202,15 @@ export default function Home() {
                     </div>
                   )}
 
-                  <h1 className="text-6xl md:text-8xl lg:text-[120px] 2xl:text-[160px] font-hero-lg leading-none uppercase mb-2">
+                  <h1 className="text-4xl sm:text-5xl md:text-8xl lg:text-[120px] 2xl:text-[160px] font-hero-lg leading-none uppercase mb-2 overflow-hidden text-ellipsis">
                     {currentSlide.titleLine1} <br />
                     {currentSlide.titleLine2}
                   </h1>
 
                   {currentSlide.subtitle && (
                     <div
-                      className="text-5xl md:text-6xl lg:text-[80px] 2xl:text-[100px] font-headline-xl text-transparent mb-4 md:mb-6 tracking-wide"
-                      style={{ WebkitTextStroke: '2px #b0ff00' }}
+                      className="text-4xl sm:text-5xl md:text-6xl lg:text-[80px] 2xl:text-[100px] font-headline-xl text-transparent mb-4 md:mb-6 tracking-wide"
+                      style={{ WebkitTextStroke: '1.5px #b0ff00' }}
                     >
                       {currentSlide.subtitle}
                     </div>
@@ -347,7 +347,7 @@ export default function Home() {
                           {section.subtitle}
                         </span>
                       )}
-                      <h2 className="text-4xl md:text-6xl 2xl:text-8xl font-headline-xl uppercase tracking-wider text-white mt-1">
+                      <h2 className="text-3xl sm:text-4xl md:text-6xl 2xl:text-8xl font-headline-xl uppercase tracking-wider text-white mt-1 break-words">
                         {section.title}
                       </h2>
                     </div>

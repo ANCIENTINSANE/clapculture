@@ -3,6 +3,7 @@ import "./globals.css";
 import { CartProvider } from "@/components/cart/CartProvider";
 import { CartDrawer } from "@/components/cart/CartDrawer";
 import { OrderStoreProvider } from "@/lib/store";
+import { PwaPrompt } from "@/components/layout/PwaPrompt";
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://clapculture.com'),
@@ -14,6 +15,12 @@ export const metadata: Metadata = {
   keywords: ["streetwear", "premium streetwear", "oversized tees", "streetwear brand india", "hypebeast", "tollywood streetwear", "luxury streetwear", "clapculture", "clap culture", "street fashion", "exclusive drops", "hoodies"],
   authors: [{ name: "ClapCulture" }],
   creator: "ClapCulture",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "CLAPCULTURE",
+  },
   openGraph: {
     type: "website",
     locale: "en_IN",
@@ -64,13 +71,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           rel="stylesheet"
           href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;700&family=Space+Grotesk:wght@700&display=swap"
         />
+        <meta name="theme-color" content="#d2f000" />
       </head>
-      <body className="bg-background text-on-background font-body-sm overflow-x-hidden selection:bg-electric-lime selection:text-black min-h-full flex flex-col">
+      <body className="bg-background text-on-background font-body-sm w-full max-w-[100vw] overflow-x-hidden selection:bg-electric-lime selection:text-black min-h-full flex flex-col">
         <div className="noise-overlay"></div>
         <CartProvider>
           <OrderStoreProvider>
             {children}
             <CartDrawer />
+            <PwaPrompt />
           </OrderStoreProvider>
         </CartProvider>
       </body>

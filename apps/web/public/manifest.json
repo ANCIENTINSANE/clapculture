@@ -1,0 +1,22 @@
+{
+  "name": "CLAPCULTURE Premium Streetwear",
+  "short_name": "CLAPCULTURE",
+  "description": "Premium streetwear for the rebels, the dreamers & the doers.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#d2f000",
+  "icons": [
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
