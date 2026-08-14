@@ -35,7 +35,7 @@ export default function CartPage() {
 
       <div className="flex flex-col lg:flex-row gap-12">
         {/* Cart Items */}
-        <div className="flex-grow">
+        <div className="grow">
           {/* Free Shipping Progress */}
           <div className="bg-charcoal p-4 mb-8">
             <p className="font-label-caps text-sm text-center mb-3 text-electric-lime">

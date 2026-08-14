@@ -212,7 +212,7 @@ export default function CheckoutPage() {
 
       <div className="flex flex-col lg:flex-row gap-12 max-w-6xl mx-auto">
         {/* Form */}
-        <div className="flex-grow">
+        <div className="grow">
           <form onSubmit={handleSubmit} className="space-y-12">
             
             {/* Contact Info */}
@@ -252,7 +252,7 @@ export default function CheckoutPage() {
                     <button
                       type="button"
                       onClick={() => setIsCountryDropdownOpen(!isCountryDropdownOpen)}
-                      className="bg-charcoal border border-gray-700 px-3 py-4 flex items-center gap-2 hover:border-electric-lime transition-colors flex-shrink-0 min-w-[110px]"
+                      className="bg-charcoal border border-gray-700 px-3 py-4 flex items-center gap-2 hover:border-electric-lime transition-colors shrink-0 min-w-27.5"
                     >
                       <span className="text-xl">{selectedCountry.flag}</span>
                       <span className="font-bold text-sm text-white">{selectedCountry.dialCode}</span>
@@ -261,7 +261,7 @@ export default function CheckoutPage() {
 
                     {/* Country Code Menu */}
                     {isCountryDropdownOpen && (
-                      <div className="absolute top-full left-0 mt-1 w-64 bg-[#181818] border border-charcoal rounded-lg shadow-2xl z-50 max-h-60 overflow-y-auto">
+                      <div className="absolute top-full left-0 mt-1 w-64 bg-soft-charcoal border border-charcoal rounded-lg shadow-2xl z-50 max-h-60 overflow-y-auto">
                         {COUNTRY_CODES.map((c) => (
                           <button
                             key={c.code}
@@ -352,8 +352,8 @@ export default function CheckoutPage() {
 
                   {/* Custom Glassmorphic State Dropdown Menu */}
                   {isStateDropdownOpen && (
-                    <div className="absolute top-full left-0 right-0 mt-1 bg-[#181818] border border-charcoal rounded-lg shadow-2xl z-50 overflow-hidden animate-in fade-in duration-150">
-                      <div className="p-3 border-b border-charcoal sticky top-0 bg-[#181818]">
+                    <div className="absolute top-full left-0 right-0 mt-1 bg-soft-charcoal border border-charcoal rounded-lg shadow-2xl z-50 overflow-hidden animate-in fade-in duration-150">
+                      <div className="p-3 border-b border-charcoal sticky top-0 bg-soft-charcoal">
                         <input
                           type="text"
                           placeholder="Search State..."
@@ -416,7 +416,7 @@ export default function CheckoutPage() {
         </div>
 
         {/* Order Summary */}
-        <div className="w-full lg:w-[450px] flex-shrink-0">
+        <div className="w-full lg:w-112.5 shrink-0">
           <div className="bg-charcoal p-6 sticky top-24">
             <h2 className="font-headline-md text-2xl mb-6 uppercase border-b border-gray-700 pb-4">ORDER SUMMARY</h2>
             
