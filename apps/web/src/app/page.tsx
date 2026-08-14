@@ -181,14 +181,14 @@ export default function Home() {
                     className={`absolute inset-0 bg-cover bg-center transition-opacity duration-1000 ease-in-out lg:hidden ${
                       currentHeroSlideIndex === sIdx ? 'opacity-100' : 'opacity-0 pointer-events-none'
                     }`}
-                    style={{ backgroundImage: `url('${slide.mobileImage || slide.desktopImage}')` }}
+                    style={{ backgroundImage: `url('${resolveImageUrl(slide.mobileImage || slide.desktopImage)}')` }}
                   />
                   {/* Desktop Image */}
                   <div
                     className={`absolute inset-0 bg-cover bg-center transition-opacity duration-1000 ease-in-out hidden lg:block ${
                       currentHeroSlideIndex === sIdx ? 'opacity-100' : 'opacity-0 pointer-events-none'
                     }`}
-                    style={{ backgroundImage: `url('${slide.desktopImage}')` }}
+                    style={{ backgroundImage: `url('${resolveImageUrl(slide.desktopImage)}')` }}
                   />
                 </React.Fragment>
               ))}
@@ -665,7 +665,7 @@ export default function Home() {
                       >
                         <div
                           className="absolute inset-0 bg-cover bg-center opacity-60 group-hover:scale-105 transition-transform duration-700"
-                          style={{ backgroundImage: `url('${tile.imageUrl}')` }}
+                          style={{ backgroundImage: `url('${resolveImageUrl(tile.imageUrl)}')` }}
                         />
                         <div className="absolute inset-0 bg-linear-to-t from-deep-black via-deep-black/40 to-transparent"></div>
 
