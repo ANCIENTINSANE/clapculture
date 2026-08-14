@@ -1375,7 +1375,7 @@ export default function HomepageCMSPage() {
               {/* Right Column: Customization Fields */}
               <div className="md:col-span-7 space-y-4 max-h-[60vh] overflow-y-auto pr-2">
                 {/* 🏷️ ATTACH A PRODUCT (OPTIONAL AUTO-FILL & ROUTE) */}
-                <div className="bg-gradient-to-r from-[#1b2207] to-[#121212] border border-[#d2f000]/40 rounded-xl p-4 space-y-2.5">
+                <div className="bg-linear-to-r from-[#1b2207] to-[#121212] border border-[#d2f000]/40 rounded-xl p-4 space-y-2.5">
                   <div className="flex justify-between items-center">
                     <div className="flex items-center gap-2">
                       <span className="material-symbols-outlined text-base text-[#d2f000]">shopping_bag</span>

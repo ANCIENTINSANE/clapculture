@@ -212,7 +212,7 @@ export default function NotificationsPage() {
                     }`}
                   >
                     <div
-                      className={`mt-1 flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
+                      className={`mt-1 shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
                         isRead ? 'bg-[#1a1a1a] text-[#737373]' : 'bg-electric-lime/20 text-electric-lime'
                       }`}
                     >

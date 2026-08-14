@@ -114,7 +114,7 @@ export function BadgeTagSelector({ selectedBadges, onChange }: BadgeTagSelectorP
       </div>
 
       {/* Selected Active Badges Chips */}
-      <div className="flex flex-wrap gap-2 p-3 bg-[#1a1a1a] border border-[#262626] rounded-lg min-h-[46px] items-center">
+      <div className="flex flex-wrap gap-2 p-3 bg-[#1a1a1a] border border-[#262626] rounded-lg min-h-11.5 items-center">
         {selectedBadges.length === 0 ? (
           <span className="text-xs text-[#737373] italic">
             No badges selected. Pick from dropdown below or type a custom tag.

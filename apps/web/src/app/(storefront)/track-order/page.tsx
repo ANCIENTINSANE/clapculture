@@ -235,8 +235,8 @@ function TrackOrderContent() {
 
                 return (
                   <div key={step.key} className="relative z-10 flex items-start gap-4">
-                    <div className={`absolute -left-[38px] w-4 h-4 rounded-full mt-1 ${dotClass}`}></div>
-                    <div className="flex-grow">
+                    <div className={`absolute -left-9.5 w-4 h-4 rounded-full mt-1 ${dotClass}`}></div>
+                    <div className="grow">
                       <h4 className={`font-label-caps tracking-widest text-sm ${textClass}`}>{step.label}</h4>
                       <p className={`text-xs mt-0.5 ${isCurrent ? 'text-gray-300 font-bold' : 'text-gray-600'}`}>
                         {isCompleted ? '✓ Completed' : isCurrent ? 'Active - Current Status' : 'Pending Verification'}

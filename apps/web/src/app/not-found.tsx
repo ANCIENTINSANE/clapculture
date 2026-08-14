@@ -17,8 +17,8 @@ export default function NotFound() {
         <h1 className="font-headline-xl text-8xl md:text-9xl mb-4 relative inline-block group">
           <span className="relative z-10">404</span>
           {/* Glitch layers */}
-          <span className="absolute top-0 left-[-2px] text-red-500 opacity-70 z-0 group-hover:animate-ping mix-blend-screen">404</span>
-          <span className="absolute top-0 right-[-2px] text-blue-500 opacity-70 z-0 group-hover:animate-pulse mix-blend-screen">404</span>
+          <span className="absolute top-0 -left-0.5 text-red-500 opacity-70 z-0 group-hover:animate-ping mix-blend-screen">404</span>
+          <span className="absolute top-0 -right-0.5 text-blue-500 opacity-70 z-0 group-hover:animate-pulse mix-blend-screen">404</span>
         </h1>
         
         <h2 className="font-headline-md text-3xl md:text-4xl mb-8 uppercase tracking-widest text-gray-300">

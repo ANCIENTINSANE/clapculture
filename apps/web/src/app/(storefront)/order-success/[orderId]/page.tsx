@@ -64,7 +64,7 @@ export default async function OrderSuccessPage({ params }: { params: Promise<{ o
           <div className="pt-2">
             <Link 
               href={`/track-order?orderId=${cleanId}`}
-              className="w-full bg-electric-lime text-black font-headline-md text-lg py-3 rounded flex items-center justify-center gap-2 hover:bg-white transition-colors uppercase font-bold text-center block"
+              className="w-full bg-electric-lime text-black font-headline-md text-lg py-3 rounded flex items-center justify-center gap-2 hover:bg-white transition-colors uppercase font-bold text-center"
             >
               <span className="material-symbols-outlined text-xl">local_shipping</span>
               TRACK ORDER NOW

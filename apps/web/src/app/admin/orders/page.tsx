@@ -56,7 +56,42 @@ export default function OrdersPage() {
   };
 
   useEffect(() => {
-    loadOrders();
+    let cancelled = false;
+    const fetchOrders = async () => {
+      try {
+        setLoading(true);
+        const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+        const res = await fetch('/api/orders?limit=100', {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        if (res.ok && !cancelled) {
+          const data = await res.json();
+          if (data.success && Array.isArray(data.data)) {
+            const mapped: AdminOrder[] = data.data.map((doc: Record<string, unknown>) => {
+              const customerObj = typeof doc.customer === 'string' 
+                ? JSON.parse(doc.customer as string) 
+                : ((doc.customer || {}) as Record<string, string | undefined>);
+              return {
+                id: String(doc.orderId || doc.$id || '').replace('#', ''),
+                customer: customerObj.fullName || 'Valued Rebel',
+                email: customerObj.email || 'customer@example.com',
+                date: doc.$createdAt ? new Date(doc.$createdAt as string).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Today',
+                paymentStatus: String(doc.paymentStatus || 'PENDING'),
+                orderStatus: String(doc.orderStatus || 'PLACED'),
+                amount: `₹${doc.total || 0}`,
+              };
+            });
+            setOrders(mapped);
+          }
+        }
+      } catch {
+        // Handle error silently
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+    fetchOrders();
+    return () => { cancelled = true; };
   }, []);
 
   const handleQuickVerify = async (orderId: string, e: React.MouseEvent) => {

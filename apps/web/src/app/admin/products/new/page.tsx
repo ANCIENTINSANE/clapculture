@@ -240,7 +240,7 @@ export default function AddProductPage() {
                     type="text"
                     value={slug}
                     readOnly
-                    className="w-full bg-transparent px-2 py-2 text-white text-xs font-mono outline-none cursor-default text-gray-200"
+                    className="w-full bg-transparent px-2 py-2 text-xs font-mono outline-none cursor-default text-gray-200"
                     placeholder="e.g. superstar-mahesh-babu-tee"
                     required
                   />
@@ -356,7 +356,7 @@ export default function AddProductPage() {
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {sizes.map((size, idx) => (
                 <div key={size.name} className="flex items-center gap-2">
-                  <div className="w-12 h-10 flex items-center justify-center bg-[#1a1a1a] border border-[#262626] rounded text-white font-mono font-bold text-xs text-[#d2f000]">
+                  <div className="w-12 h-10 flex items-center justify-center bg-[#1a1a1a] border border-[#262626] rounded font-mono font-bold text-xs text-[#d2f000]">
                     {size.name}
                   </div>
                   <input 

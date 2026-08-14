@@ -177,7 +177,7 @@ export default function ActivityLogPage() {
 
         <div className="bg-[#141414] border border-[#262626] rounded-xl overflow-hidden shadow-2xl">
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse min-w-[600px]">
+            <table className="w-full text-left border-collapse min-w-150">
               <thead>
                 <tr className="bg-[#1a1a1a] border-b border-[#262626]">
                   <th className="p-4 text-xs font-medium text-[#737373] uppercase tracking-wider w-24">Action</th>

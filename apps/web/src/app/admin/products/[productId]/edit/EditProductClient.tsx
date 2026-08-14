@@ -345,7 +345,7 @@ export default function EditProductClient({ productId }: { productId: string }) 
                     type="text"
                     value={formData.slug}
                     readOnly
-                    className="w-full bg-transparent px-2 py-2 text-white text-xs font-mono outline-none cursor-default text-gray-200"
+                    className="w-full bg-transparent px-2 py-2 text-xs font-mono outline-none cursor-default text-gray-200"
                     placeholder="e.g. superstar-mahesh-babu-tee"
                     required
                   />

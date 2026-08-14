@@ -27,13 +27,13 @@ export function CartDrawer() {
     <>
       {/* Backdrop */}
       <div 
-        className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] transition-opacity duration-300 ${isDrawerOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-100 transition-opacity duration-300 ${isDrawerOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
         onClick={() => setIsDrawerOpen(false)}
       />
 
       {/* Drawer */}
       <div 
-        className={`fixed top-0 right-0 h-full w-full sm:w-[400px] bg-deep-black border-l border-charcoal z-[101] transform transition-transform duration-300 ease-in-out flex flex-col ${isDrawerOpen ? 'translate-x-0' : 'translate-x-full'}`}
+        className={`fixed top-0 right-0 h-full w-full sm:w-100 bg-deep-black border-l border-charcoal z-101 transform transition-transform duration-300 ease-in-out flex flex-col ${isDrawerOpen ? 'translate-x-0' : 'translate-x-full'}`}
       >
         <div className="flex items-center justify-between p-4 border-b border-charcoal">
           <h2 className="font-headline-md text-2xl uppercase">YOUR CART ({items.length})</h2>

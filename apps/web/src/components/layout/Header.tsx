@@ -63,7 +63,7 @@ export function Header() {
             {/* SHOP Mega Dropdown Menu */}
             {activeDropdown === 'SHOP' && (
               <div 
-                className="absolute top-full left-0 w-[760px] bg-[#141414] border border-charcoal rounded-xl shadow-2xl p-6 grid grid-cols-12 gap-6 z-50 text-left animate-in fade-in slide-in-from-top-1 duration-150"
+                className="absolute top-full left-0 w-190 bg-[#141414] border border-charcoal rounded-xl shadow-2xl p-6 grid grid-cols-12 gap-6 z-50 text-left animate-in fade-in slide-in-from-top-1 duration-150"
                 onMouseEnter={() => handleMouseEnter('SHOP')}
                 onMouseLeave={handleMouseLeave}
               >
