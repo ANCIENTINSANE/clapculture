@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { CartItem as CartItemType } from '@clapculture/shared';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, resolveImageUrl } from '@/lib/utils';
 import { useCart } from './CartProvider';
 
 interface CartItemProps {
@@ -17,7 +17,7 @@ export function CartItem({ item }: CartItemProps) {
       <div className="w-20 h-24 relative bg-charcoal shrink-0">
         {item.image ? (
           <img
-            src={item.image}
+            src={resolveImageUrl(item.image)}
             alt={item.name}
             className="w-full h-full object-cover"
           />

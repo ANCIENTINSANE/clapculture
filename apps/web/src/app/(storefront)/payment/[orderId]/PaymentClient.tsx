@@ -3,7 +3,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, resolveImageUrl } from '@/lib/utils';
 import { useCart } from '@/components/cart/CartProvider';
 import { useOrderStore } from '@/lib/store';
 
@@ -21,7 +21,7 @@ export default function PaymentClient({ orderId }: { orderId: string }) {
   const [copiedUpi, setCopiedUpi] = useState(false);
 
   const upiId = 'paytm.slazmi4@pty';
-  const qrCodeUrl = '/qrcode.png';
+  const qrCodeUrl = resolveImageUrl('/qrcode.png');
 
   const handleCopyUpi = () => {
     navigator.clipboard.writeText(upiId);

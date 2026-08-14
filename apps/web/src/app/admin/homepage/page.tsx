@@ -11,6 +11,7 @@ import {
   useHomepageCMS,
   SectionType
 } from '@/lib/cms-store';
+import { resolveImageUrl } from '@/lib/utils';
 import { useProducts, useCategories, useCollections } from '@/lib/use-api-data';
 
 const generateId = (prefix: string) => `${prefix}-${Math.random().toString(36).slice(2, 9)}`;
@@ -47,7 +48,7 @@ const SYSTEM_ROUTE_GROUPS = [
     group: 'Tollywood Star Collections',
     routes: [
       { label: 'Star: Pawan Kalyan (Power Star)', url: '/shop?star=pawan-kalyan' },
-      { label: 'Star: Mahesh Babu (Superstar)', url: '/shop?star=mahesh-babu' },
+      { label: 'Star: Mahesh Babu (Superstar)', url: '/shop?mahesh-babu' },
       { label: 'Star: Prabhas (Rebel Star)', url: '/shop?star=prabhas' },
       { label: 'Star: Allu Arjun (Icon Star)', url: '/shop?star=allu-arjun' },
       { label: 'Star: Ram Charan (Global Star)', url: '/shop?star=ram-charan' },
@@ -548,7 +549,7 @@ export default function HomepageCMSPage() {
                       {/* Slide Image Preview */}
                       <div className="relative aspect-video bg-black overflow-hidden">
                         <img
-                          src={slide.desktopImage}
+                          src={resolveImageUrl(slide.desktopImage)}
                           alt={slide.titleLine1}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         />
@@ -635,7 +636,7 @@ export default function HomepageCMSPage() {
                   {/* Live Visual Preview of Side Banner */}
                   <div className="relative aspect-[3/4] bg-black rounded-lg overflow-hidden border border-[#333] flex flex-col justify-between p-4 shadow-lg">
                     <img
-                      src={formData.hero.sideBanner.imageUrl || '/herobg1-desktop.png'}
+                      src={resolveImageUrl(formData.hero.sideBanner.imageUrl || '/herobg1-desktop.png')}
                       alt="Side Banner"
                       className="absolute inset-0 w-full h-full object-cover opacity-60"
                     />
@@ -1031,7 +1032,7 @@ export default function HomepageCMSPage() {
                             {/* Card Banner Visual Preview */}
                             <div className="relative aspect-[4/5] bg-black overflow-hidden flex flex-col justify-between p-3.5">
                               <img
-                                src={tile.imageUrl || '/herobg1-desktop.png'}
+                                src={resolveImageUrl(tile.imageUrl || '/herobg1-desktop.png')}
                                 alt={tile.title}
                                 className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-70"
                               />

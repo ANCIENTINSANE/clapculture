@@ -52,3 +52,21 @@ export function getStatusColor(status: string) {
       return 'bg-gray-500 text-white';
   }
 }
+
+export function resolveImageUrl(url: string | undefined | null): string {
+  if (!url) return '';
+  // If it's already an absolute URL, return it as is
+  if (url.startsWith('http') || url.startsWith('data:')) {
+    return url;
+  }
+  
+  // Assume the local URL is a file ID in Appwrite (e.g. '/qrcode.png' -> 'qrcode.png')
+  const fileId = url.startsWith('/') ? url.slice(1) : url;
+  
+  // Construct the Appwrite storage URL
+  const endpoint = process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT || 'https://sgp.cloud.appwrite.io/v1';
+  const projectId = process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID || '6a7dfa97003713198186';
+  const bucketId = 'media';
+  
+  return `${endpoint}/storage/buckets/${bucketId}/files/${fileId}/view?project=${projectId}`;
+}

@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { Product, Size } from '@clapculture/shared';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, resolveImageUrl } from '@/lib/utils';
 import { useCart } from '../cart/CartProvider';
 
 interface ProductCardProps {
@@ -16,8 +16,8 @@ export function ProductCard({ product }: ProductCardProps) {
   const [isSizeModalOpen, setIsSizeModalOpen] = useState(false);
   const [selectedSize, setSelectedSize] = useState<Size>(product.sizes[0] || 'M');
 
-  const primaryImage = product.images[0] || '';
-  const secondaryImage = product.images[1] || primaryImage;
+  const primaryImage = resolveImageUrl(product.images[0]) || '/herobg1-desktop.png';
+  const secondaryImage = resolveImageUrl(product.images[1]) || primaryImage;
   const isOutOfStock = product.stock <= 0;
 
   const handleConfirmAddToCart = (e: React.MouseEvent) => {

@@ -8,6 +8,7 @@ import { Footer } from '@/components/layout/Footer';
 import { PromoBar } from '@/components/layout/PromoBar';
 import { useCart } from '@/components/cart/CartProvider';
 import { useHomepageCMS } from '@/lib/cms-store';
+import { resolveImageUrl } from '@/lib/utils';
 
 export default function Home() {
   const { data: cmsData } = useHomepageCMS();
@@ -278,7 +279,7 @@ export default function Home() {
                   {activeHeroSlides.map((slide, sIdx) => (
                     <img
                       key={slide.id}
-                      src={slide.desktopImage}
+                      src={resolveImageUrl(slide.desktopImage)}
                       alt={`Slide ${sIdx + 1}`}
                       onClick={() => setCurrentHeroSlideIndex(sIdx)}
                       className={`w-20 h-24 object-cover border-2 transition-all cursor-pointer hover:opacity-100 hover:border-electric-lime ${
@@ -297,7 +298,7 @@ export default function Home() {
               <div className="lg:col-span-4 relative bg-charcoal flex flex-col justify-between p-6 md:p-12 xl:p-16 border-t lg:border-t-0 lg:border-l border-charcoal overflow-hidden min-h-[40vh] lg:min-h-0">
                 <div
                   className="absolute inset-0 bg-cover bg-center opacity-40 transition-transform duration-700 hover:scale-105"
-                  style={{ backgroundImage: `url('${cmsData.hero.sideBanner.imageUrl || '/herobg1-desktop.png'}')` }}
+                  style={{ backgroundImage: `url('${resolveImageUrl(cmsData.hero.sideBanner.imageUrl || '/herobg1-desktop.png')}')` }}
                 />
                 <div className="absolute inset-0 bg-linear-to-t from-deep-black via-deep-black/60 to-transparent"></div>
 
@@ -378,7 +379,7 @@ export default function Home() {
                       >
                         <div
                           className="absolute inset-0 bg-cover bg-center opacity-60 group-hover:scale-105 transition-transform duration-700"
-                          style={{ backgroundImage: `url('${tile.imageUrl}')` }}
+                          style={{ backgroundImage: `url('${resolveImageUrl(tile.imageUrl)}')` }}
                         />
                         <div className="absolute inset-0 bg-linear-to-t from-deep-black via-deep-black/30 to-transparent"></div>
 
@@ -480,7 +481,7 @@ export default function Home() {
                       >
                         <div
                           className="absolute inset-0 bg-cover bg-center opacity-65 group-hover:scale-105 transition-transform duration-700"
-                          style={{ backgroundImage: `url('${hero.imageUrl}')` }}
+                          style={{ backgroundImage: `url('${resolveImageUrl(hero.imageUrl)}')` }}
                         />
                         <div className="absolute inset-0 bg-linear-to-t from-deep-black via-deep-black/40 to-transparent"></div>
 
@@ -561,7 +562,7 @@ export default function Home() {
                       <div key={product.id} className="w-65 md:w-80 shrink-0 group">
                         <div className="relative aspect-[3/4] bg-charcoal overflow-hidden border border-charcoal mb-4">
                           <img
-                            src={product.imageUrl}
+                            src={resolveImageUrl(product.imageUrl)}
                             alt={product.title}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                           />
