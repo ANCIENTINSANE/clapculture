@@ -21,7 +21,7 @@ export default function AddProductPage() {
 
   const [name, setName] = useState('');
   const [slug, setSlug] = useState('');
-  const [isManualSlug, setIsManualSlug] = useState(false);
+
   const [slugStatus, setSlugStatus] = useState<'idle' | 'checking' | 'available' | 'taken'>('idle');
   const [existingProductName, setExistingProductName] = useState<string | null>(null);
 
@@ -53,9 +53,14 @@ export default function AddProductPage() {
   // Check slug availability in real time
   useEffect(() => {
     if (!slug.trim()) {
-      setSlugStatus('idle');
-      setExistingProductName(null);
-      return;
+      let cancelled = false;
+      setTimeout(() => {
+        if (!cancelled) {
+          setSlugStatus('idle');
+          setExistingProductName(null);
+        }
+      }, 0);
+      return () => { cancelled = true; };
     }
 
     setSlugStatus('checking');
@@ -318,6 +323,7 @@ export default function AddProductPage() {
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
                 {images.map((img, idx) => (
                   <div key={idx} className="relative aspect-3/4 bg-[#1a1a1a] border border-[#262626] rounded-lg overflow-hidden group">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={img} alt="" className="w-full h-full object-cover" />
                     <button
                       type="button"

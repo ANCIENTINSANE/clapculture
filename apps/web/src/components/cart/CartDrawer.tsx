@@ -11,7 +11,11 @@ export function CartDrawer() {
   const [mounted, setMounted] = React.useState(false);
 
   React.useEffect(() => {
-    setMounted(true);
+    let mounted = true;
+    if (mounted) {
+      setTimeout(() => setMounted(true), 0);
+    }
+    return () => { mounted = false; };
   }, []);
 
   if (!mounted) {

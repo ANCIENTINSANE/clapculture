@@ -36,7 +36,7 @@ collections.get('/:slug', async (c) => {
       return c.json({ success: false, error: 'Collection not found' }, 404);
     }
     
-    const collection = response.documents[0];
+    const collection: any = response.documents[0];
     
     // Fetch related products
     if (collection.productIds && collection.productIds.length > 0) {

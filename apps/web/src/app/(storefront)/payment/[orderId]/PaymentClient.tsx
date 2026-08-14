@@ -20,7 +20,7 @@ export default function PaymentClient({ orderId }: { orderId: string }) {
   const [copiedUpi, setCopiedUpi] = useState(false);
 
   const upiId = 'clapculture@upi';
-  const qrCodeUrl = 'https://placehold.co/400x400/0d0d0d/d2f000?text=UPI+QR+CODE';
+  const qrCodeUrl = '/qrcode.jpg';
 
   const handleCopyUpi = () => {
     navigator.clipboard.writeText(upiId);

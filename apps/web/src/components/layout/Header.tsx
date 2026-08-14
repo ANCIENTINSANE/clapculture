@@ -17,7 +17,11 @@ export function Header() {
   const shopTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   React.useEffect(() => {
-    setMounted(true);
+    let mounted = true;
+    if (mounted) {
+      setTimeout(() => setMounted(true), 0);
+    }
+    return () => { mounted = false; };
   }, []);
 
   const handleMouseEnter = (menu: 'SHOP' | 'COLLECTIONS') => {
