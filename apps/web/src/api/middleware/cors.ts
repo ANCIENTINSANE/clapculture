@@ -5,7 +5,7 @@ export const configureCors = (env: AppwriteEnv) => {
   // We use a dynamically constructed object instead of an object literal
   // to prevent esbuild from aggressively inlining and merging it with Hono's
   // default cors options, which causes "Duplicate key" warnings during build.
-  const corsOptions: any = {};
+  const corsOptions: Record<string, unknown> = {};
   
   corsOptions.origin = (origin: string | undefined) => {
     // Allow any localhost for dev, or the specific frontend URL

@@ -24,7 +24,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const router = useRouter();
   const isLoginPage = pathname === '/admin/login';
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isCheckingAuth, setIsCheckingAuth] = useState(!isLoginPage);
 
   // Strict session verification for all admin pages
@@ -51,7 +50,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       })
       .then((data) => {
         if (data.success) {
-          setIsAuthenticated(true);
+          // Authenticated successfully
         } else {
           localStorage.removeItem('adminToken');
           router.push('/admin/login');
@@ -60,7 +59,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       .catch(() => {
         // Fallback for client demo session
         if (token === 'admin-secret-token-demo' || token.length > 20) {
-          setIsAuthenticated(true);
+          // Fallback accepted
         } else {
           localStorage.removeItem('adminToken');
           router.push('/admin/login');
@@ -69,7 +68,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       .finally(() => {
         setIsCheckingAuth(false);
       });
-  }, [pathname, router]);
+  }, [pathname, router, isLoginPage]);
 
   // If on login page, don't show the dashboard shell
   if (pathname === '/admin/login') {
