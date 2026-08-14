@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 'use client';
 
 import React, { useState } from 'react';
@@ -79,8 +80,6 @@ const SYSTEM_ROUTE_GROUPS = [
 export default function HomepageCMSPage() {
   const { data, updateData, resetData } = useHomepageCMS();
   const { data: dbProducts } = useProducts();
-  const { data: dbCategories } = useCategories();
-  const { data: dbCollections } = useCollections();
 
   const [formData, setFormData] = useState<HomepageCMSData>(() => JSON.parse(JSON.stringify(data)));
   const [activeTab, setActiveTab] = useState<'all' | 'hero' | 'sections' | 'newsletter'>('all');
