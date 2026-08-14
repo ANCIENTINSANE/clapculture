@@ -1,26 +1,58 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 type MediaItem = {
   id: string;
-  filename: string;
+  name: string;
   url: string;
-  size: string;
-  date: string;
+  size: number;
+  type: string;
+  createdAt: string;
 };
 
-const MOCK_MEDIA: MediaItem[] = [];
+function formatBytes(bytes: number, decimals = 2) {
+  if (!+bytes) return '0 Bytes';
+  const k = 1024;
+  const dm = decimals < 0 ? 0 : decimals;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
+}
 
 export default function MediaLibrary() {
-  const [media, setMedia] = useState<MediaItem[]>(MOCK_MEDIA);
+  const [media, setMedia] = useState<MediaItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
   const [view, setView] = useState<'grid' | 'list'>('grid');
   const [search, setSearch] = useState('');
   const [previewItem, setPreviewItem] = useState<MediaItem | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    fetchMedia();
+  }, []);
+
+  const fetchMedia = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch('/api/media');
+      const json = await res.json();
+      if (json.success && json.data) {
+        setMedia(json.data);
+      }
+    } catch (err) {
+      console.error('Failed to fetch media', err);
+      showToast('Failed to load media');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filteredMedia = media.filter(item => 
-    item.filename.toLowerCase().includes(search.toLowerCase())
+    item.name.toLowerCase().includes(search.toLowerCase())
   );
 
   const showToast = (message: string) => {
@@ -33,10 +65,69 @@ export default function MediaLibrary() {
     showToast('URL copied to clipboard');
   };
 
-  const handleDelete = (id: string) => {
-    if(confirm('Are you sure you want to delete this file?')) {
-      setMedia(media.filter(m => m.id !== id));
-      showToast('File deleted');
+  const handleDelete = async (id: string) => {
+    if(!confirm('Are you sure you want to delete this file?')) return;
+    
+    try {
+      showToast('Deleting...');
+      const res = await fetch(`/api/media/${id}`, { method: 'DELETE' });
+      const json = await res.json();
+      if (json.success) {
+        setMedia(media.filter(m => m.id !== id));
+        showToast('File deleted successfully');
+        if (previewItem?.id === id) setPreviewItem(null);
+      } else {
+        showToast(json.error || 'Failed to delete file');
+      }
+    } catch (err) {
+      console.error(err);
+      showToast('Failed to delete file');
+    }
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    const file = e.target.files[0];
+    await uploadFile(file);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      const file = e.dataTransfer.files[0];
+      await uploadFile(file);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+  };
+
+  const uploadFile = async (file: File) => {
+    try {
+      setUploading(true);
+      showToast('Uploading...');
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      const res = await fetch('/api/media/upload', {
+        method: 'POST',
+        body: formData
+      });
+      const json = await res.json();
+      
+      if (json.success && json.data) {
+        setMedia([json.data, ...media]);
+        showToast('File uploaded successfully');
+      } else {
+        showToast(json.error || 'Upload failed');
+      }
+    } catch (err) {
+      console.error(err);
+      showToast('Upload failed');
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -54,24 +145,33 @@ export default function MediaLibrary() {
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
           <div className="bg-[#141414] border border-[#262626] rounded-xl p-4 max-w-3xl w-full">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-white font-medium">{previewItem.filename}</h3>
+              <h3 className="text-white font-medium">{previewItem.name}</h3>
               <button onClick={() => setPreviewItem(null)} className="text-[#a3a3a3] hover:text-white">
                 <span className="material-symbols-outlined">close</span>
               </button>
             </div>
             <div className="bg-[#0a0a0a] rounded-lg flex items-center justify-center p-4">
-              <img src={previewItem.url} alt={previewItem.filename} className="max-h-[60vh] object-contain" />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={previewItem.url} alt={previewItem.name} className="max-h-[60vh] object-contain" />
             </div>
             <div className="flex justify-between items-center mt-4">
               <div className="text-sm text-[#737373]">
-                Uploaded {previewItem.date} • {previewItem.size}
+                Uploaded {new Date(previewItem.createdAt).toLocaleDateString()} • {formatBytes(previewItem.size)}
               </div>
-              <button 
-                onClick={() => handleCopyUrl(previewItem.url)}
-                className="bg-[#d2f000] text-black px-4 py-2 rounded-lg font-medium hover:bg-[#b8d400]"
-              >
-                Copy URL
-              </button>
+              <div className="flex gap-2">
+                <button 
+                  onClick={() => handleDelete(previewItem.id)}
+                  className="bg-red-500/10 text-red-500 px-4 py-2 rounded-lg font-medium hover:bg-red-500/20"
+                >
+                  Delete
+                </button>
+                <button 
+                  onClick={() => handleCopyUrl(previewItem.url)}
+                  className="bg-[#d2f000] text-black px-4 py-2 rounded-lg font-medium hover:bg-[#b8d400]"
+                >
+                  Copy URL
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -111,27 +211,49 @@ export default function MediaLibrary() {
       </div>
 
       {/* Upload Zone */}
-      <div className="bg-[#141414] border-2 border-dashed border-[#262626] rounded-xl p-8 flex flex-col items-center justify-center text-center mb-8 hover:border-[#d2f000] hover:bg-[#1a1a1a] transition-all cursor-pointer">
+      <div 
+        className="bg-[#141414] border-2 border-dashed border-[#262626] rounded-xl p-8 flex flex-col items-center justify-center text-center mb-8 hover:border-[#d2f000] hover:bg-[#1a1a1a] transition-all cursor-pointer relative"
+        onClick={() => fileInputRef.current?.click()}
+        onDrop={handleDrop}
+        onDragOver={handleDragOver}
+      >
+        <input 
+          type="file" 
+          ref={fileInputRef} 
+          onChange={handleFileChange} 
+          className="hidden" 
+          accept="image/*" 
+        />
         <div className="bg-[#1a1a1a] p-3 rounded-full mb-3">
-          <span className="material-symbols-outlined text-[#d2f000] text-3xl">cloud_upload</span>
+          <span className="material-symbols-outlined text-[#d2f000] text-3xl">
+            {uploading ? 'sync' : 'cloud_upload'}
+          </span>
         </div>
-        <h3 className="text-white font-medium text-lg mb-1">Click to upload or drag and drop</h3>
+        <h3 className="text-white font-medium text-lg mb-1">
+          {uploading ? 'Uploading...' : 'Click to upload or drag and drop'}
+        </h3>
         <p className="text-[#737373] text-sm">SVG, PNG, JPG or GIF (max. 10MB)</p>
       </div>
 
       {/* Media Grid/List */}
-      {filteredMedia.length === 0 ? (
+      {loading ? (
+        <div className="text-center py-12">
+          <span className="material-symbols-outlined text-4xl text-[#d2f000] mb-3 animate-spin">refresh</span>
+          <h3 className="text-white font-medium">Loading media...</h3>
+        </div>
+      ) : filteredMedia.length === 0 ? (
         <div className="text-center py-12">
           <span className="material-symbols-outlined text-4xl text-[#262626] mb-3">image_not_supported</span>
           <h3 className="text-white font-medium">No media found</h3>
-          <p className="text-[#737373] text-sm mt-1">Try adjusting your search query.</p>
+          <p className="text-[#737373] text-sm mt-1">Try adjusting your search query or upload a file.</p>
         </div>
       ) : view === 'grid' ? (
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
           {filteredMedia.map(item => (
             <div key={item.id} className="group relative bg-[#141414] border border-[#262626] rounded-lg overflow-hidden flex flex-col">
               <div className="aspect-square bg-[#1a1a1a] flex items-center justify-center relative overflow-hidden">
-                <img src={item.url} alt={item.filename} className="object-cover w-full h-full" />
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={item.url} alt={item.name} className="object-cover w-full h-full" />
                 
                 {/* Hover Actions */}
                 <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
@@ -139,7 +261,7 @@ export default function MediaLibrary() {
                     <span className="material-symbols-outlined text-[18px]">visibility</span>
                   </button>
                   <button onClick={() => handleCopyUrl(item.url)} className="bg-white/10 hover:bg-white/20 text-white p-2 rounded-full" title="Copy URL">
-                    <span className="material-symbols-outlined text-[18px]">link</span>
+                    <span className="material-symbols-outlined text-[18px]">content_copy</span>
                   </button>
                   <button onClick={() => handleDelete(item.id)} className="bg-red-500/20 hover:bg-red-500/40 text-red-500 p-2 rounded-full" title="Delete">
                     <span className="material-symbols-outlined text-[18px]">delete</span>
@@ -147,48 +269,49 @@ export default function MediaLibrary() {
                 </div>
               </div>
               <div className="p-3">
-                <p className="text-white text-sm font-medium truncate mb-1">{item.filename}</p>
+                <p className="text-sm text-white font-medium truncate mb-1" title={item.name}>{item.name}</p>
                 <div className="flex justify-between items-center text-xs text-[#737373]">
-                  <span>{item.size}</span>
-                  <span>{item.date}</span>
+                  <span>{formatBytes(item.size)}</span>
+                  <span>{new Date(item.createdAt).toLocaleDateString()}</span>
                 </div>
               </div>
             </div>
           ))}
         </div>
       ) : (
-        <div className="bg-[#141414] border border-[#262626] rounded-lg overflow-hidden">
-          <table className="w-full text-left divide-y divide-[#262626]">
+        <div className="bg-[#141414] border border-[#262626] rounded-xl overflow-hidden">
+          <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-[#1a1a1a] text-[#737373] text-sm">
+              <tr className="border-b border-[#262626] bg-[#1a1a1a]">
                 <th className="px-4 py-3 font-medium">File</th>
                 <th className="px-4 py-3 font-medium">Size</th>
                 <th className="px-4 py-3 font-medium">Date Uploaded</th>
                 <th className="px-4 py-3 font-medium text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#262626]">
+            <tbody>
               {filteredMedia.map(item => (
-                <tr key={item.id} className="hover:bg-[#1a1a1a] group">
+                <tr key={item.id} className="border-b border-[#262626] hover:bg-[#1a1a1a] transition-colors">
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded bg-[#1a1a1a] overflow-hidden flex-shrink-0">
+                      <div className="w-10 h-10 rounded bg-[#262626] overflow-hidden shrink-0">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src={item.url} alt="" className="w-full h-full object-cover" />
                       </div>
-                      <span className="text-white text-sm font-medium">{item.filename}</span>
+                      <span className="text-white font-medium truncate max-w-[200px] md:max-w-md">{item.name}</span>
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-sm text-[#a3a3a3]">{item.size}</td>
-                  <td className="px-4 py-3 text-sm text-[#a3a3a3]">{item.date}</td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button onClick={() => setPreviewItem(item)} className="text-[#a3a3a3] hover:text-white" title="Preview">
+                  <td className="px-4 py-3 text-[#a3a3a3] text-sm">{formatBytes(item.size)}</td>
+                  <td className="px-4 py-3 text-[#a3a3a3] text-sm">{new Date(item.createdAt).toLocaleDateString()}</td>
+                  <td className="px-4 py-3 text-right">
+                    <div className="flex justify-end gap-2">
+                      <button onClick={() => setPreviewItem(item)} className="text-[#a3a3a3] hover:text-white p-1" title="Preview">
                         <span className="material-symbols-outlined text-[18px]">visibility</span>
                       </button>
-                      <button onClick={() => handleCopyUrl(item.url)} className="text-[#a3a3a3] hover:text-white" title="Copy URL">
-                        <span className="material-symbols-outlined text-[18px]">link</span>
+                      <button onClick={() => handleCopyUrl(item.url)} className="text-[#a3a3a3] hover:text-white p-1" title="Copy URL">
+                        <span className="material-symbols-outlined text-[18px]">content_copy</span>
                       </button>
-                      <button onClick={() => handleDelete(item.id)} className="text-[#a3a3a3] hover:text-red-500" title="Delete">
+                      <button onClick={() => handleDelete(item.id)} className="text-red-500/70 hover:text-red-500 p-1" title="Delete">
                         <span className="material-symbols-outlined text-[18px]">delete</span>
                       </button>
                     </div>
