@@ -39,10 +39,10 @@ export function PwaPrompt() {
     const isIosDevice = /iphone|ipad|ipod/.test(userAgent);
     
     // Check if it's already installed on iOS (standalone mode)
-    const isIosStandalone = ('standalone' in window.navigator) && (window.navigator as any).standalone;
+    const isIosStandalone = ('standalone' in window.navigator) && (window.navigator as unknown as { standalone?: boolean }).standalone;
     
     if (isIosDevice && !isIosStandalone) {
-      setIsIOS(true);
+      setTimeout(() => setIsIOS(true), 0);
       // Wait a bit before showing the prompt on first visit
       setTimeout(() => setShowIOSPrompt(true), 3000);
     }
@@ -93,10 +93,10 @@ export function PwaPrompt() {
   if (!showPrompt && !showIOSPrompt) return null;
 
   return (
-    <div className="fixed bottom-0 left-0 w-full z-[9999] p-4 md:p-6 animate-in slide-in-from-bottom-10 fade-in duration-500">
+    <div className="fixed bottom-0 left-0 w-full z-9999 p-4 md:p-6 animate-in slide-in-from-bottom-10 fade-in duration-500">
       <div className="max-w-md mx-auto bg-deep-black border-2 border-charcoal shadow-2xl rounded-2xl overflow-hidden relative">
         {/* Glow effect */}
-        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-electric-lime/0 via-electric-lime to-electric-lime/0"></div>
+        <div className="absolute top-0 left-0 w-full h-1 bg-linear-to-r from-electric-lime/0 via-electric-lime to-electric-lime/0"></div>
         
         <button 
           onClick={handleDismiss}
@@ -107,7 +107,7 @@ export function PwaPrompt() {
         </button>
 
         <div className="p-5 flex items-start gap-4">
-          <div className="w-12 h-12 bg-charcoal rounded-xl border border-gray-800 flex-shrink-0 overflow-hidden flex items-center justify-center">
+          <div className="w-12 h-12 bg-charcoal rounded-xl border border-gray-800 shrink-0 overflow-hidden flex items-center justify-center">
             <span className="text-xl font-bold font-hero-lg text-electric-lime">C</span>
           </div>
           
@@ -117,7 +117,7 @@ export function PwaPrompt() {
             
             {isIOS && showIOSPrompt ? (
               <div className="bg-charcoal p-3 rounded-lg text-xs text-gray-300">
-                Tap the <span className="inline-block align-middle mx-1 bg-white/10 rounded px-1"><span className="material-symbols-outlined text-[14px]">ios_share</span></span> icon at the bottom of Safari and select <strong className="text-white">"Add to Home Screen"</strong>.
+                Tap the <span className="inline-block align-middle mx-1 bg-white/10 rounded px-1"><span className="material-symbols-outlined text-[14px]">ios_share</span></span> icon at the bottom of Safari and select <strong className="text-white">&quot;Add to Home Screen&quot;</strong>.
               </div>
             ) : (
               <button

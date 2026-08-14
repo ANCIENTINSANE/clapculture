@@ -347,7 +347,7 @@ export default function Home() {
                           {section.subtitle}
                         </span>
                       )}
-                      <h2 className="text-3xl sm:text-4xl md:text-6xl 2xl:text-8xl font-headline-xl uppercase tracking-wider text-white mt-1 break-words">
+                      <h2 className="text-3xl sm:text-4xl md:text-6xl 2xl:text-8xl font-headline-xl uppercase tracking-wider text-white mt-1">
                         {section.title}
                       </h2>
                     </div>
