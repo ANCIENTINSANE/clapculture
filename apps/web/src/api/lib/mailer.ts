@@ -15,7 +15,8 @@ export interface MailResult {
   simulated?: boolean;
 }
 
-let cachedTransporter: any = null;
+import type { Transporter } from 'nodemailer';
+let cachedTransporter: Transporter | null = null;
 let lastConfigKey = '';
 
 export type MailerEnv = Record<string, string | undefined>;
@@ -23,7 +24,7 @@ export type MailerEnv = Record<string, string | undefined>;
 /**
  * Get or initialize the Nodemailer transporter for Gmail SMTP
  */
-export function getMailTransporter(env?: MailerEnv): any {
+export function getMailTransporter(env?: MailerEnv): Transporter {
   const host = env?.SMTP_HOST || process.env.SMTP_HOST || 'smtp.gmail.com';
   const port = Number(env?.SMTP_PORT || process.env.SMTP_PORT || 465);
   const secure = port === 465 || env?.SMTP_SECURE === 'true' || process.env.SMTP_SECURE === 'true';
@@ -38,6 +39,7 @@ export function getMailTransporter(env?: MailerEnv): any {
 
   try {
     // Dynamic require to prevent edge Webpack build breakage
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const nodemailer = require('nodemailer');
     cachedTransporter = nodemailer.createTransport({
       host,

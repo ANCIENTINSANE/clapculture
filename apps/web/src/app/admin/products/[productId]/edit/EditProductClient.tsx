@@ -31,7 +31,7 @@ export default function EditProductClient({ productId }: { productId: string }) 
     badges: [] as string[],
   });
 
-  const [isManualSlug, setIsManualSlug] = useState(true);
+
   const [slugStatus, setSlugStatus] = useState<'idle' | 'checking' | 'available' | 'taken'>('idle');
   const [existingProductName, setExistingProductName] = useState<string | null>(null);
 
@@ -105,7 +105,7 @@ export default function EditProductClient({ productId }: { productId: string }) 
   }, [productId]);
 
   useEffect(() => {
-    loadProduct();
+    setTimeout(() => loadProduct(), 0);
   }, [loadProduct]);
 
   // Handle Name Change (slug is strictly generated from product name)
@@ -120,9 +120,14 @@ export default function EditProductClient({ productId }: { productId: string }) 
   // Real-time slug availability check (excluding this product's own ID)
   useEffect(() => {
     if (!formData.slug.trim()) {
-      setSlugStatus('idle');
-      setExistingProductName(null);
-      return;
+      let cancelled = false;
+      setTimeout(() => {
+        if (!cancelled) {
+          setSlugStatus('idle');
+          setExistingProductName(null);
+        }
+      }, 0);
+      return () => { cancelled = true; };
     }
 
     setSlugStatus('checking');
@@ -187,7 +192,7 @@ export default function EditProductClient({ productId }: { productId: string }) 
     try {
       const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
       const activeSizes = Object.entries(stockGrid)
-        .filter(([_, count]) => count >= 0)
+        .filter(([, count]) => count >= 0)
         .map(([size]) => size);
       const totalStock = Object.values(stockGrid).reduce((sum, count) => sum + count, 0);
 
@@ -455,6 +460,7 @@ export default function EditProductClient({ productId }: { productId: string }) 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
               {formData.images.map((img, idx) => (
                 <div key={idx} className="relative aspect-3/4 bg-[#1a1a1a] border border-[#262626] rounded-lg overflow-hidden group">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={img} alt="" className="w-full h-full object-cover" />
                   <button
                     type="button"

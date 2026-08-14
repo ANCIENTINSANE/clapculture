@@ -80,8 +80,9 @@ function TrackOrderContent() {
 
   useEffect(() => {
     if (urlOrderId) {
-      fetchDbOrder(urlOrderId);
+      setTimeout(() => fetchDbOrder(urlOrderId), 0);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [urlOrderId]);
 
   const handleTrack = (e: React.FormEvent) => {
@@ -256,6 +257,7 @@ function TrackOrderContent() {
                 {dbOrder.items.map((item, idx) => (
                   <div key={idx} className="flex justify-between items-center bg-black/40 p-3 rounded border border-gray-800 text-xs">
                     <div className="flex items-center gap-3">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={item.image || '/stock/superstar-mockup1.webp'}
                         alt={item.name}

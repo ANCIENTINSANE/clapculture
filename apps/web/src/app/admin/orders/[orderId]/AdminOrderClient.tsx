@@ -81,7 +81,8 @@ export default function AdminOrderClient({ orderId }: { orderId: string }) {
   };
 
   useEffect(() => {
-    loadOrder();
+    setTimeout(() => loadOrder(), 0);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orderId]);
 
   const handleVerifyPayment = async (status: 'VERIFIED' | 'REJECTED') => {
@@ -115,7 +116,7 @@ export default function AdminOrderClient({ orderId }: { orderId: string }) {
       } else {
         showToast(json.error || 'Failed to update payment status', true);
       }
-    } catch (err) {
+    } catch {
       showToast('Network error while updating status', true);
     } finally {
       setIsUpdating(false);
@@ -146,7 +147,7 @@ export default function AdminOrderClient({ orderId }: { orderId: string }) {
       } else {
         showToast(json.error || 'Failed to update order status', true);
       }
-    } catch (err) {
+    } catch {
       showToast('Network error while updating status', true);
     } finally {
       setIsUpdating(false);
@@ -279,6 +280,7 @@ export default function AdminOrderClient({ orderId }: { orderId: string }) {
                 <span className="text-xs text-[#737373] block mb-2 font-mono">Payment Proof Screenshot:</span>
                 <div className="border border-[#262626] rounded-lg p-2 bg-[#0d0d0d] overflow-hidden flex items-center justify-center min-h-48">
                   {order?.screenshotUrl && !order.screenshotUrl.includes('placehold') ? (
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={order.screenshotUrl}
                       alt="Payment Screenshot"
@@ -347,6 +349,7 @@ export default function AdminOrderClient({ orderId }: { orderId: string }) {
                 <div key={idx} className="py-3 flex items-center justify-between gap-4">
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-14 bg-[#111] border border-[#2e2e2e] rounded overflow-hidden shrink-0">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={item.image || '/stock/superstar-mockup1.webp'}
                         alt={item.name}

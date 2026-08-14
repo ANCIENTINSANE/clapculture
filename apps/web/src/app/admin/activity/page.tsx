@@ -91,7 +91,7 @@ export default function ActivityLogPage() {
             }
           ]);
         }
-      } catch (e) {
+      } catch {
         setLogs([
           {
             id: 'auth-session-fallback',
