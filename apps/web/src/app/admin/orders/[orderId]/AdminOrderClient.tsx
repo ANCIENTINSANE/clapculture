@@ -350,7 +350,7 @@ export default function AdminOrderClient({ orderId }: { orderId: string }) {
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-14 bg-[#111] border border-[#2e2e2e] rounded overflow-hidden shrink-0">
                       <img
-                        src={resolveImageUrl(item.image || '/herobg1-desktop.png')}
+                        src={resolveImageUrl(item.image || '6a7fa922002c9b023447')}
                         alt={item.name}
                         className="w-16 h-20 object-cover rounded border border-[#333]"
                       />

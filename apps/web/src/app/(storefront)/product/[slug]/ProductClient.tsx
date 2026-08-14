@@ -18,7 +18,7 @@ interface ProductClientProps {
 
 export default function ProductClient({ product, relatedProducts }: ProductClientProps) {
   const router = useRouter();
-  const [activeImage, setActiveImage] = useState(product.images[0] || '/herobg1-desktop.png');
+  const [activeImage, setActiveImage] = useState(product.images[0] || '6a7fa922002c9b023447');
   const [selectedSize, setSelectedSize] = useState<Size>(product.sizes[0] || 'M');
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState('description');
@@ -78,7 +78,7 @@ export default function ProductClient({ product, relatedProducts }: ProductClien
               <button 
                 key={idx} 
                 className={`w-20 md:w-full aspect-4/5 bg-charcoal shrink-0 border-2 ${activeImage === img ? 'border-electric-lime' : 'border-transparent hover:border-gray-500'}`}
-                onClick={() => setActiveImage(img || '/herobg1-desktop.png')}
+                onClick={() => setActiveImage(img || '6a7fa922002c9b023447')}
               >
                 <img src={resolveImageUrl(img)} alt={`${product.name} ${idx}`} className="w-full h-full object-cover" />
               </button>

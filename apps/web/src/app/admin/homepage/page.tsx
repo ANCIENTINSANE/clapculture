@@ -24,15 +24,15 @@ const IMAGE_PRESETS = [
   { label: 'Prabhas (Appwrite WebP)', url: '6a7fa5fb001234ea8799' },
   { label: 'Ram Charan (Appwrite WebP)', url: '6a7fa5ff00162b33637d' },
   { label: 'Jr NTR (Appwrite WebP)', url: '6a7fa6010011985f8642' },
-  { label: 'Hero 1 (Black Graphic)', url: '/herobg1-desktop.png' },
-  { label: 'Hero 2 (Vintage Grunge)', url: '/herobg2-desktop.png' },
-  { label: 'Hero 3 (Neon Street)', url: '/herobg3-desktop.png' },
-  { label: 'Mobile Banner', url: '/herobg1-mobile.png' },
-  { label: 'Superstar Tee Mockup 1', url: '/stock/superstar-mockup1.webp' },
-  { label: 'Superstar Tee Mockup 2', url: '/stock/superstar-mockup2.webp' },
-  { label: 'Pokiri Tee Mockup', url: '/stock/pokiri-mock1.webp' },
-  { label: 'Darling Tee Mockup', url: '/stock/darling-mockup1.webp' },
-  { label: 'Pushpa 2 Tee Mockup', url: '/stock/aa-mockup3.webp' },
+  { label: 'Hero 1 (Black Graphic)', url: '6a7fa922002c9b023447' },
+  { label: 'Hero 2 (Vintage Grunge)', url: '6a7fa926003c73611eef' },
+  { label: 'Hero 3 (Neon Street)', url: '6a7fa92b001fdc8fc236' },
+  { label: 'Mobile Banner', url: '6a7fa92400303d551b68' },
+  { label: 'Superstar Tee Mockup 1', url: '6a7fa922002c9b023447' },
+  { label: 'Superstar Tee Mockup 2', url: '6a7fa926003c73611eef' },
+  { label: 'Pokiri Tee Mockup', url: '6a7fa5f700082ba1bbc3' },
+  { label: 'Darling Tee Mockup', url: '6a7fa5fb001234ea8799' },
+  { label: 'Pushpa 2 Tee Mockup', url: '6a7fa5f5002dd6861328' },
 ];
 
 const SYSTEM_ROUTE_GROUPS = [
@@ -184,7 +184,7 @@ export default function HomepageCMSPage() {
       tagline: 'EXCLUSIVE FIT',
       badge: 'NEW',
       badgeColor: 'lime',
-      imageUrl: '/herobg1-desktop.png',
+      imageUrl: '6a7fa922002c9b023447',
       link: '/shop',
       ctaText: 'EXPLORE',
       aspectRatio: 'portrait',
@@ -340,7 +340,7 @@ export default function HomepageCMSPage() {
           tagline: 'SPECIAL DROP',
           badge: 'FEATURED',
           badgeColor: 'lime',
-          imageUrl: '/herobg1-desktop.png',
+          imageUrl: '6a7fa922002c9b023447',
           link: '/shop',
           ctaText: 'EXPLORE',
           aspectRatio: newSectionType === 'star_collection' ? 'tall' : 'portrait',
@@ -354,7 +354,7 @@ export default function HomepageCMSPage() {
           tagline: 'PREMIUM QUALITY',
           badge: 'NEW',
           badgeColor: 'cyan',
-          imageUrl: '/herobg2-desktop.png',
+          imageUrl: '6a7fa926003c73611eef',
           link: '/shop',
           ctaText: 'EXPLORE',
           aspectRatio: newSectionType === 'star_collection' ? 'tall' : 'portrait',
@@ -526,8 +526,8 @@ export default function HomepageCMSPage() {
                         primaryCtaLink: '/shop',
                         secondaryCtaText: 'COLLECTIONS',
                         secondaryCtaLink: '/collections',
-                        desktopImage: '/herobg1-desktop.png',
-                        mobileImage: '/herobg1-mobile.png',
+                        desktopImage: '6a7fa922002c9b023447',
+                        mobileImage: '6a7fa92400303d551b68',
                         active: true
                       };
                       setEditingSlide({ slide: newSlide, isNew: true });
@@ -635,7 +635,7 @@ export default function HomepageCMSPage() {
                   {/* Live Visual Preview of Side Banner */}
                   <div className="relative aspect-3/4 bg-black rounded-lg overflow-hidden border border-[#333] flex flex-col justify-between p-4 shadow-lg">
                     <img
-                      src={resolveImageUrl(formData.hero.sideBanner.imageUrl || '/herobg1-desktop.png')}
+                      src={resolveImageUrl(formData.hero.sideBanner.imageUrl || '6a7fa922002c9b023447')}
                       alt="Side Banner"
                       className="absolute inset-0 w-full h-full object-cover opacity-60"
                     />
@@ -1031,7 +1031,7 @@ export default function HomepageCMSPage() {
                             {/* Card Banner Visual Preview */}
                             <div className="relative aspect-4/5 bg-black overflow-hidden flex flex-col justify-between p-3.5">
                               <img
-                                src={resolveImageUrl(tile.imageUrl || '/herobg1-desktop.png')}
+                                src={resolveImageUrl(tile.imageUrl || '6a7fa922002c9b023447')}
                                 alt={tile.title}
                                 className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-70"
                               />
@@ -1318,7 +1318,7 @@ export default function HomepageCMSPage() {
                 <span className="text-xs font-mono text-[#a3a3a3] mb-2 self-start uppercase">Live Card Preview</span>
                 <div className="w-full relative aspect-4/5 bg-black rounded-xl overflow-hidden border border-[#333] flex flex-col justify-between p-5 shadow-2xl">
                   <img
-                    src={editingTile.tile.imageUrl || '/herobg1-desktop.png'}
+                    src={editingTile.tile.imageUrl || '6a7fa922002c9b023447'}
                     alt="Preview"
                     className="absolute inset-0 w-full h-full object-cover opacity-70"
                   />

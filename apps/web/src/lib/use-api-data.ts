@@ -166,12 +166,12 @@ export interface StarCollection {
 const STAR_SLUGS = ['pawan-kalyan', 'mahesh-babu', 'prabhas', 'allu-arjun', 'ram-charan', 'ntr'];
 
 const STAR_META: Record<string, { title: string; tagline: string; image: string }> = {
-  'pawan-kalyan': { title: 'POWER STAR COLLECTION', tagline: 'SENANI & OG ERA FITS', image: '/pawankalyan.jpeg' },
-  'mahesh-babu': { title: 'MAHESH BABU COLLECTION', tagline: 'SUPERSTAR & POKIRI EDITIONS', image: '/mahesh-babu.jpeg' },
-  'prabhas': { title: 'PRABHAS COLLECTION', tagline: 'REBEL STAR & RAJA SAAB DROPS', image: '/prabhas.jpeg' },
-  'allu-arjun': { title: 'ALLU ARJUN COLLECTION', tagline: 'ICON STAR & PUSHPA 2 EDITION', image: '/allu-arjun.jpeg' },
-  'ram-charan': { title: 'RAM CHARAN COLLECTION', tagline: 'GLOBAL STAR GAME CHANGER', image: '/ramcharan.jpeg' },
-  'ntr': { title: 'JR NTR COLLECTION', tagline: 'MAN OF MASSES DEVARA', image: '/ntr.jpeg' },
+  'pawan-kalyan': { title: 'POWER STAR COLLECTION', tagline: 'SENANI & OG ERA FITS', image: '6a7fa5f80010fcd2bc85' },
+  'mahesh-babu': { title: 'MAHESH BABU COLLECTION', tagline: 'SUPERSTAR & POKIRI EDITIONS', image: '6a7fa5f700082ba1bbc3' },
+  'prabhas': { title: 'PRABHAS COLLECTION', tagline: 'REBEL STAR & RAJA SAAB DROPS', image: '6a7fa5fb001234ea8799' },
+  'allu-arjun': { title: 'ALLU ARJUN COLLECTION', tagline: 'ICON STAR & PUSHPA 2 EDITION', image: '6a7fa5f5002dd6861328' },
+  'ram-charan': { title: 'RAM CHARAN COLLECTION', tagline: 'GLOBAL STAR GAME CHANGER', image: '6a7fa5ff00162b33637d' },
+  'ntr': { title: 'JR NTR COLLECTION', tagline: 'MAN OF MASSES DEVARA', image: '6a7fa6010011985f8642' },
 };
 
 export function useStarCollections(): StarCollection[] {
@@ -187,7 +187,7 @@ export function useStarCollections(): StarCollection[] {
       slug,
       title: meta?.title || `${name} COLLECTION`,
       tagline: meta?.tagline || '',
-      image: meta?.image || '/herobg1-desktop.png',
+      image: meta?.image || '6a7fa922002c9b023447',
       count: `${productCount} DROPS`,
     };
   });

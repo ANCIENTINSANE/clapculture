@@ -260,7 +260,7 @@ function TrackOrderContent() {
                     <div className="flex items-center gap-3">
                       <div className="w-16 h-20 bg-charcoal border border-charcoal overflow-hidden shrink-0">
                         <img 
-                          src={resolveImageUrl(item.image || '/herobg1-desktop.png')} 
+                          src={resolveImageUrl(item.image || '6a7fa922002c9b023447')} 
                           alt={item.name} 
                           className="w-full h-full object-cover" 
                         />
