@@ -31,9 +31,10 @@ export default function MediaLibrary() {
   
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    fetchMedia();
-  }, []);
+  const showToast = (message: string) => {
+    setToastMessage(message);
+    setTimeout(() => setToastMessage(null), 3000);
+  };
 
   const fetchMedia = async () => {
     try {
@@ -51,14 +52,14 @@ export default function MediaLibrary() {
     }
   };
 
+  useEffect(() => {
+    fetchMedia();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const filteredMedia = media.filter(item => 
     item.name.toLowerCase().includes(search.toLowerCase())
   );
-
-  const showToast = (message: string) => {
-    setToastMessage(message);
-    setTimeout(() => setToastMessage(null), 3000);
-  };
 
   const handleCopyUrl = (url: string) => {
     navigator.clipboard.writeText(url);
@@ -298,7 +299,7 @@ export default function MediaLibrary() {
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src={item.url} alt="" className="w-full h-full object-cover" />
                       </div>
-                      <span className="text-white font-medium truncate max-w-[200px] md:max-w-md">{item.name}</span>
+                      <span className="text-white font-medium truncate max-w-50 md:max-w-md">{item.name}</span>
                     </div>
                   </td>
                   <td className="px-4 py-3 text-[#a3a3a3] text-sm">{formatBytes(item.size)}</td>
