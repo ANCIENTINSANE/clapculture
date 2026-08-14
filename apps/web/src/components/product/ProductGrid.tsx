@@ -13,7 +13,7 @@ export function ProductGrid({ products, isLoading }: ProductGridProps) {
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 lg:gap-8">
         {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
           <div key={n} className="animate-pulse">
-            <div className="bg-charcoal aspect-[4/5] mb-4"></div>
+            <div className="bg-charcoal aspect-4/5 mb-4"></div>
             <div className="h-6 bg-charcoal w-3/4 mb-2"></div>
             <div className="h-5 bg-charcoal w-1/4"></div>
           </div>
