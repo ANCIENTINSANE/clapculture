@@ -55,8 +55,18 @@ export function getStatusColor(status: string) {
 
 export function resolveImageUrl(url: string | undefined | null): string {
   if (!url) return '';
-  // If it's already an absolute URL, return it as is
-  if (url.startsWith('http') || url.startsWith('data:')) {
+  // If it's already an absolute URL, clean it and return
+  if (url.startsWith('http')) {
+    try {
+      const urlObj = new URL(url);
+      urlObj.searchParams.delete('mode');
+      urlObj.searchParams.delete('impersonateuserid');
+      return urlObj.toString();
+    } catch {
+      return url;
+    }
+  }
+  if (url.startsWith('data:')) {
     return url;
   }
   
