@@ -38,7 +38,6 @@ export default function MediaLibrary() {
 
   const fetchMedia = async () => {
     try {
-      setLoading(true);
       const res = await fetch('/api/media');
       const json = await res.json();
       if (json.success && json.data) {
