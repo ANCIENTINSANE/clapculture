@@ -87,10 +87,6 @@ export default function AdminLogin() {
             {isLoading ? 'VERIFYING...' : 'SIGN IN'}
           </button>
         </form>
-
-        <div className="mt-8 pt-6 border-t border-[#262626] text-center text-xs text-[#737373]">
-          Default Credentials: <span className="text-[#d2f000] font-mono">admin@clapculture.com</span> / <span className="text-[#d2f000] font-mono">clapculture123</span>
-        </div>
       </div>
     </div>
   );
