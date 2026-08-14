@@ -136,7 +136,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </div>
             <div>
               <p className="text-sm text-white font-medium">Admin User</p>
-              <p className="text-xs text-[#737373]">admin@clapculture.com</p>
+              <p className="text-xs text-[#737373]">Administrator</p>
             </div>
           </div>
           <button

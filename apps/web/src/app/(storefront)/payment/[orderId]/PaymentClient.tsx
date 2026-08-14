@@ -20,8 +20,8 @@ export default function PaymentClient({ orderId }: { orderId: string }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [copiedUpi, setCopiedUpi] = useState(false);
 
-  const upiId = 'clapculture@upi';
-  const qrCodeUrl = '/qrcode.jpg';
+  const upiId = 'paytm.slazmi4@pty';
+  const qrCodeUrl = '/qrcode.png';
 
   const handleCopyUpi = () => {
     navigator.clipboard.writeText(upiId);
@@ -64,7 +64,7 @@ export default function PaymentClient({ orderId }: { orderId: string }) {
       total: order?.total || total,
       paymentStatus: 'SUBMITTED',
       orderStatus: 'PLACED',
-      transactionId: utrNumber.trim() || 'UPI-REF-PENDING',
+      transactionId: utrNumber.trim(),
       trackingNumber: 'TRK-CLAP-PENDING',
     };
 
@@ -84,7 +84,7 @@ export default function PaymentClient({ orderId }: { orderId: string }) {
     }
 
     if (order) {
-      updatePaymentInfo(utrNumber || 'UPI-REF-PENDING', screenshotUrl || 'https://placehold.co/600x800?text=Payment+Screenshot');
+      updatePaymentInfo(utrNumber.trim(), screenshotUrl || 'https://placehold.co/600x800?text=Payment+Screenshot');
     }
 
     clearCart();
@@ -174,21 +174,26 @@ export default function PaymentClient({ orderId }: { orderId: string }) {
 
           <div>
             <label className="block text-xs font-label-caps uppercase text-gray-300 mb-2">
-              2. ENTER 12-DIGIT UTR / REFERENCE NUMBER (OPTIONAL)
+              2. ENTER 12-DIGIT UTR / REFERENCE NUMBER *
             </label>
             <input
               type="text"
               placeholder="e.g. 423987123984"
               value={utrNumber}
-              onChange={(e) => setUtrNumber(e.target.value)}
+              onChange={(e) => setUtrNumber(e.target.value.replace(/\D/g, '').slice(0, 12))}
+              required
+              minLength={12}
+              maxLength={12}
+              pattern="\d{12}"
+              title="Please enter a valid 12-digit UTR number"
               className="w-full bg-[#1a1a1a] border border-charcoal rounded-lg p-3 text-white font-mono focus:border-electric-lime outline-none"
             />
           </div>
 
           <button
             type="submit"
-            disabled={isSubmitting || !screenshotUrl}
-            className="w-full bg-electric-lime text-black font-label-caps font-bold text-base py-4 rounded-xl hover:bg-white transition-all disabled:opacity-50 uppercase tracking-widest"
+            disabled={isSubmitting || !screenshotUrl || utrNumber.length < 12}
+            className="w-full bg-electric-lime text-black font-label-caps font-bold text-base py-4 rounded-xl hover:bg-white transition-all disabled:opacity-50 disabled:cursor-not-allowed uppercase tracking-widest"
           >
             {isSubmitting ? 'VERIFYING PAYMENT...' : 'CONFIRM PAYMENT & COMPLETE ORDER →'}
           </button>

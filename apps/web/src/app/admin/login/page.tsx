@@ -62,7 +62,7 @@ export default function AdminLogin() {
               onChange={(e) => setEmail(e.target.value)}
               required
               className="w-full bg-[#1a1a1a] border border-[#262626] rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#d2f000] transition-colors"
-              placeholder="admin@clapculture.com"
+              placeholder="xyz@clapculture.com"
             />
           </div>
           <div>
@@ -75,7 +75,7 @@ export default function AdminLogin() {
               onChange={(e) => setPassword(e.target.value)}
               required
               className="w-full bg-[#1a1a1a] border border-[#262626] rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#d2f000] transition-colors"
-              placeholder="••••••••"
+              placeholder="•••••••••••••"
             />
           </div>
 
