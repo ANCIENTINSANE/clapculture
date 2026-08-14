@@ -5,8 +5,35 @@ import { CartDrawer } from "@/components/cart/CartDrawer";
 import { OrderStoreProvider } from "@/lib/store";
 
 export const metadata: Metadata = {
-  title: "CLAPCULTURE - Premium Streetwear",
-  description: "Premium streetwear for the rebels, the dreamers & the doers.",
+  metadataBase: new URL('https://clapculture.com'),
+  title: {
+    default: "CLAPCULTURE | Premium Streetwear",
+    template: "%s | CLAPCULTURE"
+  },
+  description: "Premium streetwear for the rebels, the dreamers & the doers. Shop exclusive drops, oversized tees, hoodies, and headwear.",
+  keywords: ["streetwear", "premium streetwear", "oversized tees", "streetwear brand india", "hypebeast", "tollywood streetwear", "luxury streetwear", "clapculture", "clap culture", "street fashion", "exclusive drops", "hoodies"],
+  authors: [{ name: "ClapCulture" }],
+  creator: "ClapCulture",
+  openGraph: {
+    type: "website",
+    locale: "en_IN",
+    url: "https://clapculture.com",
+    title: "CLAPCULTURE | Premium Streetwear",
+    description: "Premium streetwear for the rebels, the dreamers & the doers. Shop exclusive drops, oversized tees, hoodies, and headwear.",
+    siteName: "CLAPCULTURE",
+    images: [{
+      url: "/og-image.jpg",
+      width: 1200,
+      height: 630,
+      alt: "CLAPCULTURE Premium Streetwear"
+    }]
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "CLAPCULTURE | Premium Streetwear",
+    description: "Premium streetwear for the rebels, the dreamers & the doers.",
+    images: ["/og-image.jpg"],
+  },
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },
