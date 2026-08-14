@@ -4,6 +4,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { resolveImageUrl } from '@/lib/utils';
 import { BadgeTagSelector } from '@/components/admin/BadgeTagSelector';
 
 function slugify(text: string): string {
@@ -462,7 +463,7 @@ export default function EditProductClient({ productId }: { productId: string }) 
               {formData.images.map((img, idx) => (
                 <div key={idx} className="relative aspect-3/4 bg-[#1a1a1a] border border-[#262626] rounded-lg overflow-hidden group">
 
-                  <img src={img} alt="" className="w-full h-full object-cover" />
+                  <img src={resolveImageUrl(img)} alt="" className="w-full h-full object-cover" />
                   <button
                     type="button"
                     onClick={() => handleRemoveImage(idx)}

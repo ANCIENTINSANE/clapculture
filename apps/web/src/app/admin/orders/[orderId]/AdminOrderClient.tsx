@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, resolveImageUrl } from '@/lib/utils';
 
 interface OrderItem {
   id?: string;
@@ -281,9 +281,8 @@ export default function AdminOrderClient({ orderId }: { orderId: string }) {
                 <span className="text-xs text-[#737373] block mb-2 font-mono">Payment Proof Screenshot:</span>
                 <div className="border border-[#262626] rounded-lg p-2 bg-[#0d0d0d] overflow-hidden flex items-center justify-center min-h-48">
                   {order?.screenshotUrl && !order.screenshotUrl.includes('placehold') ? (
-
                     <img
-                      src={order.screenshotUrl}
+                      src={resolveImageUrl(order.screenshotUrl)}
                       alt="Payment Screenshot"
                       className="w-full max-h-64 object-contain rounded"
                     />
@@ -350,11 +349,10 @@ export default function AdminOrderClient({ orderId }: { orderId: string }) {
                 <div key={idx} className="py-3 flex items-center justify-between gap-4">
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-14 bg-[#111] border border-[#2e2e2e] rounded overflow-hidden shrink-0">
-
                       <img
-                        src={item.image || '/stock/superstar-mockup1.webp'}
+                        src={resolveImageUrl(item.image || '/herobg1-desktop.png')}
                         alt={item.name}
-                        className="w-full h-full object-cover"
+                        className="w-16 h-20 object-cover rounded border border-[#333]"
                       />
                     </div>
                     <div>

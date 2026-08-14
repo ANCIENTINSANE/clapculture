@@ -5,7 +5,7 @@ import React, { useState, useEffect, useMemo, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useOrderStore, OrderData } from '@/lib/store';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, resolveImageUrl } from '@/lib/utils';
 
 function TrackOrderContent() {
   const searchParams = useSearchParams();
@@ -258,12 +258,13 @@ function TrackOrderContent() {
                 {dbOrder.items.map((item, idx) => (
                   <div key={idx} className="flex justify-between items-center bg-black/40 p-3 rounded border border-gray-800 text-xs">
                     <div className="flex items-center gap-3">
-
-                      <img
-                        src={item.image || '/stock/superstar-mockup1.webp'}
-                        alt={item.name}
-                        className="w-10 h-12 object-cover rounded border border-gray-700"
-                      />
+                      <div className="w-16 h-20 bg-charcoal border border-charcoal overflow-hidden shrink-0">
+                        <img 
+                          src={resolveImageUrl(item.image || '/herobg1-desktop.png')} 
+                          alt={item.name} 
+                          className="w-full h-full object-cover" 
+                        />
+                      </div>
                       <div>
                         <p className="font-bold text-white uppercase">{item.name}</p>
                         <p className="text-gray-400">Size: {item.size || 'M'} | Qty: {item.quantity || 1}</p>

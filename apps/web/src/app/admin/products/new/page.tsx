@@ -3,6 +3,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { resolveImageUrl } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 import { BadgeTagSelector } from '@/components/admin/BadgeTagSelector';
 
@@ -325,7 +326,7 @@ export default function AddProductPage() {
                 {images.map((img, idx) => (
                   <div key={idx} className="relative aspect-3/4 bg-[#1a1a1a] border border-[#262626] rounded-lg overflow-hidden group">
 
-                    <img src={img} alt="" className="w-full h-full object-cover" />
+                    <img src={resolveImageUrl(img)} alt="" className="w-full h-full object-cover" />
                     <button
                       type="button"
                       onClick={() => handleRemoveImage(idx)}

@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { resolveImageUrl } from '@/lib/utils';
 import { useState, useEffect } from 'react';
 
 interface AdminProduct {
@@ -108,7 +109,7 @@ export default function ProductsPage() {
                   <tr key={product.id} className="hover:bg-[#1a1a1a] transition-colors">
                     <td className="p-4">
                       <div className="flex items-center gap-3">
-                        <img src={product.img} alt={product.name} className="w-12 h-12 rounded bg-[#262626] object-cover" />
+                        <img src={resolveImageUrl(product.img)} alt={product.name} className="w-12 h-12 rounded bg-[#262626] object-cover" />
                         <div>
                           <p className="text-white font-medium text-sm">{product.name}</p>
                           <p className="text-[#737373] text-xs">Created {product.created}</p>

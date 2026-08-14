@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { resolveImageUrl } from '@/lib/utils';
 import { useCart } from '@/components/cart/CartProvider';
 import { formatCurrency } from '@/lib/utils';
 
@@ -62,8 +63,8 @@ export default function CartPage() {
               <div key={item.id} className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center border-b border-charcoal pb-6">
                 {/* Mobile View: Image & Info together */}
                 <div className="col-span-6 flex gap-4">
-                  <div className="w-24 h-32 bg-charcoal flex-shrink-0">
-                    <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                  <div className="w-20 h-24 bg-[#1a1a1a] border border-[#262626] rounded-md overflow-hidden shrink-0">
+                    <img src={resolveImageUrl(item.image)} alt={item.name} className="w-full h-full object-cover" />
                   </div>
                   <div className="flex flex-col justify-center">
                     <h3 className="font-bold text-sm md:text-base uppercase line-clamp-2 hover:text-electric-lime"><Link href={`/product/${item.productId}`}>{item.name}</Link></h3>

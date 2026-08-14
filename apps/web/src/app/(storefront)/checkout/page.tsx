@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCart } from '@/components/cart/CartProvider';
 import { useOrderStore, CheckoutInfo } from '@/lib/store';
-import { formatCurrency, generateOrderId } from '@/lib/utils';
+import { formatCurrency, generateOrderId, resolveImageUrl } from '@/lib/utils';
 import Link from 'next/link';
 
 interface CountryCode {
@@ -423,7 +423,7 @@ export default function CheckoutPage() {
               {items.map((item) => (
                 <div key={item.id} className="flex gap-4">
                   <div className="w-16 h-20 bg-gray-900 relative flex-shrink-0 border border-gray-700">
-                    <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                    <img src={resolveImageUrl(item.image)} alt={item.name} className="w-full h-full object-cover" />
                     <span className="absolute -top-2 -right-2 bg-gray-600 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full z-10">{item.quantity}</span>
                   </div>
                   <div className="flex-grow flex flex-col justify-center">

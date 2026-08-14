@@ -18,7 +18,7 @@ interface ProductClientProps {
 
 export default function ProductClient({ product, relatedProducts }: ProductClientProps) {
   const router = useRouter();
-  const [activeImage, setActiveImage] = useState(resolveImageUrl(product.images[0]) || '/herobg1-desktop.png');
+  const [activeImage, setActiveImage] = useState(product.images[0] || '/herobg1-desktop.png');
   const [selectedSize, setSelectedSize] = useState<Size>(product.sizes[0] || 'M');
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState('description');
@@ -64,7 +64,7 @@ export default function ProductClient({ product, relatedProducts }: ProductClien
         {/* Image Gallery */}
         <div className="w-full lg:w-3/5 flex flex-col md:flex-row-reverse gap-4">
           <div className="w-full md:w-5/6 bg-charcoal aspect-4/5 relative">
-            <img src={activeImage} alt={product.name} className="w-full h-full object-cover" />
+            <img src={resolveImageUrl(activeImage)} alt={product.name} className="w-full h-full object-cover" />
             {product.badges && product.badges.length > 0 && (
               <div className="absolute top-4 left-4 flex flex-col gap-2">
                 {product.badges.map((badge, idx) => (
@@ -77,8 +77,8 @@ export default function ProductClient({ product, relatedProducts }: ProductClien
             {product.images.map((img, idx) => (
               <button 
                 key={idx} 
-                className={`w-20 md:w-full aspect-4/5 bg-charcoal shrink-0 border-2 ${activeImage === resolveImageUrl(img) ? 'border-electric-lime' : 'border-transparent hover:border-gray-500'}`}
-                onClick={() => setActiveImage(resolveImageUrl(img) || '/herobg1-desktop.png')}
+                className={`w-20 md:w-full aspect-4/5 bg-charcoal shrink-0 border-2 ${activeImage === img ? 'border-electric-lime' : 'border-transparent hover:border-gray-500'}`}
+                onClick={() => setActiveImage(img || '/herobg1-desktop.png')}
               >
                 <img src={resolveImageUrl(img)} alt={`${product.name} ${idx}`} className="w-full h-full object-cover" />
               </button>
