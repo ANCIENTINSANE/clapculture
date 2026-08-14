@@ -60,8 +60,9 @@ export function resolveImageUrl(url: string | undefined | null): string {
     return url;
   }
   
-  // Assume the local URL is a file ID in Appwrite (e.g. '/qrcode.png' -> 'qrcode.png')
-  const fileId = url.startsWith('/') ? url.slice(1) : url;
+  // Extract the filename or file ID (strip any path prefixes like /stock/)
+  const parts = url.split('/');
+  const fileId = parts[parts.length - 1];
   
   // Construct the Appwrite storage URL
   const endpoint = process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT || 'https://sgp.cloud.appwrite.io/v1';
