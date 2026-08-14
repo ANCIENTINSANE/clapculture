@@ -21,25 +21,31 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [isInitialized, setIsInitialized] = useState(false);
+  const [isHydrated, setIsHydrated] = useState(false);
 
+  // Load from localStorage only after component mounts on client
   useEffect(() => {
-    const stored = localStorage.getItem('clapculture_cart');
-    if (stored) {
-      try {
+    try {
+      const stored = localStorage.getItem('clapculture_cart');
+      if (stored) {
         setItems(JSON.parse(stored));
-      } catch (e) {
-        console.error('Failed to parse cart data');
       }
+    } catch (e) {
+      console.error('Failed to load cart from localStorage', e);
     }
-    setIsInitialized(true);
+    setIsHydrated(true);
   }, []);
 
+  // Save to localStorage only after initial client hydration
   useEffect(() => {
-    if (isInitialized) {
-      localStorage.setItem('clapculture_cart', JSON.stringify(items));
+    if (isHydrated) {
+      try {
+        localStorage.setItem('clapculture_cart', JSON.stringify(items));
+      } catch (err) {
+        console.error('Failed to save cart to localStorage', err);
+      }
     }
-  }, [items, isInitialized]);
+  }, [items, isHydrated]);
 
   const addToCart = (product: Product, size: Size, quantity: number) => {
     setItems((prev) => {

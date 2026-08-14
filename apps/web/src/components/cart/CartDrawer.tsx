@@ -8,6 +8,16 @@ import Link from 'next/link';
 
 export function CartDrawer() {
   const { items, isDrawerOpen, setIsDrawerOpen, getCartTotal } = useCart();
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return null;
+  }
+
   const total = getCartTotal();
   const freeShippingThreshold = 999;
   const progress = Math.min((total / freeShippingThreshold) * 100, 100);
@@ -92,9 +102,9 @@ export function CartDrawer() {
               </Link>
               <button 
                 onClick={() => setIsDrawerOpen(false)}
-                className="w-full border border-charcoal text-white font-label-caps px-4 py-4 uppercase font-bold text-sm hover:bg-charcoal transition-colors"
+                className="w-full border border-charcoal text-white font-label-caps px-4 py-3 uppercase text-xs hover:border-white transition-colors"
               >
-                CONTINUE SHOPPING
+                Continue Shopping
               </button>
             </div>
           </div>

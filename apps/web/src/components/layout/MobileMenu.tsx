@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { useStarCollections } from '@/lib/use-api-data';
 
 interface MobileMenuProps {
   isOpen: boolean;
@@ -9,9 +10,11 @@ interface MobileMenuProps {
 }
 
 export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
+  const starCollections = useStarCollections();
+
   const links = [
     { label: 'HOME', href: '/' },
-    { label: 'SHOP', href: '/shop' },
+    { label: 'SHOP ALL', href: '/shop' },
     { label: 'COLLECTIONS', href: '/collections' },
     { label: 'NEW DROPS', href: '/collections/new-drop' },
     { label: 'ABOUT', href: '/about' },
@@ -22,7 +25,7 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
 
   return (
     <div 
-      className={`fixed inset-0 bg-deep-black z-[100] transition-all duration-500 ease-in-out flex flex-col ${isOpen ? 'opacity-100 visible' : 'opacity-0 invisible pointer-events-none'}`}
+      className={`fixed inset-0 bg-deep-black z-100 transition-all duration-500 ease-in-out flex flex-col ${isOpen ? 'opacity-100 visible' : 'opacity-0 invisible pointer-events-none'}`}
     >
       <div className="flex items-center justify-between p-4 md:p-8 border-b border-charcoal">
         <div className="text-2xl font-headline-md text-white tracking-wider">
@@ -36,19 +39,38 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 md:p-8 flex flex-col justify-center">
-        <nav className="flex flex-col gap-6">
+      <div className="flex-1 overflow-y-auto p-4 md:p-8 flex flex-col justify-start">
+        <nav className="flex flex-col gap-4 mb-6">
           {links.map((link) => (
             <Link 
               key={link.label} 
               href={link.href}
               onClick={onClose}
-              className="text-4xl md:text-5xl font-headline-xl uppercase text-white hover:text-electric-lime transition-colors w-fit"
+              className="text-3xl md:text-5xl font-headline-xl uppercase text-white hover:text-electric-lime transition-colors w-fit"
             >
               {link.label}
             </Link>
           ))}
         </nav>
+
+        {/* Star Collection Fast Links */}
+        <div className="pt-4 border-t border-charcoal/60">
+          <span className="text-[11px] font-label-caps text-electric-lime uppercase tracking-widest block mb-2 font-bold">
+            STAR EDITIONS
+          </span>
+          <div className="grid grid-cols-2 gap-2">
+            {starCollections.map((hero) => (
+              <Link
+                key={hero.slug}
+                href={`/shop?star=${hero.slug}`}
+                onClick={onClose}
+                className="bg-[#141414] hover:bg-[#202020] border border-charcoal hover:border-electric-lime/40 rounded p-2 text-xs font-headline-md text-gray-200 hover:text-electric-lime transition-all"
+              >
+                {hero.name}
+              </Link>
+            ))}
+          </div>
+        </div>
       </div>
 
       <div className="p-4 md:p-8 border-t border-charcoal mt-auto space-y-4">

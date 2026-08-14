@@ -31,8 +31,9 @@ export default function AdminLogin() {
       // Store authenticated JWT token
       localStorage.setItem('adminToken', data.data.token);
       router.push('/admin/dashboard');
-    } catch (err: any) {
-      setErrorMsg(err.message || 'Login failed. Please check credentials.');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Login failed. Please check credentials.';
+      setErrorMsg(msg);
     } finally {
       setIsLoading(false);
     }

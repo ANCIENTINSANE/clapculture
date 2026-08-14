@@ -2,7 +2,7 @@ import { Hono } from 'hono';
 import { handle } from 'hono/vercel';
 import { configureCors } from '@/api/middleware/cors';
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
 
 
@@ -19,6 +19,9 @@ import homepage from '@/api/routes/homepage';
 import customers from '@/api/routes/customers';
 import discounts from '@/api/routes/discounts';
 import settings from '@/api/routes/settings';
+import newsletter from '@/api/routes/newsletter';
+import contact from '@/api/routes/contact';
+import auth from '@/api/routes/auth';
 
 const app = new Hono().basePath('/api');
 
@@ -53,6 +56,9 @@ app.route('/homepage', homepage);
 app.route('/customers', customers);
 app.route('/discounts', discounts);
 app.route('/settings', settings);
+app.route('/newsletter', newsletter);
+app.route('/contact', contact);
+app.route('/auth', auth);
 
 export const GET = handle(app);
 export const POST = handle(app);

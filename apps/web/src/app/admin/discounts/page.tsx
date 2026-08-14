@@ -1,5 +1,6 @@
 'use client';
-import { useState } from 'react';
+
+import { useState, useEffect, useCallback } from 'react';
 
 type DiscountType = 'Percentage' | 'Flat' | 'Free Shipping';
 
@@ -15,10 +16,9 @@ interface Discount {
   isActive: boolean;
 }
 
-const initialDiscounts: Discount[] = [];
-
 export default function DiscountsPage() {
-  const [discounts, setDiscounts] = useState<Discount[]>(initialDiscounts);
+  const [discounts, setDiscounts] = useState<Discount[]>([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -34,18 +34,77 @@ export default function DiscountsPage() {
     setTimeout(() => setToast(null), 3000);
   };
 
+  const loadDiscounts = useCallback(async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('adminToken');
+      const res = await fetch('/api/discounts', {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && Array.isArray(data.data)) {
+          const mapped: Discount[] = data.data.map((d: Record<string, unknown>) => ({
+            id: String(d.$id || d.id || ''),
+            code: String(d.code || ''),
+            type: (d.type as DiscountType) || 'Percentage',
+            value: Number(d.value) || 0,
+            minOrder: Number(d.minOrder) || 0,
+            expiry: String(d.expiry || ''),
+            usageCount: Number(d.usageCount) || 0,
+            usageLimit: d.usageLimit ? Number(d.usageLimit) : null,
+            isActive: d.active !== false && d.isActive !== false,
+          }));
+          setDiscounts(mapped);
+        }
+      }
+    } catch {
+      // Handled silently
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadDiscounts();
+  }, [loadDiscounts]);
+
   const filteredDiscounts = discounts.filter(d => d.code.toLowerCase().includes(search.toLowerCase()));
 
-  const handleToggleStatus = (id: string) => {
-    setDiscounts(discounts.map(d => d.id === id ? { ...d, isActive: !d.isActive } : d));
+  const handleToggleStatus = async (id: string) => {
+    const target = discounts.find(d => d.id === id);
+    if (!target) return;
+    const nextActive = !target.isActive;
+    setDiscounts(discounts.map(d => d.id === id ? { ...d, isActive: nextActive } : d));
+
+    const token = localStorage.getItem('adminToken');
+    fetch(`/api/discounts/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ active: nextActive, isActive: nextActive }),
+    }).catch(() => {});
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (discountToDelete) {
-      setDiscounts(discounts.filter(d => d.id !== discountToDelete));
+      const id = discountToDelete;
+      setDiscounts(discounts.filter(d => d.id !== id));
       setIsDeleteModalOpen(false);
       setDiscountToDelete(null);
-      showToast('Discount deleted successfully');
+
+      const token = localStorage.getItem('adminToken');
+      try {
+        await fetch(`/api/discounts/${id}`, {
+          method: 'DELETE',
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+        showToast('Discount deleted successfully');
+      } catch {
+        showToast('Failed to delete discount');
+      }
     }
   };
 
@@ -54,27 +113,50 @@ export default function DiscountsPage() {
     showToast(`Copied ${code} to clipboard`);
   };
 
-  const handleSaveDiscount = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSaveDiscount = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    const newDiscount: Discount = {
-      id: editingDiscount ? editingDiscount.id : Date.now().toString(),
-      code: formData.get('code') as string,
+    const payload = {
+      code: (formData.get('code') as string || '').toUpperCase(),
       type: formData.get('type') as DiscountType,
       value: Number(formData.get('value')) || 0,
       minOrder: Number(formData.get('minOrder')) || 0,
       expiry: formData.get('expiry') as string,
-      usageCount: editingDiscount ? editingDiscount.usageCount : 0,
       usageLimit: formData.get('usageLimit') ? Number(formData.get('usageLimit')) : null,
+      active: formData.get('isActive') === 'on',
       isActive: formData.get('isActive') === 'on',
     };
 
-    if (editingDiscount) {
-      setDiscounts(discounts.map(d => d.id === editingDiscount.id ? newDiscount : d));
-      showToast('Discount updated successfully');
-    } else {
-      setDiscounts([...discounts, newDiscount]);
-      showToast('Discount created successfully');
+    const token = localStorage.getItem('adminToken');
+    const headers = {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    };
+
+    try {
+      if (editingDiscount) {
+        const res = await fetch(`/api/discounts/${editingDiscount.id}`, {
+          method: 'PUT',
+          headers,
+          body: JSON.stringify(payload),
+        });
+        if (res.ok) {
+          showToast('Discount updated successfully');
+          loadDiscounts();
+        }
+      } else {
+        const res = await fetch('/api/discounts', {
+          method: 'POST',
+          headers,
+          body: JSON.stringify(payload),
+        });
+        if (res.ok) {
+          showToast('Discount created successfully');
+          loadDiscounts();
+        }
+      }
+    } catch {
+      showToast('Error saving discount');
     }
     
     setIsModalOpen(false);
@@ -85,7 +167,10 @@ export default function DiscountsPage() {
     <div className="bg-[#0a0a0a] min-h-screen text-white p-6">
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-2xl font-bold text-white">Discounts</h1>
+          <div>
+            <h1 className="text-2xl font-bold text-white">Discounts</h1>
+            <p className="text-[#a3a3a3] text-sm mt-1">Manage promotional discount codes and coupons.</p>
+          </div>
           <button 
             onClick={() => { setEditingDiscount(null); setIsModalOpen(true); }}
             className="bg-[#d2f000] text-black font-medium px-4 py-2 rounded-lg hover:bg-[#b8d400] flex items-center gap-2"
@@ -123,7 +208,14 @@ export default function DiscountsPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#262626] text-sm">
-                {filteredDiscounts.length === 0 ? (
+                {loading ? (
+                  <tr>
+                    <td colSpan={7} className="px-6 py-12 text-center text-[#737373]">
+                      <div className="w-6 h-6 border-2 border-electric-lime border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+                      <p>Loading discounts...</p>
+                    </td>
+                  </tr>
+                ) : filteredDiscounts.length === 0 ? (
                   <tr>
                     <td colSpan={7} className="px-6 py-12 text-center text-[#737373]">
                       <span className="material-symbols-outlined text-4xl mb-2">sell</span>

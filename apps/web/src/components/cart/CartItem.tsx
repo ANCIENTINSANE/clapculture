@@ -4,7 +4,6 @@ import React from 'react';
 import { CartItem as CartItemType } from '@clapculture/shared';
 import { formatCurrency } from '@/lib/utils';
 import { useCart } from './CartProvider';
-import Image from 'next/image';
 
 interface CartItemProps {
   item: CartItemType;
@@ -15,7 +14,7 @@ export function CartItem({ item }: CartItemProps) {
 
   return (
     <div className="flex gap-4 py-4 border-b border-charcoal">
-      <div className="w-20 h-24 relative bg-charcoal flex-shrink-0">
+      <div className="w-20 h-24 relative bg-charcoal shrink-0">
         {item.image ? (
           <img
             src={item.image}

@@ -56,13 +56,13 @@ export default function ProductClient({ product, relatedProducts }: ProductClien
         <span>/</span>
         <Link href="/shop" className="hover:text-electric-lime transition-colors">SHOP</Link>
         <span>/</span>
-        <span className="text-white truncate max-w-[200px] md:max-w-none">{product.name.toUpperCase()}</span>
+        <span className="text-white truncate max-w-50 md:max-w-none">{product.name.toUpperCase()}</span>
       </div>
 
       <div className="flex flex-col lg:flex-row gap-8 px-4 md:px-8 mb-24">
         {/* Image Gallery */}
         <div className="w-full lg:w-3/5 flex flex-col md:flex-row-reverse gap-4">
-          <div className="w-full md:w-5/6 bg-charcoal aspect-[4/5] relative">
+          <div className="w-full md:w-5/6 bg-charcoal aspect-4/5 relative">
             <img src={activeImage} alt={product.name} className="w-full h-full object-cover" />
             {product.badges && product.badges.length > 0 && (
               <div className="absolute top-4 left-4 flex flex-col gap-2">
@@ -76,7 +76,7 @@ export default function ProductClient({ product, relatedProducts }: ProductClien
             {product.images.map((img, idx) => (
               <button 
                 key={idx} 
-                className={`w-20 md:w-full aspect-[4/5] bg-charcoal flex-shrink-0 border-2 ${activeImage === img ? 'border-electric-lime' : 'border-transparent hover:border-gray-500'}`}
+                className={`w-20 md:w-full aspect-4/5 bg-charcoal shrink-0 border-2 ${activeImage === img ? 'border-electric-lime' : 'border-transparent hover:border-gray-500'}`}
                 onClick={() => setActiveImage(img)}
               >
                 <img src={img} alt={`${product.name} ${idx}`} className="w-full h-full object-cover" />
@@ -236,13 +236,13 @@ export default function ProductClient({ product, relatedProducts }: ProductClien
                 </tr>
               </thead>
               <tbody className="divide-y divide-charcoal text-gray-300">
-                <tr><td className="p-2 font-bold text-white">XS</td><td className="p-2">40"</td><td className="p-2">27"</td><td className="p-2">20"</td></tr>
-                <tr><td className="p-2 font-bold text-white">S</td><td className="p-2">42"</td><td className="p-2">28"</td><td className="p-2">21"</td></tr>
-                <tr><td className="p-2 font-bold text-white">M</td><td className="p-2">44"</td><td className="p-2">29"</td><td className="p-2">22"</td></tr>
-                <tr><td className="p-2 font-bold text-white">L</td><td className="p-2">46"</td><td className="p-2">30"</td><td className="p-2">23"</td></tr>
-                <tr><td className="p-2 font-bold text-white">XL</td><td className="p-2">48"</td><td className="p-2">31"</td><td className="p-2">24"</td></tr>
-                <tr><td className="p-2 font-bold text-white">XXL</td><td className="p-2">50"</td><td className="p-2">32"</td><td className="p-2">25"</td></tr>
-                <tr><td className="p-2 font-bold text-white">XXXL</td><td className="p-2">52"</td><td className="p-2">33"</td><td className="p-2">26"</td></tr>
+                <tr><td className="p-2 font-bold text-white">XS</td><td className="p-2">40 in</td><td className="p-2">27 in</td><td className="p-2">20 in</td></tr>
+                <tr><td className="p-2 font-bold text-white">S</td><td className="p-2">42 in</td><td className="p-2">28 in</td><td className="p-2">21 in</td></tr>
+                <tr><td className="p-2 font-bold text-white">M</td><td className="p-2">44 in</td><td className="p-2">29 in</td><td className="p-2">22 in</td></tr>
+                <tr><td className="p-2 font-bold text-white">L</td><td className="p-2">46 in</td><td className="p-2">30 in</td><td className="p-2">23 in</td></tr>
+                <tr><td className="p-2 font-bold text-white">XL</td><td className="p-2">48 in</td><td className="p-2">31 in</td><td className="p-2">24 in</td></tr>
+                <tr><td className="p-2 font-bold text-white">XXL</td><td className="p-2">50 in</td><td className="p-2">32 in</td><td className="p-2">25 in</td></tr>
+                <tr><td className="p-2 font-bold text-white">XXXL</td><td className="p-2">52 in</td><td className="p-2">33 in</td><td className="p-2">26 in</td></tr>
               </tbody>
             </table>
           </div>

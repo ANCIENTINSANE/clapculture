@@ -26,30 +26,34 @@ export default function ActivityLogPage() {
       setLoading(true);
       try {
         // Fetch live orders dynamically from Appwrite backend API
-        const res = await api.get<{ success: boolean; data: any[] }>('/api/orders');
+        const res = await api.get<{ success: boolean; data: Record<string, unknown>[] }>('/api/orders');
         if (res?.success && Array.isArray(res.data)) {
           const dynamicLogs: ActivityLog[] = [];
 
-          res.data.forEach((order: any, index: number) => {
-            const customerObj = typeof order.customer === 'string' ? JSON.parse(order.customer) : (order.customer || {});
-            const dateStr = order.createdAt ? new Date(order.createdAt).toLocaleString() : new Date().toLocaleString();
+          res.data.forEach((order: Record<string, unknown>, index: number) => {
+            const customerObj = typeof order.customer === 'string' 
+              ? JSON.parse(order.customer as string) 
+              : (((order.customer || {}) as Record<string, string | undefined>));
+            const dateStr = typeof order.createdAt === 'string' 
+              ? new Date(order.createdAt).toLocaleString() 
+              : new Date().toLocaleString();
 
             // Order creation event
             dynamicLogs.push({
-              id: `order-create-${order.$id || index}`,
+              id: `order-create-${String(order.$id || index)}`,
               action: 'CREATE',
               user: customerObj.email || customerObj.fullName || 'Customer',
-              details: `Order #${order.orderId || 'CLAP'} created (Amount: ₹${order.total || 0})`,
+              details: `Order #${String(order.orderId || 'CLAP')} created (Amount: ₹${Number(order.total || 0)})`,
               timestamp: dateStr,
             });
 
             // Payment verification event if verified
             if (order.paymentStatus === 'VERIFIED') {
               dynamicLogs.push({
-                id: `payment-verify-${order.$id || index}`,
+                id: `payment-verify-${String(order.$id || index)}`,
                 action: 'UPDATE',
                 user: 'Admin Accounts',
-                details: `Payment screenshot verified for Order #${order.orderId}`,
+                details: `Payment screenshot verified for Order #${String(order.orderId || '')}`,
                 timestamp: dateStr,
               });
             }
@@ -57,10 +61,10 @@ export default function ActivityLogPage() {
             // Order shipment event if shipped
             if (order.orderStatus === 'SHIPPED') {
               dynamicLogs.push({
-                id: `order-shipped-${order.$id || index}`,
+                id: `order-shipped-${String(order.$id || index)}`,
                 action: 'UPDATE',
                 user: 'Fulfillment Team',
-                details: `Order #${order.orderId} status changed to SHIPPED (Tracking: ${order.trackingNumber || 'N/A'})`,
+                details: `Order #${String(order.orderId || '')} status changed to SHIPPED (Tracking: ${String(order.trackingNumber || 'N/A')})`,
                 timestamp: dateStr,
               });
             }

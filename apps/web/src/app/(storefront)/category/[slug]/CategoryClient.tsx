@@ -2,41 +2,55 @@
 
 import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
-import { MOCK_CATEGORIES, MOCK_PRODUCTS } from '@/lib/mock-data';
+import { Category } from '@clapculture/shared';
+import { useProducts, useCategories } from '@/lib/use-api-data';
 import { ProductGrid } from '@/components/product/ProductGrid';
 import { ProductFilters, FilterState } from '@/components/product/ProductFilters';
 
-export default function CategoryClient({ category }: { category: typeof MOCK_CATEGORIES[0] }) {
+export default function CategoryClient({ category }: { category: Category }) {
+  const { data: allProducts } = useProducts();
+  const { data: categories } = useCategories();
+
   const [filters, setFilters] = useState<FilterState>({
     selectedCategories: [],
     selectedSizes: [],
     sortBy: 'NEWEST',
   });
 
-  const baseProducts = useMemo(() => {
-    return MOCK_PRODUCTS.filter((p) => p.categoryId === category.id);
-  }, [category]);
+  const catId = category.id || (category as unknown as Record<string, string>).$id;
 
-  const categories = useMemo(() => MOCK_CATEGORIES.map((c) => c.name), []);
+  const baseProducts = useMemo(() => {
+    // Match by categoryId or by slug in the product text
+    return allProducts.filter((p) => {
+      if (p.categoryId === catId) return true;
+      // Fallback: match by slug keyword
+      const slug = category.slug.toLowerCase();
+      const text = `${p.name} ${p.description} ${(p.badges || []).join(' ')}`.toLowerCase();
+      if (slug === 'tees') return text.includes('tee') || text.includes('t-shirt');
+      if (slug === 'outerwear') return text.includes('hoodie') || text.includes('jacket') || text.includes('fleece');
+      if (slug === 'bottoms') return text.includes('cargo') || text.includes('pants') || text.includes('bottoms');
+      if (slug === 'headwear') return text.includes('cap') || text.includes('hat') || text.includes('snapback');
+      return false;
+    });
+  }, [allProducts, catId, category.slug]);
+
+  const categoryNames = useMemo(() => categories.map((c) => c.name), [categories]);
 
   const filteredProducts = useMemo(() => {
     let result = [...baseProducts];
 
-    // Category filter
     if (filters.selectedCategories.length > 0) {
-      const categoryMap = new Map(MOCK_CATEGORIES.map((c) => [c.name, c.id]));
+      const categoryMap = new Map(categories.map((c) => [c.name, c.id || (c as unknown as Record<string, string>).$id]));
       const allowedCatIds = filters.selectedCategories.map((name) => categoryMap.get(name)).filter(Boolean);
       result = result.filter((p) => allowedCatIds.includes(p.categoryId));
     }
 
-    // Size filter
     if (filters.selectedSizes.length > 0) {
       result = result.filter((p) =>
         p.sizes.some((s) => filters.selectedSizes.includes(s))
       );
     }
 
-    // Sort
     switch (filters.sortBy) {
       case 'LOW_HIGH':
         result.sort((a, b) => a.price - b.price);
@@ -53,7 +67,7 @@ export default function CategoryClient({ category }: { category: typeof MOCK_CAT
     }
 
     return result;
-  }, [baseProducts, filters]);
+  }, [baseProducts, filters, categories]);
 
   return (
     <div className="min-h-screen bg-deep-black text-white pt-24 pb-12 px-4 md:px-8 max-w-[1920px] mx-auto">
@@ -69,10 +83,9 @@ export default function CategoryClient({ category }: { category: typeof MOCK_CAT
       </div>
 
       <div className="flex flex-col md:flex-row gap-8">
-        {/* Filters */}
-        <div className="w-full md:w-64 flex-shrink-0">
+        <div className="w-full md:w-64 shrink-0">
           <ProductFilters 
-            categories={categories} 
+            categories={categoryNames} 
             selectedCategories={filters.selectedCategories}
             selectedSizes={filters.selectedSizes}
             sortBy={filters.sortBy}
@@ -80,8 +93,7 @@ export default function CategoryClient({ category }: { category: typeof MOCK_CAT
           />
         </div>
 
-        {/* Product Grid */}
-        <div className="flex-grow">
+        <div className="grow">
           <div className="mb-6 flex justify-between items-center text-sm font-label-caps text-gray-400 border-b border-charcoal pb-4">
             <span>{filteredProducts.length} PRODUCTS</span>
             <select 

@@ -19,7 +19,7 @@ export default function CartPage() {
       <div className="min-h-[70vh] flex flex-col items-center justify-center bg-deep-black text-white px-4">
         <span className="material-symbols-outlined text-6xl text-gray-700 mb-6">shopping_bag</span>
         <h1 className="font-headline-xl text-5xl md:text-6xl mb-4">YOUR CART IS EMPTY</h1>
-        <p className="text-gray-400 mb-8 text-center max-w-md">Looks like you haven't added any streetwear to your cart yet.</p>
+        <p className="text-gray-400 mb-8 text-center max-w-md">Looks like you haven&apos;t added any streetwear to your cart yet.</p>
         <Link href="/shop" className="bg-electric-lime text-black font-headline-md px-8 py-4 text-xl hover:bg-white transition-colors">
           START SHOPPING
         </Link>

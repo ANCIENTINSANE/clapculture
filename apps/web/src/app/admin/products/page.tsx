@@ -1,12 +1,51 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+
+interface AdminProduct {
+  id: string;
+  name: string;
+  img: string;
+  category: string;
+  price: string;
+  stock: number;
+  status: string;
+  created: string;
+}
 
 export default function ProductsPage() {
-  const [products, setProducts] = useState<any[]>([]);
+  const [products, setProducts] = useState<AdminProduct[]>([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All Categories');
+
+  useEffect(() => {
+    async function loadDynamicProducts() {
+      try {
+        const res = await fetch('/api/products');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && Array.isArray(data.data) && data.data.length > 0) {
+            const mapped: AdminProduct[] = data.data.map((doc: Record<string, unknown>) => ({
+              id: String(doc.$id || doc.id || ''),
+              name: String(doc.name || 'Untitled Product'),
+              img: Array.isArray(doc.images) && doc.images[0] ? String(doc.images[0]) : '/stock/superstar-mockup1.webp',
+              category: doc.categoryId === 'c2' ? 'Hoodies' : 'T-Shirts',
+              price: `₹${doc.price || 699}`,
+              stock: Number(doc.stock) || 0,
+              status: (Number(doc.stock) || 0) > 0 ? 'Active' : 'Sold Out',
+              created: doc.$createdAt ? new Date(doc.$createdAt as string).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : 'Recently',
+            }));
+            setProducts(mapped);
+          }
+        }
+      } catch {
+        // Handled silently
+      }
+    }
+    loadDynamicProducts();
+  }, []);
 
   const filteredProducts = products.filter(p => {
     const matchesSearch = p.name.toLowerCase().includes(search.toLowerCase());
@@ -95,9 +134,6 @@ export default function ProductsPage() {
                         <Link href={`/admin/products/${product.id}/edit`} className="p-2 bg-[#262626] text-[#a3a3a3] hover:text-white rounded-lg transition-colors">
                           <span className="material-symbols-outlined text-[18px]">edit</span>
                         </Link>
-                        <button className="p-2 bg-[#262626] text-red-400 hover:bg-red-500/10 rounded-lg transition-colors">
-                          <span className="material-symbols-outlined text-[18px]">delete</span>
-                        </button>
                       </div>
                     </td>
                   </tr>

@@ -4,65 +4,176 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 
 export default function ContactPage() {
-  const [sent, setSent] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    subject: '',
+    message: '',
+  });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [errorMsg, setErrorMsg] = useState('');
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSent(true);
+    setStatus('loading');
+    setErrorMsg('');
+
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        setStatus('success');
+      } else {
+        setStatus('error');
+        setErrorMsg(data.error || 'Failed to transmit message. Please try again.');
+      }
+    } catch {
+      setStatus('error');
+      setErrorMsg('Network error. Please check your connection and try again.');
+    }
   };
 
   return (
     <div className="min-h-screen bg-deep-black text-white pt-32 pb-24 px-4 md:px-8 max-w-7xl mx-auto">
       <div className="text-center mb-16">
         <h1 className="font-headline-xl text-5xl md:text-7xl uppercase mb-4">HIT US UP</h1>
-        <p className="text-gray-400 font-label-caps tracking-widest">WE'RE HERE FOR THE CULTURE.</p>
+        <p className="text-gray-400 font-label-caps tracking-widest">WE&apos;RE HERE FOR THE CULTURE.</p>
       </div>
 
       <div className="flex flex-col md:flex-row gap-16">
         <div className="w-full md:w-1/2">
-          {sent ? (
-            <div className="bg-charcoal p-12 text-center border border-electric-lime">
+          {status === 'success' ? (
+            <div className="bg-charcoal p-10 md:p-12 text-center border border-electric-lime rounded-lg animate-in fade-in duration-500">
               <span className="material-symbols-outlined text-6xl text-electric-lime mb-4">check_circle</span>
-              <h2 className="font-headline-md text-3xl uppercase mb-2">MESSAGE SENT</h2>
-              <p className="text-gray-400">We'll get back to you within 24 hours.</p>
+              <h2 className="font-headline-md text-3xl uppercase mb-2">TRANSMISSION RECEIVED</h2>
+              <p className="text-gray-300 mb-2">
+                Thank you, <strong className="text-white">{formData.name}</strong>. A confirmation email has been dispatched to <strong className="text-electric-lime">{formData.email}</strong>.
+              </p>
+              <p className="text-gray-400 text-sm mb-6">Our support crew will respond within 24 hours.</p>
+              <button
+                onClick={() => {
+                  setStatus('idle');
+                  setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
+                }}
+                className="bg-transparent border border-gray-600 hover:border-electric-lime hover:text-electric-lime text-xs font-label-caps uppercase px-6 py-2.5 transition-all"
+              >
+                Send Another Message
+              </button>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid grid-cols-2 gap-6">
-                <input required type="text" placeholder="NAME *" className="w-full bg-charcoal border border-gray-700 p-4 text-white focus:outline-none focus:border-electric-lime" />
-                <input required type="email" placeholder="EMAIL *" className="w-full bg-charcoal border border-gray-700 p-4 text-white focus:outline-none focus:border-electric-lime" />
+            <form onSubmit={handleSubmit} className="space-y-5">
+              {status === 'error' && (
+                <div className="p-3.5 bg-red-950/80 border border-red-500 rounded text-red-300 text-xs">
+                  {errorMsg}
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <input
+                  required
+                  type="text"
+                  placeholder="NAME *"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  className="w-full bg-charcoal border border-gray-700 p-4 text-white focus:outline-none focus:border-electric-lime text-sm"
+                />
+                <input
+                  required
+                  type="email"
+                  placeholder="EMAIL *"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  className="w-full bg-charcoal border border-gray-700 p-4 text-white focus:outline-none focus:border-electric-lime text-sm"
+                />
               </div>
-              <input required type="text" placeholder="SUBJECT *" className="w-full bg-charcoal border border-gray-700 p-4 text-white focus:outline-none focus:border-electric-lime" />
-              <textarea required placeholder="YOUR MESSAGE *" rows={6} className="w-full bg-charcoal border border-gray-700 p-4 text-white focus:outline-none focus:border-electric-lime resize-none"></textarea>
-              <button type="submit" className="w-full bg-electric-lime text-black font-headline-md text-xl py-4 uppercase hover:bg-white transition-colors">
-                SEND MESSAGE
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <input
+                  required
+                  type="text"
+                  placeholder="SUBJECT *"
+                  value={formData.subject}
+                  onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
+                  className="w-full bg-charcoal border border-gray-700 p-4 text-white focus:outline-none focus:border-electric-lime text-sm"
+                />
+                <input
+                  type="tel"
+                  placeholder="PHONE (OPTIONAL)"
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  className="w-full bg-charcoal border border-gray-700 p-4 text-white focus:outline-none focus:border-electric-lime text-sm"
+                />
+              </div>
+
+              <textarea
+                required
+                placeholder="YOUR MESSAGE *"
+                rows={5}
+                value={formData.message}
+                onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                className="w-full bg-charcoal border border-gray-700 p-4 text-white focus:outline-none focus:border-electric-lime resize-none text-sm"
+              ></textarea>
+
+              <button
+                type="submit"
+                disabled={status === 'loading'}
+                className="w-full bg-electric-lime text-black font-headline-md text-xl py-4 uppercase hover:bg-white transition-colors cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {status === 'loading' ? (
+                  <>
+                    <span className="inline-block w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin"></span>
+                    TRANSMITTING...
+                  </>
+                ) : (
+                  'SEND MESSAGE'
+                )}
               </button>
             </form>
           )}
         </div>
 
-        <div className="w-full md:w-1/2 space-y-12">
+        <div className="w-full md:w-1/2 space-y-10">
           <div>
             <h2 className="font-headline-md text-2xl uppercase border-b border-charcoal pb-2 mb-4">CONTACT INFO</h2>
             <div className="space-y-4 text-gray-300 font-body-sm">
-              <p className="flex items-center gap-4"><span className="material-symbols-outlined text-electric-lime">mail</span> hello@clapculture.com</p>
-              <p className="flex items-center gap-4"><span className="material-symbols-outlined text-electric-lime">phone</span> +91 98765 43210</p>
-              <p className="flex items-center gap-4"><span className="material-symbols-outlined text-electric-lime">location_on</span> Banjara Hills, Hyderabad, India</p>
+              <p className="flex items-center gap-4">
+                <span className="material-symbols-outlined text-electric-lime">mail</span>
+                <a href="mailto:clapculture.co@gmail.com" className="hover:underline text-white">clapculture.co@gmail.com</a>
+              </p>
+              <p className="flex items-center gap-4">
+                <span className="material-symbols-outlined text-electric-lime">support_agent</span>
+                <span>Direct Support Mon&ndash;Sun 10:00 AM &ndash; 8:00 PM IST</span>
+              </p>
+              <p className="flex items-center gap-4">
+                <span className="material-symbols-outlined text-electric-lime">location_on</span>
+                <span>Hyderabad, Telangana, India</span>
+              </p>
             </div>
           </div>
 
           <div>
-            <h2 className="font-headline-md text-2xl uppercase border-b border-charcoal pb-2 mb-4">SOCIALS</h2>
+            <h2 className="font-headline-md text-2xl uppercase border-b border-charcoal pb-2 mb-4">CONNECT</h2>
             <div className="flex gap-4">
-              <a href="#" className="w-12 h-12 bg-charcoal flex items-center justify-center hover:text-electric-lime transition-colors"><span className="material-symbols-outlined">link</span></a>
-              <a href="#" className="w-12 h-12 bg-charcoal flex items-center justify-center hover:text-electric-lime transition-colors"><span className="material-symbols-outlined">share</span></a>
+              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="w-12 h-12 bg-charcoal border border-gray-800 flex items-center justify-center hover:text-electric-lime hover:border-electric-lime transition-all">
+                <span className="material-symbols-outlined">link</span>
+              </a>
+              <a href="mailto:clapculture.co@gmail.com" className="w-12 h-12 bg-charcoal border border-gray-800 flex items-center justify-center hover:text-electric-lime hover:border-electric-lime transition-all">
+                <span className="material-symbols-outlined">alternate_email</span>
+              </a>
             </div>
           </div>
 
-          <div className="bg-charcoal p-6 border border-gray-800">
-            <h3 className="font-headline-md text-xl uppercase mb-2">QUICK ANSWERS</h3>
-            <p className="text-gray-400 text-sm mb-4">Check our FAQ for quick answers regarding shipping, returns, and sizes.</p>
-            <Link href="/faq" className="text-electric-lime underline text-sm font-label-caps tracking-wider">VIEW FAQ</Link>
+          <div className="bg-charcoal p-6 border border-gray-800 rounded-lg">
+            <h3 className="font-headline-md text-xl uppercase mb-2 text-white">QUICK ANSWERS</h3>
+            <p className="text-gray-400 text-sm mb-4">Check our FAQ for instant info regarding shipping timelines, returns, and oversized sizing.</p>
+            <Link href="/faq" className="text-electric-lime underline text-xs font-label-caps tracking-wider uppercase font-bold">VIEW FAQ &rarr;</Link>
           </div>
         </div>
       </div>

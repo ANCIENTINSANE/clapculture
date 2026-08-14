@@ -35,9 +35,52 @@ export default function PaymentClient({ orderId }: { orderId: string }) {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+
+    const formattedOrderId = orderId.startsWith('CLAP') ? orderId : `CLAP${orderId}`;
+
+    const customerData = order?.customer || {
+      fullName: 'Valued Customer',
+      email: 'customer@example.com',
+      phone: '+91 9876543210',
+      address: 'Street address',
+      apartment: '',
+      city: 'Hyderabad',
+      state: 'Telangana',
+      pincode: '500001',
+    };
+
+    const itemsData = (order?.items && order.items.length > 0) ? order.items : [];
+
+    const orderPayload = {
+      orderId: formattedOrderId,
+      customer: typeof customerData === 'string' ? customerData : JSON.stringify(customerData),
+      items: typeof itemsData === 'string' ? itemsData : JSON.stringify(itemsData),
+      subtotal: order?.subtotal || total,
+      shipping: order?.shipping || 0,
+      total: order?.total || total,
+      paymentStatus: 'SUBMITTED',
+      orderStatus: 'PLACED',
+      transactionId: utrNumber.trim() || 'UPI-REF-PENDING',
+      trackingNumber: 'TRK-CLAP-PENDING',
+    };
+
+    try {
+      const res = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(orderPayload),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        console.log('✅ Order saved to Appwrite DB successfully:', data.data);
+      }
+    } catch (err) {
+      console.error('Error posting order to DB:', err);
+    }
 
     if (order) {
       updatePaymentInfo(utrNumber || 'UPI-REF-PENDING', screenshotUrl || 'https://placehold.co/600x800?text=Payment+Screenshot');
@@ -47,8 +90,8 @@ export default function PaymentClient({ orderId }: { orderId: string }) {
 
     setTimeout(() => {
       setIsSubmitting(false);
-      router.push(`/order-success/${orderId}`);
-    }, 1000);
+      router.push(`/order-success/${formattedOrderId}`);
+    }, 600);
   };
 
   return (

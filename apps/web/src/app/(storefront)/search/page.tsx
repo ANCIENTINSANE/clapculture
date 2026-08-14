@@ -1,14 +1,24 @@
 'use client';
 
-import React, { useState } from 'react';
-import { MOCK_PRODUCTS } from '@/lib/mock-data';
+import React, { useState, useMemo } from 'react';
+import { useProducts } from '@/lib/use-api-data';
 import { ProductGrid } from '@/components/product/ProductGrid';
 
 export default function SearchPage() {
+  const { data: products } = useProducts();
   const [query, setQuery] = useState('');
   const [hasSearched, setHasSearched] = useState(false);
 
-  const results = MOCK_PRODUCTS.filter(p => p.name.toLowerCase().includes(query.toLowerCase()));
+  const results = useMemo(() => {
+    if (!query.trim()) return [];
+    const q = query.toLowerCase();
+    return products.filter(p => 
+      p.name.toLowerCase().includes(q) || 
+      p.description.toLowerCase().includes(q) ||
+      (p.badges || []).some(b => b.toLowerCase().includes(q))
+    );
+  }, [products, query]);
+  
   const suggestions = ["Oversized Tee", "Hoodie", "Tollywood", "Cargo"];
 
   const handleSearch = (e: React.FormEvent) => {
@@ -57,7 +67,7 @@ export default function SearchPage() {
       {hasSearched && (
         <div>
           <div className="mb-8 border-b border-charcoal pb-4">
-            <h2 className="font-headline-md text-2xl uppercase">RESULTS FOR "{query}" ({results.length})</h2>
+            <h2 className="font-headline-md text-2xl uppercase">RESULTS FOR &quot;{query}&quot; ({results.length})</h2>
           </div>
           
           <ProductGrid products={results} />

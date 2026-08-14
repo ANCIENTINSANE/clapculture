@@ -4,14 +4,21 @@ import React, { useState, useRef } from 'react';
 import Link from 'next/link';
 import { useCart } from '../cart/CartProvider';
 import { MobileMenu } from './MobileMenu';
-import { STAR_COLLECTIONS, MOCK_COLLECTIONS } from '@/lib/mock-data';
+import { useStarCollections, useCollections } from '@/lib/use-api-data';
 
 export function Header() {
   const { getCartCount, setIsDrawerOpen } = useCart();
+  const [mounted, setMounted] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<'SHOP' | 'COLLECTIONS' | null>(null);
+  const starCollections = useStarCollections();
+  const { data: collections } = useCollections();
 
   const shopTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleMouseEnter = (menu: 'SHOP' | 'COLLECTIONS') => {
     if (shopTimeoutRef.current) clearTimeout(shopTimeoutRef.current);
@@ -68,7 +75,7 @@ export function Header() {
                   </div>
                   
                   <div className="grid grid-cols-2 gap-2.5">
-                    {STAR_COLLECTIONS.map((hero) => (
+                    {starCollections.map((hero) => (
                       <Link
                         key={hero.slug}
                         href={`/shop?star=${hero.slug}`}
@@ -135,16 +142,19 @@ export function Header() {
                 <div className="mb-2 pb-1 border-b border-charcoal px-2">
                   <span className="font-label-caps text-[11px] text-electric-lime font-bold tracking-widest uppercase">FEATURED CURATIONS</span>
                 </div>
-                {MOCK_COLLECTIONS.slice(0, 5).map((col) => (
-                  <Link
-                    key={col.id}
-                    href={`/collections/${col.slug}`}
-                    onClick={() => setActiveDropdown(null)}
-                    className="block px-3 py-2 text-sm text-gray-300 hover:bg-[#242424] hover:text-electric-lime rounded transition-colors font-medium"
-                  >
-                    {col.name}
-                  </Link>
-                ))}
+                {collections.slice(0, 5).map((col) => {
+                  const colId = col.id || (col as unknown as Record<string, string>).$id;
+                  return (
+                    <Link
+                      key={colId}
+                      href={`/collections/${col.slug}`}
+                      onClick={() => setActiveDropdown(null)}
+                      className="block px-3 py-2 text-sm text-gray-300 hover:bg-[#242424] hover:text-electric-lime rounded transition-colors font-medium"
+                    >
+                      {col.name}
+                    </Link>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -170,7 +180,7 @@ export function Header() {
             aria-label="Open cart"
           >
             <span className="material-symbols-outlined text-xl md:text-2xl">shopping_bag</span>
-            {getCartCount() > 0 && (
+            {mounted && getCartCount() > 0 && (
               <span className="absolute -top-1 -right-1 md:-right-2 bg-electric-lime text-deep-black text-[9px] md:text-[10px] font-bold w-4 h-4 md:w-5 md:h-5 rounded-full flex items-center justify-center">
                 {getCartCount()}
               </span>

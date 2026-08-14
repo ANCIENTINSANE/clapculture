@@ -3,7 +3,7 @@ interface CacheItem<T> {
   expiry: number;
 }
 
-const memoryCache = new Map<string, CacheItem<any>>();
+const memoryCache = new Map<string, CacheItem<unknown>>();
 
 export function getCached<T>(key: string): T | null {
   const item = memoryCache.get(key);
@@ -12,7 +12,7 @@ export function getCached<T>(key: string): T | null {
     memoryCache.delete(key);
     return null;
   }
-  return item.data;
+  return item.data as T;
 }
 
 export function setCached<T>(key: string, data: T, ttlSeconds: number = 60): void {

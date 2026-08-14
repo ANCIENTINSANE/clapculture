@@ -1,18 +1,17 @@
 import React from 'react';
-import { MOCK_CATEGORIES } from '@/lib/mock-data';
-import { notFound } from 'next/navigation';
 import CategoryClient from './CategoryClient';
+import { getServerCategories } from '@/lib/server-data';
 
-export async function generateStaticParams() {
-  return MOCK_CATEGORIES.map((c) => ({ slug: c.slug }));
-}
+export const dynamic = 'force-dynamic';
 
 export default async function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const category = MOCK_CATEGORIES.find((c) => c.slug === slug);
+  const categories = await getServerCategories();
+  const category = categories.find((c) => c.slug === slug);
 
   if (!category) {
-    notFound();
+    const name = slug.charAt(0).toUpperCase() + slug.slice(1);
+    return <CategoryClient category={{ id: slug, name, slug }} />;
   }
 
   return <CategoryClient category={category} />;

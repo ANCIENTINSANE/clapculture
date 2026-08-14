@@ -36,15 +36,48 @@ products.get('/', async (c) => {
     setCached(cacheKey, response.documents, 60);
     c.header('X-Cache', 'MISS');
     return c.json({ success: true, data: response.documents });
-  } catch (error: any) {
-    return c.json({ success: false, error: error.message }, 500);
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : 'Internal server error';
+    return c.json({ success: false, error: msg }, 500);
+  }
+});
+
+// Check slug availability
+products.get('/check/slug', async (c) => {
+  try {
+    const slug = (c.req.query('slug') || '').trim().toLowerCase();
+    const excludeId = (c.req.query('excludeId') || '').trim();
+
+    if (!slug) {
+      return c.json({ success: true, available: false, message: 'Slug is required' });
+    }
+
+    const { databases } = getAppwriteClient(getEnv(c));
+    const dbId = getDbId(c);
+
+    const response = await databases.listDocuments(dbId, 'products', [
+      Query.equal('slug', slug),
+      Query.limit(5),
+    ]);
+
+    const matching = response.documents.filter(d => d.$id !== excludeId && d.id !== excludeId);
+    const available = matching.length === 0;
+
+    return c.json({
+      success: true,
+      available,
+      existingProduct: available ? null : { name: matching[0].name, id: matching[0].$id, slug: matching[0].slug },
+    });
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : 'Internal server error';
+    return c.json({ success: false, error: msg }, 500);
   }
 });
 
 products.get('/:slug', async (c) => {
   try {
-    const slug = c.req.param('slug') || '';
-    const cacheKey = `product_${slug}`;
+    const slugOrId = c.req.param('slug') || '';
+    const cacheKey = `product_${slugOrId}`;
 
     const cachedData = getCached(cacheKey);
     if (cachedData) {
@@ -55,10 +88,23 @@ products.get('/:slug', async (c) => {
     const { databases } = getAppwriteClient(getEnv(c));
     const dbId = getDbId(c);
     
+    // 1. Try fetching by document ID first
+    try {
+      const doc = await databases.getDocument(dbId, 'products', slugOrId);
+      if (doc) {
+        setCached(cacheKey, doc, 60);
+        c.header('X-Cache', 'MISS');
+        return c.json({ success: true, data: doc });
+      }
+    } catch {
+      // If getDocument fails (not found as direct doc ID), query by slug
+    }
+
+    // 2. Query by slug
     const response = await databases.listDocuments(
       dbId,
       'products',
-      [Query.equal('slug', slug), Query.limit(1)]
+      [Query.equal('slug', slugOrId), Query.limit(1)]
     );
     
     if (response.documents.length === 0) {
@@ -68,8 +114,9 @@ products.get('/:slug', async (c) => {
     setCached(cacheKey, response.documents[0], 60);
     c.header('X-Cache', 'MISS');
     return c.json({ success: true, data: response.documents[0] });
-  } catch (error: any) {
-    return c.json({ success: false, error: error.message }, 500);
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : 'Internal server error';
+    return c.json({ success: false, error: msg }, 500);
   }
 });
 
@@ -91,8 +138,9 @@ products.post('/', adminAuth, async (c) => {
     clearCache('products');
     clearCache('product');
     return c.json({ success: true, data: response }, 201);
-  } catch (error: any) {
-    return c.json({ success: false, error: error.message }, 500);
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : 'Internal server error';
+    return c.json({ success: false, error: msg }, 500);
   }
 });
 
@@ -113,8 +161,9 @@ products.put('/:id', adminAuth, async (c) => {
     clearCache('products');
     clearCache('product');
     return c.json({ success: true, data: response });
-  } catch (error: any) {
-    return c.json({ success: false, error: error.message }, 500);
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : 'Internal server error';
+    return c.json({ success: false, error: msg }, 500);
   }
 });
 
@@ -133,8 +182,9 @@ products.delete('/:id', adminAuth, async (c) => {
     clearCache('products');
     clearCache('product');
     return c.json({ success: true, data: { deleted: true } });
-  } catch (error: any) {
-    return c.json({ success: false, error: error.message }, 500);
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : 'Internal server error';
+    return c.json({ success: false, error: msg }, 500);
   }
 });
 

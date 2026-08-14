@@ -4,31 +4,59 @@ import React from 'react';
 import Link from 'next/link';
 import { formatCurrency } from '@/lib/utils';
 import { useOrderStore } from '@/lib/store';
-import { MOCK_PRODUCTS } from '@/lib/mock-data';
 
 export default function OrderClient({ orderId }: { orderId: string }) {
   const { getOrder, currentOrder } = useOrderStore();
   const cleanId = orderId.replace('#', '');
-  const storeOrder = getOrder(cleanId) || (currentOrder?.orderId === cleanId ? currentOrder : null);
+  const localOrder = getOrder(cleanId) || (currentOrder?.orderId === cleanId ? currentOrder : null);
 
-  // Fallback dynamic items
-  const items = storeOrder?.items || [
-    { id: '1', productId: '1', name: MOCK_PRODUCTS[0].name, image: MOCK_PRODUCTS[0].images[0], size: 'L' as const, price: MOCK_PRODUCTS[0].price, quantity: 1 },
-    { id: '2', productId: '2', name: MOCK_PRODUCTS[1].name, image: MOCK_PRODUCTS[1].images[0], size: 'M' as const, price: MOCK_PRODUCTS[1].price, quantity: 1 },
-  ];
+  const [dbOrder, setDbOrder] = React.useState<any>(null);
 
-  const customer = storeOrder?.customer || {
-    fullName: 'Customer',
+  React.useEffect(() => {
+    async function loadDbOrder() {
+      try {
+        const res = await fetch(`/api/orders/${cleanId}`);
+        if (res.ok) {
+          const json = await res.json();
+          if (json.success && json.data) {
+            const doc = json.data;
+            let parsedCustomer = doc.customer;
+            if (typeof doc.customer === 'string') {
+              try { parsedCustomer = JSON.parse(doc.customer); } catch {}
+            }
+            let parsedItems = doc.items;
+            if (typeof doc.items === 'string') {
+              try { parsedItems = JSON.parse(doc.items); } catch {}
+            }
+
+            setDbOrder({
+              ...doc,
+              customer: parsedCustomer,
+              items: parsedItems,
+            });
+          }
+        }
+      } catch (e) {
+        console.error('Failed to fetch DB order:', e);
+      }
+    }
+    loadDbOrder();
+  }, [cleanId]);
+
+  const activeOrder = dbOrder || localOrder;
+  const items = activeOrder?.items || [];
+  const customer = activeOrder?.customer || {
+    fullName: 'Valued Customer',
     email: 'customer@example.com',
     phone: '+91 9876543210',
-    address: 'Street address',
+    address: 'Delivery address',
     city: 'Hyderabad',
     state: 'Telangana',
     pincode: '500081',
   };
 
-  const total = storeOrder?.total || 3498;
-  const paymentStatus = storeOrder?.paymentStatus || 'SUBMITTED';
+  const total = activeOrder?.total || 1398;
+  const paymentStatus = activeOrder?.paymentStatus || 'SUBMITTED';
 
   return (
     <div className="bg-[#0a0a0a] min-h-screen text-white pt-24 pb-16 px-4 md:px-8">
@@ -119,12 +147,12 @@ export default function OrderClient({ orderId }: { orderId: string }) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#262626]">
-                {items.map((item, idx) => (
+                {items.map((item: { name: string; size?: string; quantity?: number; price: number }, idx: number) => (
                   <tr key={idx} className="hover:bg-[#1a1a1a]/50">
                     <td className="p-3 font-bold text-white print-black-text">{item.name}</td>
-                    <td className="p-3 font-mono text-[#a3a3a3]">{item.size}</td>
-                    <td className="p-3 text-center font-mono">{item.quantity}</td>
-                    <td className="p-3 text-right font-mono font-bold text-white print-black-text">{formatCurrency(item.price * item.quantity)}</td>
+                    <td className="p-3 font-mono text-[#a3a3a3]">{item.size || 'M'}</td>
+                    <td className="p-3 text-center font-mono">{item.quantity || 1}</td>
+                    <td className="p-3 text-right font-mono font-bold text-white print-black-text">{formatCurrency(item.price * (item.quantity || 1))}</td>
                   </tr>
                 ))}
               </tbody>

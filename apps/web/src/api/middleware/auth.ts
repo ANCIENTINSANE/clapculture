@@ -16,7 +16,7 @@ export const adminAuth = async (c: Context, next: Next) => {
   }
   
   // Attach validated admin payload to context
-  c.set('admin' as any, payload);
+  c.set('admin' as never, payload);
   
   await next();
 };

@@ -13,7 +13,7 @@ export function ProductGrid({ products, isLoading }: ProductGridProps) {
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 lg:gap-8">
         {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
           <div key={n} className="animate-pulse">
-            <div className="bg-charcoal aspect-[4/5] mb-4"></div>
+            <div className="bg-charcoal aspect-4/5 mb-4"></div>
             <div className="h-6 bg-charcoal w-3/4 mb-2"></div>
             <div className="h-5 bg-charcoal w-1/4"></div>
           </div>
@@ -27,16 +27,17 @@ export function ProductGrid({ products, isLoading }: ProductGridProps) {
       <div className="flex flex-col items-center justify-center py-24 text-center">
         <span className="material-symbols-outlined text-6xl text-gray-600 mb-4">search_off</span>
         <h3 className="text-2xl font-headline-md uppercase mb-2">No products found</h3>
-        <p className="text-gray-400 max-w-md">Try adjusting your filters or search terms to find what you're looking for.</p>
+        <p className="text-gray-400 max-w-md">Try adjusting your filters or search terms to find what you&apos;re looking for.</p>
       </div>
     );
   }
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 lg:gap-8">
-      {products.map((product) => (
-        <ProductCard key={product.id} product={product} />
-      ))}
+      {products.map((product, idx) => {
+        const uniqueKey = product.id || (product as unknown as Record<string, string>).$id || product.slug || `prod-${idx}`;
+        return <ProductCard key={uniqueKey} product={product} />;
+      })}
     </div>
   );
 }

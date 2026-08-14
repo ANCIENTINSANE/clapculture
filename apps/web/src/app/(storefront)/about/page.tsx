@@ -25,11 +25,11 @@ export default function AboutPage() {
           <h2 className="font-headline-md text-4xl mb-6 uppercase border-b border-charcoal pb-4">OUR STORY</h2>
           <div className="font-body-sm text-gray-300 space-y-4 leading-relaxed text-lg text-justify">
             <p>
-              Born in the vibrant streets of Hyderabad, CLAPCULTURE isn't just a clothing brand—it's a movement. 
+              Born in the vibrant streets of Hyderabad, CLAPCULTURE isn&apos;t just a clothing brand—it&apos;s a movement. 
               We fuse the rebellious spirit of global streetwear with the unapologetic swagger of Tollywood cinema.
             </p>
             <p>
-              Our maximalist aesthetic isn't for the faint of heart. We believe in bold graphics, oversized silhouettes, 
+              Our maximalist aesthetic isn&apos;t for the faint of heart. We believe in bold graphics, oversized silhouettes, 
               and premium materials that stand the test of time. Every piece is a statement.
             </p>
           </div>
@@ -42,7 +42,7 @@ export default function AboutPage() {
             <div className="bg-charcoal p-8 border border-gray-800 hover:border-electric-lime transition-colors">
               <span className="material-symbols-outlined text-4xl text-electric-lime mb-4">diamond</span>
               <h3 className="font-headline-md text-2xl uppercase mb-2">PREMIUM QUALITY</h3>
-              <p className="text-gray-400 text-sm">Heavyweight cottons, custom cuts, and durable prints. We don't compromise.</p>
+              <p className="text-gray-400 text-sm">Heavyweight cottons, custom cuts, and durable prints. We don&apos;t compromise.</p>
             </div>
             <div className="bg-charcoal p-8 border border-gray-800 hover:border-electric-lime transition-colors">
               <span className="material-symbols-outlined text-4xl text-electric-lime mb-4">local_fire_department</span>

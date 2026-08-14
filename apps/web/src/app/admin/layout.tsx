@@ -22,14 +22,14 @@ const NAV_ITEMS = [
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
+  const isLoginPage = pathname === '/admin/login';
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(!isLoginPage);
 
   // Strict session verification for all admin pages
   useEffect(() => {
-    if (pathname === '/admin/login') {
-      setIsCheckingAuth(false);
+    if (isLoginPage) {
       return;
     }
 

@@ -1,23 +1,63 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 type InventoryItem = {
   id: string;
+  productId: string;
   product: string;
   sku: string;
   size: string;
   stock: number;
 };
 
-const MOCK_INVENTORY: InventoryItem[] = [];
-
 export default function InventoryPage() {
-  const [inventory, setInventory] = useState<InventoryItem[]>(MOCK_INVENTORY);
+  const [inventory, setInventory] = useState<InventoryItem[]>([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<'all' | 'in-stock' | 'low-stock' | 'out-of-stock'>('all');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState<string>('');
+
+  const loadInventory = useCallback(async () => {
+    try {
+      setLoading(true);
+      const res = await fetch('/api/products?limit=100');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && Array.isArray(data.data)) {
+          const items: InventoryItem[] = [];
+          data.data.forEach((p: Record<string, unknown>) => {
+            const pId = String(p.$id || p.id || '');
+            const pName = String(p.name || 'Untitled');
+            const pSlug = String(p.slug || pId);
+            const sizes = Array.isArray(p.sizes) ? p.sizes : ['Free Size'];
+            const stockTotal = Number(p.stock) || 0;
+
+            sizes.forEach((sz, idx) => {
+              items.push({
+                id: `${pId}-${sz}`,
+                productId: pId,
+                product: pName,
+                sku: `${pSlug.toUpperCase().slice(0, 10)}-${sz}`,
+                size: String(sz),
+                stock: idx === 0 ? stockTotal : Math.max(0, Math.floor(stockTotal / sizes.length)),
+              });
+            });
+          });
+          setInventory(items);
+        }
+      }
+    } catch {
+      // Ignore
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadInventory();
+  }, [loadInventory]);
 
   const getStatus = (stock: number) => {
     if (stock === 0) return 'out-of-stock';
@@ -50,13 +90,27 @@ export default function InventoryPage() {
     setEditValue(item.stock.toString());
   };
 
-  const handleEditSave = () => {
+  const handleEditSave = async () => {
     if (editingId) {
       const numValue = parseInt(editValue, 10);
       if (!isNaN(numValue) && numValue >= 0) {
+        const targetItem = inventory.find(i => i.id === editingId);
         setInventory(inventory.map(item => 
           item.id === editingId ? { ...item, stock: numValue } : item
         ));
+
+        // Persist stock to API
+        if (targetItem?.productId) {
+          const token = localStorage.getItem('adminToken');
+          fetch(`/api/products/${targetItem.productId}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+            body: JSON.stringify({ stock: numValue }),
+          }).catch(() => {});
+        }
       }
       setEditingId(null);
     }
@@ -72,12 +126,12 @@ export default function InventoryPage() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
           <h1 className="text-2xl font-bold text-white mb-2">Inventory Management</h1>
-          <p className="text-[#a3a3a3]">Track and update your product stock levels.</p>
+          <p className="text-[#a3a3a3]">Track and update your product stock levels in real-time from the database.</p>
         </div>
         <div className="flex gap-4">
-          <button className="border border-[#262626] text-white px-4 py-2 rounded-lg hover:bg-[#1a1a1a] flex items-center gap-2">
-            <span className="material-symbols-outlined text-[18px]">download</span>
-            Export
+          <button onClick={loadInventory} className="border border-[#262626] text-white px-4 py-2 rounded-lg hover:bg-[#1a1a1a] flex items-center gap-2">
+            <span className="material-symbols-outlined text-[18px]">refresh</span>
+            Refresh
           </button>
         </div>
       </div>
@@ -94,7 +148,7 @@ export default function InventoryPage() {
             ].map(tab => (
               <button
                 key={tab.id}
-                onClick={() => setFilter(tab.id as any)}
+                onClick={() => setFilter(tab.id as "all" | "in-stock" | "low-stock" | "out-of-stock")}
                 className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                   filter === tab.id 
                     ? 'bg-[#262626] text-white' 
@@ -130,7 +184,14 @@ export default function InventoryPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[#262626]">
-              {filteredInventory.length === 0 ? (
+              {loading ? (
+                <tr>
+                  <td colSpan={4} className="px-6 py-12 text-center">
+                    <div className="w-6 h-6 border-2 border-electric-lime border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+                    <p className="text-[#a3a3a3]">Loading inventory from database...</p>
+                  </td>
+                </tr>
+              ) : filteredInventory.length === 0 ? (
                 <tr>
                   <td colSpan={4} className="px-6 py-12 text-center">
                     <span className="material-symbols-outlined text-4xl text-[#262626] mb-2">inventory_2</span>
@@ -166,7 +227,7 @@ export default function InventoryPage() {
                         <button 
                           onClick={() => handleEditStart(item)}
                           className="text-white hover:text-[#d2f000] flex items-center justify-end gap-2 w-full group"
-                          title="Click to edit"
+                          title="Click to edit stock level"
                         >
                           <span className="opacity-0 group-hover:opacity-100 material-symbols-outlined text-[16px] text-[#737373]">edit</span>
                           <span className="font-medium text-lg">{item.stock}</span>

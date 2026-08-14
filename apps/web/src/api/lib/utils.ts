@@ -1,4 +1,5 @@
 import { Context } from 'hono';
+import { AppwriteEnv } from './appwrite';
 
 export const generateOrderId = (): string => {
   const randomNum = Math.floor(10000 + Math.random() * 90000);
@@ -11,8 +12,8 @@ export const slugify = (text: string): string => {
     .toLowerCase()
     .trim()
     .replace(/\s+/g, '-')
-    .replace(/[^\w\-]+/g, '')
-    .replace(/\-\-+/g, '-');
+    .replace(/[^\w-]+/g, '')
+    .replace(/-+/g, '-');
 };
 
 export const isValidEmail = (email: string): boolean => {
@@ -21,9 +22,10 @@ export const isValidEmail = (email: string): boolean => {
 };
 
 export const getDbId = (c: Context): string => {
-  return (c.env as any)?.APPWRITE_DATABASE_ID || process.env.APPWRITE_DATABASE_ID || 'clapculture_db';
+  const env = (c.env || {}) as Record<string, string | undefined>;
+  return env.APPWRITE_DATABASE_ID || process.env.APPWRITE_DATABASE_ID || 'clapculture_db';
 };
 
-export const getEnv = (c: Context): any => {
-  return c.env && Object.keys(c.env).length > 0 ? c.env : process.env;
+export const getEnv = (c: Context): AppwriteEnv => {
+  return c.env && Object.keys(c.env).length > 0 ? (c.env as AppwriteEnv) : (process.env as AppwriteEnv);
 };

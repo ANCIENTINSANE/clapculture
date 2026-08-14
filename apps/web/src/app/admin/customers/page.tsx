@@ -1,10 +1,106 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+
+interface AdminCustomer {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  orders: number;
+  spent: string;
+  lastOrder: string;
+}
 
 export default function CustomersPage() {
-  const [customers, setCustomers] = useState<any[]>([]);
+  const [customers, setCustomers] = useState<AdminCustomer[]>([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+
+  useEffect(() => {
+    async function loadCustomers() {
+      try {
+        setLoading(true);
+        const token = localStorage.getItem('adminToken');
+        const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
+
+        // 1. Fetch direct customers from /api/customers
+        const custRes = await fetch('/api/customers', { headers }).catch(() => null);
+        const custData = custRes && custRes.ok ? await custRes.json() : null;
+        
+        // 2. Fetch orders from /api/orders
+        const ordersRes = await fetch('/api/orders', { headers }).catch(() => null);
+        const ordersData = ordersRes && ordersRes.ok ? await ordersRes.json() : null;
+
+        const customerMap = new Map<string, AdminCustomer>();
+
+        // Populate from customer docs
+        if (custData && custData.success && Array.isArray(custData.data)) {
+          custData.data.forEach((c: Record<string, unknown>) => {
+            const email = String(c.email || '').toLowerCase();
+            if (!email) return;
+            const firstName = String(c.firstName || '');
+            const lastName = String(c.lastName || '');
+            const name = `${firstName} ${lastName}`.trim() || 'Valued Rebel';
+            let ordersCount = 0;
+            try {
+              ordersCount = typeof c.orders === 'string' ? JSON.parse(c.orders).length : Array.isArray(c.orders) ? c.orders.length : 0;
+            } catch {
+              ordersCount = 0;
+            }
+
+            customerMap.set(email, {
+              id: String(c.$id || email),
+              name,
+              email,
+              phone: String(c.phone || 'N/A'),
+              orders: ordersCount,
+              spent: '₹0',
+              lastOrder: c.$createdAt ? new Date(c.$createdAt as string).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : 'Recently',
+            });
+          });
+        }
+
+        // Merge order totals
+        if (ordersData && ordersData.success && Array.isArray(ordersData.data)) {
+          ordersData.data.forEach((doc: Record<string, unknown>) => {
+            const customerObj = typeof doc.customer === 'string' 
+              ? JSON.parse(doc.customer as string) 
+              : ((doc.customer || {}) as Record<string, string | undefined>);
+            
+            const email = (customerObj.email || '').toLowerCase();
+            if (!email) return;
+
+            const existing = customerMap.get(email);
+            const amount = Number(doc.total) || 0;
+
+            if (existing) {
+              const currentSpent = Number(existing.spent.replace('₹', '')) || 0;
+              existing.spent = `₹${currentSpent + amount}`;
+              if (!existing.orders) existing.orders = 1;
+            } else {
+              customerMap.set(email, {
+                id: String(doc.$id || email),
+                name: customerObj.fullName || 'Valued Rebel',
+                email,
+                phone: customerObj.phone || 'N/A',
+                orders: 1,
+                spent: `₹${amount}`,
+                lastOrder: doc.$createdAt ? new Date(doc.$createdAt as string).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : 'Recently',
+              });
+            }
+          });
+        }
+
+        setCustomers(Array.from(customerMap.values()));
+      } catch {
+        // Handled silently
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadCustomers();
+  }, []);
 
   const filteredCustomers = customers.filter(c => 
     c.name.toLowerCase().includes(search.toLowerCase()) || 
@@ -27,7 +123,12 @@ export default function CustomersPage() {
           />
         </div>
         
-        {filteredCustomers.length > 0 ? (
+        {loading ? (
+          <div className="py-16 text-center text-[#737373]">
+            <div className="w-6 h-6 border-2 border-electric-lime border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+            <p className="text-sm">Loading customers from database...</p>
+          </div>
+        ) : filteredCustomers.length > 0 ? (
           <table className="w-full text-left">
             <thead>
               <tr className="border-b border-[#262626] bg-[#1a1a1a] text-[#737373] text-xs uppercase tracking-wider">
@@ -57,7 +158,7 @@ export default function CustomersPage() {
           <div className="py-16 text-center text-[#737373]">
             <span className="material-symbols-outlined text-4xl mb-2 text-[#737373]">group</span>
             <p className="text-white text-base font-medium">No customers found</p>
-            <p className="text-xs text-[#737373] mt-1">Customer profiles will automatically appear here once orders are placed.</p>
+            <p className="text-xs text-[#737373] mt-1">Customer profiles will automatically appear here once orders are placed or leads sign up.</p>
           </div>
         )}
       </div>

@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState, useMemo, useEffect, Suspense } from 'react';
+import React, { useState, useMemo, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { MOCK_PRODUCTS, MOCK_CATEGORIES, STAR_COLLECTIONS } from '@/lib/mock-data';
+import { useProducts, useCategories, useStarCollections } from '@/lib/use-api-data';
 import { ProductGrid } from '@/components/product/ProductGrid';
 import { ProductFilters, FilterState } from '@/components/product/ProductFilters';
 
@@ -11,8 +11,14 @@ function ShopContent() {
   const searchParams = useSearchParams();
   const starParam = searchParams.get('star') || '';
 
+  const { data: products, loading: productsLoading } = useProducts();
+  const { data: categories } = useCategories();
+  const starCollections = useStarCollections();
+
   const [search, setSearch] = useState('');
-  const [selectedStarFilter, setSelectedStarFilter] = useState(starParam);
+  const [userSelectedStar, setUserSelectedStar] = useState<string | null>(null);
+  const selectedStarFilter = userSelectedStar !== null ? userSelectedStar : starParam;
+
   const [filters, setFilters] = useState<FilterState>({
     selectedCategories: [],
     selectedSizes: [],
@@ -21,30 +27,85 @@ function ShopContent() {
   const [page, setPage] = useState(1);
   const itemsPerPage = 8;
 
-  useEffect(() => {
-    if (starParam) {
-      setSelectedStarFilter(starParam);
-    }
-  }, [starParam]);
-
-  const categories = useMemo(() => MOCK_CATEGORIES.map((c) => c.name), []);
+  const categoryNames = useMemo(() => categories.map((c) => c.name), [categories]);
 
   const activeStarHero = useMemo(() => {
-    return STAR_COLLECTIONS.find((h) => h.slug === selectedStarFilter);
-  }, [selectedStarFilter]);
+    return starCollections.find((h) => h.slug === selectedStarFilter);
+  }, [selectedStarFilter, starCollections]);
 
   const filteredProducts = useMemo(() => {
-    let result = [...MOCK_PRODUCTS];
+    let result = [...products];
 
     // Star Hero filter
     if (selectedStarFilter) {
-      const heroName = activeStarHero ? activeStarHero.name.toLowerCase() : selectedStarFilter.replace('-', ' ');
-      result = result.filter(
-        (p) =>
-          p.badges?.some((b) => b.toLowerCase().includes(heroName) || heroName.includes(b.toLowerCase())) ||
-          p.name.toLowerCase().includes(heroName) ||
-          p.description.toLowerCase().includes(heroName)
-      );
+      const heroSlug = selectedStarFilter.toLowerCase();
+      const heroName = activeStarHero ? activeStarHero.name.toLowerCase() : heroSlug.replace('-', ' ');
+      result = result.filter((p) => {
+        const badges = (p.badges || []).map((b) => b.toLowerCase());
+        const name = p.name.toLowerCase();
+        const combined = `${name} ${badges.join(' ')}`;
+
+        if (heroSlug === 'pawan-kalyan' || heroName.includes('pawan')) {
+          return (
+            badges.includes('pawan kalyan') ||
+            badges.includes('power star') ||
+            badges.includes('senani') ||
+            badges.includes('og') ||
+            badges.includes('pspk') ||
+            /\b(pawan|kalyan|senani|power star|pspk|hungry cheetah|they call him og)\b/i.test(combined) ||
+            /\bog\b/i.test(name)
+          );
+        }
+        if (heroSlug === 'mahesh-babu' || heroName.includes('mahesh')) {
+          return (
+            badges.includes('mahesh babu') ||
+            badges.includes('superstar') ||
+            badges.includes('pokiri') ||
+            badges.includes('ssmb') ||
+            /\b(mahesh|babu|ssmb|superstar|pokiri|guntur kaaram|murari|khaleja|okkadhu)\b/i.test(combined)
+          );
+        }
+        if (heroSlug === 'prabhas' || heroName.includes('prabhas')) {
+          return (
+            badges.includes('prabhas') ||
+            badges.includes('rebel star') ||
+            badges.includes('darling') ||
+            badges.includes('salaar') ||
+            badges.includes('raja saab') ||
+            /\b(prabhas|salaar|rebel star|darling|raja saab|kalki|bahubali|mirchi)\b/i.test(combined)
+          );
+        }
+        if (heroSlug === 'allu-arjun' || heroName.includes('allu')) {
+          return (
+            badges.includes('allu arjun') ||
+            badges.includes('icon star') ||
+            badges.includes('pushpa') ||
+            badges.includes('aa rule') ||
+            /\b(allu arjun|pushpa|icon star|aa rule|bunny|aryaa|dj|sarrainodu)\b/i.test(combined)
+          );
+        }
+        if (heroSlug === 'ram-charan' || heroName.includes('charan')) {
+          return (
+            badges.includes('ram charan') ||
+            badges.includes('global star') ||
+            badges.includes('game changer') ||
+            /\b(ram charan|global star|mega power star|game changer|magadheera|dhruva|rc15)\b/i.test(combined)
+          );
+        }
+        if (heroSlug === 'ntr' || heroSlug === 'ntr-jr' || heroName.includes('ntr')) {
+          return (
+            badges.includes('jr ntr') ||
+            badges.includes('ntr') ||
+            badges.includes('man of masses') ||
+            badges.includes('devara') ||
+            /\b(ntr|jr ntr|devara|man of masses|tarak|young tiger|janatha garage|simhadri)\b/i.test(combined)
+          );
+        }
+        return (
+          badges.some((b) => b.includes(heroName) || heroName.includes(b)) ||
+          name.includes(heroName)
+        );
+      });
     }
 
     // Search filter
@@ -57,7 +118,7 @@ function ShopContent() {
 
     // Category filter
     if (filters.selectedCategories.length > 0) {
-      const categoryMap = new Map(MOCK_CATEGORIES.map((c) => [c.name, c.id]));
+      const categoryMap = new Map(categories.map((c) => [c.name, c.id || (c as unknown as Record<string, string>).$id]));
       const allowedCatIds = filters.selectedCategories.map((name) => categoryMap.get(name)).filter(Boolean);
       result = result.filter((p) => allowedCatIds.includes(p.categoryId));
     }
@@ -82,12 +143,12 @@ function ShopContent() {
         break;
       case 'NEWEST':
       default:
-        result.sort((a, b) => (a.badges?.includes('NEW') ? -1 : 1));
+        result.sort((a) => (a.badges?.includes('NEW') ? -1 : 1));
         break;
     }
 
     return result;
-  }, [search, filters, selectedStarFilter, activeStarHero]);
+  }, [search, filters, selectedStarFilter, activeStarHero, products, categories]);
 
   const totalPages = Math.ceil(filteredProducts.length / itemsPerPage) || 1;
   const paginatedProducts = useMemo(() => {
@@ -102,7 +163,7 @@ function ShopContent() {
         <div className="text-sm text-gray-400 mb-4 flex items-center gap-2 font-label-caps tracking-widest">
           <Link href="/" className="hover:text-electric-lime transition-colors">HOME</Link>
           <span>/</span>
-          <Link href="/shop" onClick={() => setSelectedStarFilter('')} className="hover:text-electric-lime transition-colors">SHOP</Link>
+          <Link href="/shop" onClick={() => setUserSelectedStar('')} className="hover:text-electric-lime transition-colors">SHOP</Link>
           {activeStarHero && (
             <>
               <span>/</span>
@@ -126,14 +187,14 @@ function ShopContent() {
           <div className="flex items-center gap-4 w-full md:w-auto">
             {selectedStarFilter && (
               <button 
-                onClick={() => setSelectedStarFilter('')}
+                onClick={() => setUserSelectedStar('')}
                 className="bg-charcoal text-xs text-electric-lime border border-electric-lime px-3 py-2 font-label-caps hover:bg-electric-lime hover:text-black transition-colors"
               >
                 CLEAR STAR FILTER ×
               </button>
             )}
 
-            <div className="relative flex-grow md:w-64">
+            <div className="relative grow md:w-64">
               <input 
                 type="text" 
                 value={search}
@@ -159,15 +220,15 @@ function ShopContent() {
 
         {/* Star Collection Filter Pills */}
         <div className="flex items-center gap-2 mt-4 overflow-x-auto hide-scrollbar pb-2">
-          <span className="text-xs text-gray-400 font-label-caps mr-2 flex-shrink-0">STAR EDITIONS:</span>
-          {STAR_COLLECTIONS.map((hero) => (
+          <span className="text-xs text-gray-400 font-label-caps mr-2 shrink-0">STAR EDITIONS:</span>
+          {starCollections.map((hero) => (
             <button
               key={hero.slug}
               onClick={() => {
-                setSelectedStarFilter(selectedStarFilter === hero.slug ? '' : hero.slug);
+                setUserSelectedStar(selectedStarFilter === hero.slug ? '' : hero.slug);
                 setPage(1);
               }}
-              className={`text-xs px-3 py-1.5 rounded-sm font-label-caps font-bold transition-all flex-shrink-0 ${
+              className={`text-xs px-3 py-1.5 rounded-sm font-label-caps font-bold transition-all shrink-0 ${
                 selectedStarFilter === hero.slug
                   ? 'bg-electric-lime text-black'
                   : 'bg-charcoal border border-gray-800 text-gray-300 hover:border-electric-lime'
@@ -181,9 +242,9 @@ function ShopContent() {
 
       <div className="flex flex-col md:flex-row gap-8">
         {/* Filters Sidebar */}
-        <div className="w-full md:w-64 flex-shrink-0">
+        <div className="w-full md:w-64 shrink-0">
           <ProductFilters 
-            categories={categories} 
+            categories={categoryNames} 
             selectedCategories={filters.selectedCategories}
             selectedSizes={filters.selectedSizes}
             sortBy={filters.sortBy}
@@ -195,8 +256,14 @@ function ShopContent() {
         </div>
 
         {/* Product Grid */}
-        <div className="flex-grow">
-          <ProductGrid products={paginatedProducts} />
+        <div className="grow">
+          {productsLoading && products.length === 0 ? (
+            <div className="flex items-center justify-center py-32">
+              <div className="w-8 h-8 border-2 border-electric-lime border-t-transparent rounded-full animate-spin" />
+            </div>
+          ) : (
+            <ProductGrid products={paginatedProducts} />
+          )}
           
           {/* Pagination */}
           {totalPages > 1 && (

@@ -14,10 +14,18 @@
     "deploy:pages": "npm run build && npm run pages:build && cd apps/web && wrangler pages deploy .vercel/output/static --project-name=clapculture",
     "deploy:api": "cd apps/api && wrangler deploy",
     "db:setup": "node scripts/setup-db.js && node scripts/seed-admin.js",
-    "db:seed": "node scripts/seed-admin.js"
+    "db:seed": "node scripts/seed-admin.js",
+    "email:verify": "node scripts/verify-smtp.js",
+    "email:test": "node scripts/test-smtp.js",
+    "messaging:setup": "node scripts/setup-appwrite-messaging.js",
+    "messaging:send": "node scripts/send-appwrite-message.js",
+    "otp:send": "node scripts/send-otp.js"
   },
   "devDependencies": {
     "concurrently": "^10.0.4",
     "wrangler": "^4.122.0"
+  },
+  "dependencies": {
+    "nodemailer": "^9.0.5"
   }
 }

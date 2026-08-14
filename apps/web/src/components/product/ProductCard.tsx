@@ -35,7 +35,7 @@ export function ProductCard({ product }: ProductCardProps) {
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
-        <div className="relative bg-charcoal aspect-[4/5] mb-4 overflow-hidden">
+        <div className="relative bg-charcoal aspect-4/5 mb-4 overflow-hidden">
           <Link href={`/product/${product.slug}`}>
             <img 
               src={isHovered ? secondaryImage : primaryImage} 
@@ -45,20 +45,21 @@ export function ProductCard({ product }: ProductCardProps) {
           </Link>
           
           {/* Badges */}
-          <div className="absolute top-4 left-4 flex flex-col gap-2 z-10">
+          <div className="absolute top-4 left-4 flex flex-col gap-1.5 z-10">
             {isOutOfStock ? (
-              <span className="bg-red-600 text-white text-[10px] md:text-xs font-bold px-2.5 py-1 uppercase">
-                OUT OF STOCK
+              <span className="bg-rose-600 text-white text-[10px] md:text-xs font-black tracking-wider px-2.5 py-1 uppercase shadow-md">
+                SOLD OUT
               </span>
             ) : (
               product.badges?.map((badge, idx) => {
                 let bgColor = 'bg-white';
                 let textColor = 'text-black';
-                if (badge.toUpperCase() === 'NEW') { bgColor = 'bg-electric-lime'; textColor = 'text-black'; }
-                if (badge.toUpperCase() === 'LIMITED') { bgColor = 'bg-red-500'; textColor = 'text-white'; }
+                if (badge.toUpperCase() === 'NEW' || badge.toUpperCase() === 'IN STOCK') { bgColor = 'bg-electric-lime'; textColor = 'text-black'; }
+                if (badge.toUpperCase() === 'LIMITED' || badge.toUpperCase() === 'SOLD OUT') { bgColor = 'bg-rose-600'; textColor = 'text-white'; }
+                if (badge.toUpperCase() === '320 GSM') { bgColor = 'bg-black/80 text-electric-lime border border-electric-lime/50'; textColor = 'text-electric-lime'; }
                 
                 return (
-                  <span key={idx} className={`${bgColor} ${textColor} text-[10px] md:text-xs font-bold px-2.5 py-1 uppercase`}>
+                  <span key={idx} className={`${bgColor} ${textColor} text-[10px] md:text-xs font-black tracking-wider px-2.5 py-1 uppercase shadow-md`}>
                     {badge}
                   </span>
                 );
@@ -66,15 +67,20 @@ export function ProductCard({ product }: ProductCardProps) {
             )}
           </div>
 
+          {/* Sold Out Dark Overlay */}
+          {isOutOfStock && (
+            <div className="absolute inset-0 bg-black/40 pointer-events-none z-5" />
+          )}
+
           <button 
             type="button"
-            className="absolute top-4 right-4 w-10 h-10 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center hover:bg-electric-lime hover:text-black transition-colors text-white z-10"
+            className="absolute top-4 right-4 w-10 h-10 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center hover:bg-electric-lime hover:text-black transition-colors text-white z-10 cursor-pointer"
           >
             <span className="material-symbols-outlined text-[20px]">favorite</span>
           </button>
 
           {/* Quick Add Button */}
-          <div className="absolute inset-x-0 bottom-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform translate-y-4 group-hover:translate-y-0 z-10">
+          <div className="absolute inset-x-0 bottom-0 p-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 transform translate-y-2 group-hover:translate-y-0 z-10">
             <button 
               onClick={(e) => {
                 e.preventDefault();
@@ -84,13 +90,13 @@ export function ProductCard({ product }: ProductCardProps) {
                 }
               }}
               disabled={isOutOfStock}
-              className={`w-full font-bold py-3 uppercase text-sm transition-colors ${
+              className={`w-full font-black py-3 uppercase text-xs tracking-wider transition-all cursor-pointer ${
                 isOutOfStock 
-                  ? 'bg-gray-800 text-gray-500 cursor-not-allowed' 
-                  : 'bg-white text-black hover:bg-electric-lime'
+                  ? 'bg-neutral-900/90 text-neutral-400 border border-neutral-700 cursor-not-allowed opacity-90' 
+                  : 'bg-electric-lime text-black hover:bg-white hover:text-black shadow-xl font-bold'
               }`}
             >
-              {isOutOfStock ? 'OUT OF STOCK' : 'SELECT SIZE & ADD'}
+              {isOutOfStock ? 'SOLD OUT' : 'SELECT SIZE & ADD'}
             </button>
           </div>
         </div>
@@ -99,10 +105,10 @@ export function ProductCard({ product }: ProductCardProps) {
           <Link href={`/product/${product.slug}`}>
             <h3 className="font-bold text-lg mb-1 hover:text-electric-lime transition-colors line-clamp-1">{product.name}</h3>
           </Link>
-          <div className="flex items-center gap-2 mb-3">
-            <span className="text-white font-bold">{formatCurrency(product.price)}</span>
+          <div className="flex items-center gap-2 mb-3" suppressHydrationWarning>
+            <span className="text-white font-bold" suppressHydrationWarning>{formatCurrency(product.price)}</span>
             {product.compareAtPrice && (
-              <span className="text-gray-500 line-through text-sm">{formatCurrency(product.compareAtPrice)}</span>
+              <span className="text-gray-500 line-through text-sm" suppressHydrationWarning>{formatCurrency(product.compareAtPrice)}</span>
             )}
           </div>
         </div>
@@ -111,7 +117,7 @@ export function ProductCard({ product }: ProductCardProps) {
       {/* Quick Size Selection Modal */}
       {isSizeModalOpen && (
         <div 
-          className="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200"
+          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200"
           onClick={() => setIsSizeModalOpen(false)}
         >
           <div 

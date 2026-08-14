@@ -1,7 +1,31 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // Ensure server-side env vars are available at runtime
+  env: {
+    APPWRITE_ENDPOINT: process.env.APPWRITE_ENDPOINT,
+    APPWRITE_PROJECT_ID: process.env.APPWRITE_PROJECT_ID,
+    APPWRITE_API_KEY: process.env.APPWRITE_API_KEY,
+    APPWRITE_DATABASE_ID: process.env.APPWRITE_DATABASE_ID,
+    APPWRITE_STORAGE_BUCKET_MEDIA: process.env.APPWRITE_STORAGE_BUCKET_MEDIA,
+    JWT_SECRET: process.env.JWT_SECRET,
+    SMTP_HOST: process.env.SMTP_HOST,
+    SMTP_PORT: process.env.SMTP_PORT,
+    SMTP_SECURE: process.env.SMTP_SECURE,
+    SMTP_USER: process.env.SMTP_USER,
+    SMTP_PASS: process.env.SMTP_PASS,
+    SMTP_FROM_NAME: process.env.SMTP_FROM_NAME,
+    SMTP_FROM_EMAIL: process.env.SMTP_FROM_EMAIL,
+    ADMIN_NOTIFICATION_EMAIL: process.env.ADMIN_NOTIFICATION_EMAIL,
+  },
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'sgp.cloud.appwrite.io',
+      },
+    ],
+  },
 };
 
 export default nextConfig;

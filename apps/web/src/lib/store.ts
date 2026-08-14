@@ -62,9 +62,9 @@ export function OrderStoreProvider({ children }: { children: ReactNode }) {
   const [checkoutInfo, setCheckoutInfoState] = useState<CheckoutInfo>(emptyCheckoutInfo);
   const [orders, setOrders] = useState<OrderData[]>([]);
   const [currentOrder, setCurrentOrder] = useState<OrderData | null>(null);
-  const [isInitialized, setIsInitialized] = useState(false);
+  const [isHydrated, setIsHydrated] = useState(false);
 
-  // Hydrate from sessionStorage on mount
+  // Hydrate from sessionStorage once mounted on client
   useEffect(() => {
     try {
       const storedCheckout = sessionStorage.getItem('cc_checkout');
@@ -73,31 +73,44 @@ export function OrderStoreProvider({ children }: { children: ReactNode }) {
       const storedOrders = sessionStorage.getItem('cc_orders');
       if (storedOrders) setOrders(JSON.parse(storedOrders));
 
-      const storedCurrent = sessionStorage.getItem('cc_current_order');
-      if (storedCurrent) setCurrentOrder(JSON.parse(storedCurrent));
+      const storedCurrentOrder = sessionStorage.getItem('cc_current_order');
+      if (storedCurrentOrder) setCurrentOrder(JSON.parse(storedCurrentOrder));
     } catch (e) {
-      console.error('Failed to hydrate order store:', e);
+      console.error('Failed to load order store from sessionStorage:', e);
     }
-    setIsInitialized(true);
+    setIsHydrated(true);
   }, []);
 
   // Persist to sessionStorage on changes
   useEffect(() => {
-    if (!isInitialized) return;
-    sessionStorage.setItem('cc_checkout', JSON.stringify(checkoutInfo));
-  }, [checkoutInfo, isInitialized]);
-
-  useEffect(() => {
-    if (!isInitialized) return;
-    sessionStorage.setItem('cc_orders', JSON.stringify(orders));
-  }, [orders, isInitialized]);
-
-  useEffect(() => {
-    if (!isInitialized) return;
-    if (currentOrder) {
-      sessionStorage.setItem('cc_current_order', JSON.stringify(currentOrder));
+    if (isHydrated) {
+      try {
+        sessionStorage.setItem('cc_checkout', JSON.stringify(checkoutInfo));
+      } catch (e) {
+        console.error('Failed to save checkoutInfo:', e);
+      }
     }
-  }, [currentOrder, isInitialized]);
+  }, [checkoutInfo, isHydrated]);
+
+  useEffect(() => {
+    if (isHydrated) {
+      try {
+        sessionStorage.setItem('cc_orders', JSON.stringify(orders));
+      } catch (e) {
+        console.error('Failed to save orders:', e);
+      }
+    }
+  }, [orders, isHydrated]);
+
+  useEffect(() => {
+    if (isHydrated && currentOrder) {
+      try {
+        sessionStorage.setItem('cc_current_order', JSON.stringify(currentOrder));
+      } catch (e) {
+        console.error('Failed to save current order:', e);
+      }
+    }
+  }, [currentOrder, isHydrated]);
 
   const setCheckoutInfo = (info: CheckoutInfo) => {
     setCheckoutInfoState(info);

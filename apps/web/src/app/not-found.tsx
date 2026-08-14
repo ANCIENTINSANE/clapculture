@@ -26,7 +26,7 @@ export default function NotFound() {
         </h2>
         
         <p className="text-gray-400 font-label-caps mb-12 max-w-md mx-auto">
-          The page you're looking for doesn't exist or has been moved to a new drop.
+          The page you&apos;re looking for doesn&apos;t exist or has been moved to a new drop.
         </p>
 
         <Link 

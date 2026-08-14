@@ -26,8 +26,9 @@ categories.get('/', async (c) => {
     setCached('categories_all', response.documents, 120);
     c.header('X-Cache', 'MISS');
     return c.json({ success: true, data: response.documents });
-  } catch (error: any) {
-    return c.json({ success: false, error: error.message }, 500);
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : 'Internal server error';
+    return c.json({ success: false, error: msg }, 500);
   }
 });
 
@@ -46,8 +47,9 @@ categories.post('/', adminAuth, async (c) => {
     
     clearCache('categories');
     return c.json({ success: true, data: response }, 201);
-  } catch (error: any) {
-    return c.json({ success: false, error: error.message }, 500);
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : 'Internal server error';
+    return c.json({ success: false, error: msg }, 500);
   }
 });
 
@@ -67,8 +69,9 @@ categories.put('/:id', adminAuth, async (c) => {
     
     clearCache('categories');
     return c.json({ success: true, data: response });
-  } catch (error: any) {
-    return c.json({ success: false, error: error.message }, 500);
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : 'Internal server error';
+    return c.json({ success: false, error: msg }, 500);
   }
 });
 
@@ -86,8 +89,9 @@ categories.delete('/:id', adminAuth, async (c) => {
     
     clearCache('categories');
     return c.json({ success: true, data: { deleted: true } });
-  } catch (error: any) {
-    return c.json({ success: false, error: error.message }, 500);
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : 'Internal server error';
+    return c.json({ success: false, error: msg }, 500);
   }
 });
 

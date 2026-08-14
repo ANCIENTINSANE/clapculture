@@ -23,8 +23,9 @@ payments.post('/submit', async (c) => {
     );
     
     return c.json({ success: true, data: response });
-  } catch (error: any) {
-    return c.json({ success: false, error: error.message }, 500);
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : 'Internal server error';
+    return c.json({ success: false, error: msg }, 500);
   }
 });
 
@@ -49,8 +50,9 @@ payments.post('/verify', async (c) => {
     );
     
     return c.json({ success: true, data: response });
-  } catch (error: any) {
-    return c.json({ success: false, error: error.message }, 500);
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : 'Internal server error';
+    return c.json({ success: false, error: msg }, 500);
   }
 });
 

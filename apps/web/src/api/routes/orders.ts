@@ -3,7 +3,14 @@ import { ID, Query } from 'node-appwrite';
 import { getAppwriteClient } from '../lib/appwrite';
 import { getDbId, getEnv, generateOrderId } from '../lib/utils';
 import { adminAuth } from '../middleware/auth';
-import { sendOrderConfirmationEmail, sendPaymentVerifiedEmail, sendShippingUpdateEmail } from '../lib/email';
+import { upsertCustomerAndUser } from './customers';
+import {
+  sendOrderConfirmationEmail,
+  sendPaymentVerifiedEmail,
+  sendShippingUpdateEmail,
+  sendOrderDeliveredEmail,
+  sendAdminAlertEmail,
+} from '../lib/email';
 
 const orders = new Hono();
 
@@ -15,13 +22,21 @@ orders.post('/', async (c) => {
     const dbId = getDbId(c);
     
     const customOrderId = body.orderId || generateOrderId();
-    
+
+    const customerStr = typeof body.customer === 'string' ? body.customer : JSON.stringify(body.customer || {});
+    const itemsStr = typeof body.items === 'string' ? body.items : JSON.stringify(body.items || []);
+
     const orderData = {
-      ...body,
       orderId: customOrderId,
-      paymentStatus: body.paymentStatus || 'PENDING',
+      customer: customerStr,
+      items: itemsStr,
+      subtotal: Number(body.subtotal) || Number(body.total) || 0,
+      shipping: Number(body.shipping) || 0,
+      total: Number(body.total) || 0,
+      paymentStatus: body.paymentStatus || 'SUBMITTED',
       orderStatus: body.orderStatus || 'PLACED',
-      createdAt: new Date().toISOString()
+      transactionId: body.transactionId || 'UPI-REF-PENDING',
+      trackingNumber: body.trackingNumber || 'TRK-CLAP-PENDING',
     };
     
     const response = await databases.createDocument(
@@ -31,8 +46,21 @@ orders.post('/', async (c) => {
       orderData
     );
 
-    // Send Appwrite Messaging Order Confirmation Email
+    // Auto-save/sync customer profile and Appwrite Auth user
     const customerObj = typeof body.customer === 'string' ? JSON.parse(body.customer) : (body.customer || {});
+    if (customerObj.email) {
+      upsertCustomerAndUser(env, {
+        email: customerObj.email,
+        fullName: customerObj.fullName,
+        phone: customerObj.phone,
+        address: customerObj.address,
+        city: customerObj.city,
+        state: customerObj.state,
+        pincode: customerObj.pincode,
+        orderId: customOrderId,
+        source: 'order_checkout',
+      }).catch((e) => console.log('Customer upsert notice:', e.message));
+    }
     const itemsList = typeof body.items === 'string' ? JSON.parse(body.items) : (body.items || []);
     
     if (customerObj.email) {
@@ -44,12 +72,28 @@ orders.post('/', async (c) => {
         items: itemsList,
         paymentStatus: orderData.paymentStatus,
         shippingAddress: `${customerObj.address || ''}, ${customerObj.city || ''}, ${customerObj.state || ''} ${customerObj.pincode || ''}`,
-      }).catch((e) => console.log('Email notice:', e.message));
+      }).catch((e) => console.log('Email confirmation notice:', e.message));
     }
+
+    // 2. Send Admin New Order Notification Email
+    sendAdminAlertEmail(env, {
+      subject: `New Order Placed #${customOrderId.replace('#', '')} (₹${body.total || 0})`,
+      title: `NEW ORDER #${customOrderId.replace('#', '')}`,
+      message: `A new order has been placed by ${customerObj.fullName || 'Customer'} for ₹${body.total || 0}.`,
+      actionUrl: `/admin/orders/${customOrderId.replace('#', '')}`,
+      actionText: 'VIEW ORDER IN ADMIN',
+      metadata: {
+        orderId: customOrderId,
+        customer: `${customerObj.fullName} (${customerObj.email}, ${customerObj.phone})`,
+        amount: `₹${body.total}`,
+        itemsCount: itemsList.length,
+      },
+    }).catch((e) => console.log('Admin email alert notice:', e.message));
     
     return c.json({ success: true, data: response }, 201);
-  } catch (error: any) {
-    return c.json({ success: false, error: error.message }, 500);
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : 'Failed to create order';
+    return c.json({ success: false, error: msg }, 500);
   }
 });
 
@@ -75,86 +119,126 @@ orders.get('/track', async (c) => {
       return c.json({ success: false, error: 'Order not found' }, 404);
     }
     
-    const order: any = response.documents[0];
+    const order = response.documents[0] as Record<string, unknown>;
+    const customer = (order.customer || {}) as Record<string, string | undefined>;
     
-    if (order.customer?.email !== contact && order.customer?.phone !== contact) {
+    if (customer.email !== contact && customer.phone !== contact) {
       return c.json({ success: false, error: 'Contact details do not match order' }, 403);
     }
     
     return c.json({ success: true, data: order });
-  } catch (error: any) {
-    return c.json({ success: false, error: error.message }, 500);
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : 'Failed to track order';
+    return c.json({ success: false, error: msg }, 500);
   }
 });
 
 orders.get('/:orderId', async (c) => {
   try {
-    const orderId = c.req.param('orderId') || '';
+    const rawId = c.req.param('orderId') || '';
+    const cleanId = rawId.replace('#', '').trim();
     const { databases } = getAppwriteClient(getEnv(c));
     const dbId = getDbId(c);
     
-    const response = await databases.listDocuments(
-      dbId,
-      'orders',
-      [Query.equal('orderId', orderId.toUpperCase()), Query.limit(1)]
-    );
-    
-    if (response.documents.length === 0) {
-      return c.json({ success: false, error: 'Order not found' }, 404);
+    // 1. Try finding by document ID
+    try {
+      const doc = await databases.getDocument(dbId, 'orders', cleanId);
+      if (doc) return c.json({ success: true, data: doc });
+    } catch {}
+
+    // 2. Try querying by orderId (case-insensitive variations)
+    const variations = [cleanId, `CLAP${cleanId}`, cleanId.toUpperCase(), `#${cleanId}`];
+    for (const v of variations) {
+      const response = await databases.listDocuments(
+        dbId,
+        'orders',
+        [Query.equal('orderId', v), Query.limit(1)]
+      );
+      if (response.documents.length > 0) {
+        return c.json({ success: true, data: response.documents[0] });
+      }
     }
     
-    return c.json({ success: true, data: response.documents[0] });
-  } catch (error: any) {
-    return c.json({ success: false, error: error.message }, 500);
+    return c.json({ success: false, error: 'Order not found' }, 404);
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : 'Failed to get order';
+    return c.json({ success: false, error: msg }, 500);
   }
 });
 
 orders.put('/:id/status', adminAuth, async (c) => {
   try {
-    const id = c.req.param('id') || '';
+    const idOrOrderId = (c.req.param('id') || '').replace('#', '').trim();
     const { orderStatus, paymentStatus, trackingNumber } = await c.req.json();
     const env = getEnv(c);
     const { databases } = getAppwriteClient(env);
     const dbId = getDbId(c);
     
-    const updateData: any = {
-      updatedAt: new Date().toISOString()
-    };
+    let targetDocId = idOrOrderId;
+
+    // Resolve real document ID if orderId was passed
+    try {
+      await databases.getDocument(dbId, 'orders', targetDocId);
+    } catch {
+      const variations = [idOrOrderId, `CLAP${idOrOrderId}`, idOrOrderId.toUpperCase(), `#${idOrOrderId}`];
+      for (const v of variations) {
+        const list = await databases.listDocuments(dbId, 'orders', [
+          Query.equal('orderId', v),
+          Query.limit(1)
+        ]);
+        if (list.documents.length > 0) {
+          targetDocId = list.documents[0].$id;
+          break;
+        }
+      }
+    }
     
+    const updateData: Record<string, unknown> = {};
     if (orderStatus) updateData.orderStatus = orderStatus;
     if (paymentStatus) updateData.paymentStatus = paymentStatus;
-    if (trackingNumber) updateData.trackingNumber = trackingNumber;
+    if (trackingNumber !== undefined) updateData.trackingNumber = trackingNumber;
     
-    const response: any = await databases.updateDocument(
+    const response = await databases.updateDocument(
       dbId,
       'orders',
-      id,
+      targetDocId,
       updateData
     );
 
-    // Send corresponding Appwrite Messaging email on status change
-    const customerObj = typeof response.customer === 'string' ? JSON.parse(response.customer) : (response.customer || {});
+    // Send corresponding transactional email on status change via Gmail SMTP
+    const customerObj = typeof (response as Record<string, unknown>).customer === 'string' 
+      ? JSON.parse((response as Record<string, unknown>).customer as string) 
+      : (((response as Record<string, unknown>).customer || {}) as Record<string, string | undefined>);
+
     if (customerObj.email) {
+      const orderIdStr = String(response.orderId || targetDocId).replace('#', '');
       if (paymentStatus === 'VERIFIED') {
         sendPaymentVerifiedEmail(env, {
           toEmail: customerObj.email,
-          customerName: customerObj.fullName || 'Customer',
-          orderId: response.orderId,
-          transactionId: response.transactionId,
-        }).catch(() => {});
-      } else if (orderStatus === 'SHIPPED' && trackingNumber) {
+          customerName: customerObj.fullName || 'Valued Rebel',
+          orderId: orderIdStr,
+          transactionId: String(response.transactionId || ''),
+        }).catch((e) => console.log('Payment verified email notice:', e.message));
+      } else if (orderStatus === 'SHIPPED') {
         sendShippingUpdateEmail(env, {
           toEmail: customerObj.email,
-          customerName: customerObj.fullName || 'Customer',
-          orderId: response.orderId,
-          trackingNumber,
-        }).catch(() => {});
+          customerName: customerObj.fullName || 'Valued Rebel',
+          orderId: orderIdStr,
+          trackingNumber: trackingNumber || response.trackingNumber || 'TRK-CLAP-EXPRESS',
+        }).catch((e) => console.log('Shipping update email notice:', e.message));
+      } else if (orderStatus === 'DELIVERED') {
+        sendOrderDeliveredEmail(env, {
+          toEmail: customerObj.email,
+          customerName: customerObj.fullName || 'Valued Rebel',
+          orderId: orderIdStr,
+        }).catch((e) => console.log('Delivered email notice:', e.message));
       }
     }
     
     return c.json({ success: true, data: response });
-  } catch (error: any) {
-    return c.json({ success: false, error: error.message }, 500);
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : 'Failed to update order status';
+    return c.json({ success: false, error: msg }, 500);
   }
 });
 
@@ -177,8 +261,9 @@ orders.get('/', adminAuth, async (c) => {
     );
     
     return c.json({ success: true, data: response.documents });
-  } catch (error: any) {
-    return c.json({ success: false, error: error.message }, 500);
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : 'Failed to list orders';
+    return c.json({ success: false, error: msg }, 500);
   }
 });
 

@@ -26,14 +26,14 @@ export const api = {
   get: <T>(endpoint: string, options?: RequestInit): Promise<T> => 
     fetchWithAuth(endpoint, { ...options, method: 'GET' }),
 
-  post: <T>(endpoint: string, data?: any, options?: RequestInit): Promise<T> =>
+  post: <T>(endpoint: string, data?: unknown, options?: RequestInit): Promise<T> =>
     fetchWithAuth(endpoint, {
       ...options,
       method: 'POST',
       body: data ? JSON.stringify(data) : undefined,
     }),
 
-  put: <T>(endpoint: string, data?: any, options?: RequestInit): Promise<T> =>
+  put: <T>(endpoint: string, data?: unknown, options?: RequestInit): Promise<T> =>
     fetchWithAuth(endpoint, {
       ...options,
       method: 'PUT',

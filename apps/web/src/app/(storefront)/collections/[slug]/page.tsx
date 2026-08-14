@@ -1,19 +1,19 @@
 import React from 'react';
-import { MOCK_COLLECTIONS } from '@/lib/mock-data';
-import { notFound } from 'next/navigation';
 import CollectionClient from './CollectionClient';
+import { getServerCollectionBySlug } from '@/lib/server-data';
 
-export async function generateStaticParams() {
-  return MOCK_COLLECTIONS.map((c) => ({ slug: c.slug }));
-}
+export const dynamic = 'force-dynamic';
 
 export default async function CollectionDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const collection = MOCK_COLLECTIONS.find((c) => c.slug === slug);
+  const dbCollection = await getServerCollectionBySlug(slug);
 
-  if (!collection) {
-    notFound();
-  }
+  const collection = dbCollection || {
+    id: `col-${slug}`,
+    name: slug.split('-').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') + ' Collection',
+    slug: slug,
+    productIds: [],
+  };
 
   return <CollectionClient collection={collection} />;
 }

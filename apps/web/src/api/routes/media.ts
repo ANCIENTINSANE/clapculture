@@ -20,7 +20,7 @@ media.post('/upload', adminAuth, async (c) => {
     const env = getEnv(c);
 
     // Process & Compress Image into WebP format under 200KB
-    let uploadPayload: any = file;
+    let uploadPayload: File | { buffer: Buffer; fileName: string; mimeType: string } = file;
     if (file.type.startsWith('image/')) {
       const processed = await processAndCompressImage(file);
       uploadPayload = processed;
@@ -41,8 +41,9 @@ media.post('/upload', adminAuth, async (c) => {
         format: 'webp'
       } 
     });
-  } catch (error: any) {
-    return c.json({ success: false, error: error.message }, 500);
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : 'Internal server error';
+    return c.json({ success: false, error: msg }, 500);
   }
 });
 
@@ -62,8 +63,9 @@ media.get('/', adminAuth, async (c) => {
     }));
     
     return c.json({ success: true, data: files });
-  } catch (error: any) {
-    return c.json({ success: false, error: error.message }, 500);
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : 'Internal server error';
+    return c.json({ success: false, error: msg }, 500);
   }
 });
 
@@ -75,8 +77,9 @@ media.delete('/:id', adminAuth, async (c) => {
     await storage.deleteFile(BUCKET_ID, id);
     
     return c.json({ success: true, data: { deleted: true } });
-  } catch (error: any) {
-    return c.json({ success: false, error: error.message }, 500);
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : 'Internal server error';
+    return c.json({ success: false, error: msg }, 500);
   }
 });
 
