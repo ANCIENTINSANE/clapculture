@@ -4,6 +4,7 @@ import ProductClient from './ProductClient';
 import { getServerProductBySlug, getServerProducts } from '@/lib/server-data';
 
 export const dynamic = 'force-dynamic';
+export const runtime = 'edge';
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;

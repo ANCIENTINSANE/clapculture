@@ -3,6 +3,7 @@ import CategoryClient from './CategoryClient';
 import { getServerCategories } from '@/lib/server-data';
 
 export const dynamic = 'force-dynamic';
+export const runtime = 'edge';
 
 export default async function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;

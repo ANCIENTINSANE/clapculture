@@ -3,13 +3,12 @@ import Link from 'next/link';
 
 
 
+export const runtime = 'edge';
+export const dynamic = 'force-dynamic';
+
 export const metadata = {
   title: 'Order Confirmation | CLAPCULTURE',
 };
-
-export function generateStaticParams() {
-  return [{ orderId: 'CLAP10245' }];
-}
 
 export default async function OrderSuccessPage({ params }: { params: Promise<{ orderId: string }> }) {
   const { orderId } = await params;

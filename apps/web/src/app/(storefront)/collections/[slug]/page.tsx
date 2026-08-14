@@ -3,6 +3,7 @@ import CollectionClient from './CollectionClient';
 import { getServerCollectionBySlug } from '@/lib/server-data';
 
 export const dynamic = 'force-dynamic';
+export const runtime = 'edge';
 
 export default async function CollectionDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;

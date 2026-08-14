@@ -26,6 +26,28 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  webpack: (config) => {
+    config.resolve = config.resolve || {};
+    config.resolve.fallback = {
+      ...config.resolve.fallback,
+      fs: false,
+      net: false,
+      tls: false,
+      dns: false,
+      child_process: false,
+      path: false,
+      stream: false,
+      crypto: false,
+      os: false,
+      buffer: false,
+      util: false,
+      events: false,
+      zlib: false,
+      http: false,
+      https: false,
+    };
+    return config;
+  },
 };
 
 export default nextConfig;
