@@ -35,7 +35,7 @@ export function ProductCard({ product }: ProductCardProps) {
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
-        <div className="relative bg-charcoal aspect-4/5 mb-4 overflow-hidden">
+        <div className="relative bg-charcoal aspect-[4/5] mb-4 overflow-hidden">
           <Link href={`/product/${product.slug}`}>
             <img 
               src={isHovered ? secondaryImage : primaryImage} 

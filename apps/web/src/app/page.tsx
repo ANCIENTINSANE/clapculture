@@ -374,7 +374,7 @@ export default function Home() {
                       <Link
                         key={tile.id}
                         href={tile.link || '/shop'}
-                        className="group relative aspect-3/4 bg-charcoal overflow-hidden border border-charcoal flex flex-col justify-between p-4 md:p-6"
+                        className="group relative aspect-[3/4] bg-charcoal overflow-hidden border border-charcoal flex flex-col justify-between p-4 md:p-6"
                       >
                         <div
                           className="absolute inset-0 bg-cover bg-center opacity-60 group-hover:scale-105 transition-transform duration-700"
@@ -476,7 +476,7 @@ export default function Home() {
                       <Link
                         key={hero.id}
                         href={hero.link || '/shop'}
-                        className="w-70 sm:w-80 lg:w-90 2xl:w-100 shrink-0 group relative aspect-4/5 bg-charcoal overflow-hidden border border-charcoal flex flex-col justify-between p-6 md:p-8 hover:border-electric-lime/50 hover:shadow-2xl hover:shadow-electric-lime/10 transition-all rounded-sm"
+                        className="w-70 sm:w-80 lg:w-90 2xl:w-100 shrink-0 group relative aspect-[4/5] bg-charcoal overflow-hidden border border-charcoal flex flex-col justify-between p-6 md:p-8 hover:border-electric-lime/50 hover:shadow-2xl hover:shadow-electric-lime/10 transition-all rounded-sm"
                       >
                         <div
                           className="absolute inset-0 bg-cover bg-center opacity-65 group-hover:scale-105 transition-transform duration-700"
@@ -559,7 +559,7 @@ export default function Home() {
                   >
                     {activeTiles.map((product) => (
                       <div key={product.id} className="w-65 md:w-80 shrink-0 group">
-                        <div className="relative aspect-3/4 bg-charcoal overflow-hidden border border-charcoal mb-4">
+                        <div className="relative aspect-[3/4] bg-charcoal overflow-hidden border border-charcoal mb-4">
                           <img
                             src={product.imageUrl}
                             alt={product.title}
@@ -659,7 +659,7 @@ export default function Home() {
                         key={tile.id}
                         href={tile.link || '/shop'}
                         className={`group relative ${
-                          isBentoWide ? 'md:col-span-2 aspect-video md:aspect-auto min-h-80' : 'aspect-4/5 min-h-70'
+                          isBentoWide ? 'md:col-span-2 aspect-video md:aspect-auto min-h-80' : 'aspect-[4/5] min-h-70'
                         } bg-charcoal overflow-hidden border border-charcoal flex flex-col justify-between p-6 md:p-8 hover:border-electric-lime/40 transition-all`}
                       >
                         <div

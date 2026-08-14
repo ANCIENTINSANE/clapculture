@@ -62,7 +62,7 @@ export default function ProductClient({ product, relatedProducts }: ProductClien
       <div className="flex flex-col lg:flex-row gap-8 px-4 md:px-8 mb-24">
         {/* Image Gallery */}
         <div className="w-full lg:w-3/5 flex flex-col md:flex-row-reverse gap-4">
-          <div className="w-full md:w-5/6 bg-charcoal aspect-4/5 relative">
+          <div className="w-full md:w-5/6 bg-charcoal aspect-[4/5] relative">
             <img src={activeImage} alt={product.name} className="w-full h-full object-cover" />
             {product.badges && product.badges.length > 0 && (
               <div className="absolute top-4 left-4 flex flex-col gap-2">
@@ -76,7 +76,7 @@ export default function ProductClient({ product, relatedProducts }: ProductClien
             {product.images.map((img, idx) => (
               <button 
                 key={idx} 
-                className={`w-20 md:w-full aspect-4/5 bg-charcoal shrink-0 border-2 ${activeImage === img ? 'border-electric-lime' : 'border-transparent hover:border-gray-500'}`}
+                className={`w-20 md:w-full aspect-[4/5] bg-charcoal shrink-0 border-2 ${activeImage === img ? 'border-electric-lime' : 'border-transparent hover:border-gray-500'}`}
                 onClick={() => setActiveImage(img)}
               >
                 <img src={img} alt={`${product.name} ${idx}`} className="w-full h-full object-cover" />

@@ -633,7 +633,7 @@ export default function HomepageCMSPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-[#171717] p-5 rounded-xl border border-[#262626]">
                   {/* Live Visual Preview of Side Banner */}
-                  <div className="relative aspect-3/4 bg-black rounded-lg overflow-hidden border border-[#333] flex flex-col justify-between p-4 shadow-lg">
+                  <div className="relative aspect-[3/4] bg-black rounded-lg overflow-hidden border border-[#333] flex flex-col justify-between p-4 shadow-lg">
                     <img
                       src={formData.hero.sideBanner.imageUrl || '/herobg1-desktop.png'}
                       alt="Side Banner"
@@ -1029,7 +1029,7 @@ export default function HomepageCMSPage() {
                             className={`group relative bg-[#171717] border ${tile.active ? 'border-[#262626] hover:border-[#d2f000]' : 'border-zinc-800 opacity-60'} rounded-xl overflow-hidden flex flex-col transition-all shadow-md`}
                           >
                             {/* Card Banner Visual Preview */}
-                            <div className="relative aspect-4/5 bg-black overflow-hidden flex flex-col justify-between p-3.5">
+                            <div className="relative aspect-[4/5] bg-black overflow-hidden flex flex-col justify-between p-3.5">
                               <img
                                 src={tile.imageUrl || '/herobg1-desktop.png'}
                                 alt={tile.title}
@@ -1138,7 +1138,7 @@ export default function HomepageCMSPage() {
                         {/* Quick Add Card Button inside grid */}
                         <button
                           onClick={() => openAddTileModal(section.id)}
-                          className="aspect-4/5 border-2 border-dashed border-[#262626] hover:border-[#d2f000] rounded-xl flex flex-col items-center justify-center p-6 text-center hover:bg-[#141414] transition-all cursor-pointer group"
+                          className="aspect-[4/5] border-2 border-dashed border-[#262626] hover:border-[#d2f000] rounded-xl flex flex-col items-center justify-center p-6 text-center hover:bg-[#141414] transition-all cursor-pointer group"
                         >
                           <div className="w-12 h-12 rounded-full bg-[#1a1a1a] group-hover:bg-[#d2f000] group-hover:text-black text-[#d2f000] flex items-center justify-center transition-all mb-2">
                             <span className="material-symbols-outlined text-2xl">add</span>
@@ -1316,7 +1316,7 @@ export default function HomepageCMSPage() {
               {/* Left Column: Live Card Preview */}
               <div className="md:col-span-5 flex flex-col items-center">
                 <span className="text-xs font-mono text-[#a3a3a3] mb-2 self-start uppercase">Live Card Preview</span>
-                <div className="w-full relative aspect-4/5 bg-black rounded-xl overflow-hidden border border-[#333] flex flex-col justify-between p-5 shadow-2xl">
+                <div className="w-full relative aspect-[4/5] bg-black rounded-xl overflow-hidden border border-[#333] flex flex-col justify-between p-5 shadow-2xl">
                   <img
                     src={editingTile.tile.imageUrl || '/herobg1-desktop.png'}
                     alt="Preview"
