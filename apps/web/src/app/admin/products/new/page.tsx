@@ -63,7 +63,7 @@ export default function AddProductPage() {
       return () => { cancelled = true; };
     }
 
-    setSlugStatus('checking');
+    setTimeout(() => setSlugStatus('checking'), 0);
     if (checkTimeoutRef.current) clearTimeout(checkTimeoutRef.current);
 
     checkTimeoutRef.current = setTimeout(async () => {
