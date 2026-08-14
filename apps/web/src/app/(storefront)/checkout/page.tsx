@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
@@ -422,11 +423,11 @@ export default function CheckoutPage() {
             <div className="space-y-4 mb-6 max-h-[40vh] overflow-y-auto hide-scrollbar pr-2">
               {items.map((item) => (
                 <div key={item.id} className="flex gap-4">
-                  <div className="w-16 h-20 bg-gray-900 relative flex-shrink-0 border border-gray-700">
+                  <div className="w-16 h-20 bg-gray-900 relative shrink-0 border border-gray-700">
                     <img src={resolveImageUrl(item.image)} alt={item.name} className="w-full h-full object-cover" />
                     <span className="absolute -top-2 -right-2 bg-gray-600 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full z-10">{item.quantity}</span>
                   </div>
-                  <div className="flex-grow flex flex-col justify-center">
+                  <div className="grow flex flex-col justify-center">
                     <span className="font-bold text-sm uppercase line-clamp-1">{item.name}</span>
                     <span className="text-gray-400 text-xs">SIZE: {item.size}</span>
                   </div>

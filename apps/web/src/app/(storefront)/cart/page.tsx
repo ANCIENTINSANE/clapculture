@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 'use client';
 
 import React from 'react';
@@ -98,7 +99,7 @@ export default function CartPage() {
         </div>
 
         {/* Order Summary */}
-        <div className="w-full lg:w-[400px] flex-shrink-0">
+        <div className="w-full lg:w-100 shrink-0">
           <div className="bg-charcoal p-6 lg:sticky lg:top-24">
             <h2 className="font-headline-md text-2xl mb-6 uppercase border-b border-gray-700 pb-4">Order Summary</h2>
             
