@@ -12,10 +12,11 @@ export const getNextSequentialOrderId = async (databases: Databases, dbId: strin
     let highestSeq = 1000;
     for (const doc of list.documents) {
       const raw = String(doc.orderId || '').replace('#', '').trim();
-      const match = raw.match(/^CLAP0?(\d{4,})$/i);
+      // Strictly match sequential series like CLAP01001, CLAP01002, etc. (starts with CLAP0)
+      const match = raw.match(/^CLAP0(1\d{3,})$/i) || raw.match(/^CLAP0(\d{4,})$/i);
       if (match) {
         const num = parseInt(match[1], 10);
-        if (num >= 1000 && num < 100000 && num > highestSeq) {
+        if (num >= 1001 && num < 100000 && num > highestSeq) {
           highestSeq = num;
         }
       }
