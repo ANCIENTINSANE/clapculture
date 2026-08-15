@@ -148,7 +148,7 @@ export default function ProductClient({ product, relatedProducts }: ProductClien
           ) : (
             <p className="text-sm text-green-500 font-label-caps mb-8 flex items-center gap-2">
               <span className="material-symbols-outlined text-sm">check_circle</span>
-              IN STOCK ({product.stock} UNITS) - SHIPS IN 24 HOURS
+              IN STOCK — SHIPS IN 24 HOURS
             </p>
           )}
 
