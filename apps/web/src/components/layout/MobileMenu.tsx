@@ -81,13 +81,6 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
             <a href="#" className="text-gray-400 hover:text-electric-lime transition-colors">TT</a>
             <a href="#" className="text-gray-400 hover:text-electric-lime transition-colors">YT</a>
           </div>
-          <Link 
-            href="/admin/login" 
-            onClick={onClose}
-            className="text-xs text-electric-lime hover:underline font-label-caps"
-          >
-            ADMIN PORTAL
-          </Link>
         </div>
 
         {/* Developer Credit Footer */}

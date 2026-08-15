@@ -168,13 +168,10 @@ export function Header() {
           <Link href="/about" className="font-nav-link text-xs xl:text-sm hover:text-electric-lime transition-colors">ABOUT US</Link>
         </div>
 
-        {/* Right Side: Search, Admin Profile, Cart, AND Hamburger Menu */}
+        {/* Right Side: Search, Cart, AND Hamburger Menu */}
         <div className="flex items-center gap-3 md:gap-4">
           <Link href="/search" className="hidden sm:block text-white hover:text-electric-lime transition-colors">
             <span className="material-symbols-outlined text-xl md:text-2xl">search</span>
-          </Link>
-          <Link href="/admin/login" className="hidden sm:block text-white hover:text-electric-lime transition-colors">
-            <span className="material-symbols-outlined text-xl md:text-2xl">person</span>
           </Link>
           
           {/* Shopping Cart Drawer Trigger */}
