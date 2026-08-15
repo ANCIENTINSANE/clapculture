@@ -50,7 +50,6 @@ orders.post('/', async (c) => {
     );
 
     // Auto-save/sync customer profile and Appwrite Auth user
-    const customerObj = typeof body.customer === 'string' ? JSON.parse(body.customer) : (body.customer || {});
     if (customerObj.email) {
       upsertCustomerAndUser(env, {
         email: customerObj.email,
