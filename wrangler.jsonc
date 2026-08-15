@@ -1,9 +1,14 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "clapculture",
+  "main": "apps/web/.vercel/output/static/_worker.js/index.js",
   "compatibility_date": "2026-08-13",
   "compatibility_flags": [
     "nodejs_compat"
   ],
-  "pages_build_output_dir": "apps/web/.vercel/output/static"
+  "assets": {
+    "directory": "apps/web/.vercel/output/static",
+    "binding": "ASSETS",
+    "html_handling": "auto-trailing-slash"
+  }
 }

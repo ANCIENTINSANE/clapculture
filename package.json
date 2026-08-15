@@ -8,8 +8,8 @@
   ],
   "scripts": {
     "dev": "npm run dev --workspace=@clapculture/web",
-    "build": "cd apps/web && npx @cloudflare/next-on-pages",
-    "pages:build": "cd apps/web && npx @cloudflare/next-on-pages",
+    "build": "cd apps/web && npx @cloudflare/next-on-pages && (echo '_worker.js' > .vercel/output/static/.assetsignore || true)",
+    "pages:build": "cd apps/web && npx @cloudflare/next-on-pages && (echo '_worker.js' > .vercel/output/static/.assetsignore || true)",
     "deploy": "npm run build && npm run pages:build && cd apps/web && wrangler pages deploy .vercel/output/static --project-name=clapculture",
     "deploy:pages": "npm run build && npm run pages:build && cd apps/web && wrangler pages deploy .vercel/output/static --project-name=clapculture",
     "deploy:api": "cd apps/api && wrangler deploy",
