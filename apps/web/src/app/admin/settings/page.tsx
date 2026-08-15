@@ -66,7 +66,7 @@ export default function SettingsPage() {
 
         <div className="flex flex-col md:flex-row gap-6">
           {/* Tabs Sidebar */}
-          <div className="w-full md:w-64 flex-shrink-0">
+          <div className="w-full md:w-64 shrink-0">
             <div className="bg-[#141414] border border-[#262626] rounded-xl overflow-hidden flex flex-col p-2 gap-1">
               {tabs.map((tab) => (
                 <button
@@ -253,7 +253,7 @@ export default function SettingsPage() {
                       </div>
                       <label className="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" className="sr-only peer" checked={notificationData.orderConfirmation} onChange={(e) => setNotificationData({...notificationData, orderConfirmation: e.target.checked})} />
-                        <div className="w-11 h-6 bg-[#262626] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#d2f000]"></div>
+                        <div className="w-11 h-6 bg-[#262626] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#d2f000]"></div>
                       </label>
                     </div>
 
@@ -264,7 +264,7 @@ export default function SettingsPage() {
                       </div>
                       <label className="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" className="sr-only peer" checked={notificationData.paymentSubmitted} onChange={(e) => setNotificationData({...notificationData, paymentSubmitted: e.target.checked})} />
-                        <div className="w-11 h-6 bg-[#262626] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#d2f000]"></div>
+                        <div className="w-11 h-6 bg-[#262626] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#d2f000]"></div>
                       </label>
                     </div>
 
@@ -275,7 +275,7 @@ export default function SettingsPage() {
                       </div>
                       <label className="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" className="sr-only peer" checked={notificationData.orderConfirmed} onChange={(e) => setNotificationData({...notificationData, orderConfirmed: e.target.checked})} />
-                        <div className="w-11 h-6 bg-[#262626] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#d2f000]"></div>
+                        <div className="w-11 h-6 bg-[#262626] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#d2f000]"></div>
                       </label>
                     </div>
 
@@ -286,7 +286,7 @@ export default function SettingsPage() {
                       </div>
                       <label className="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" className="sr-only peer" checked={notificationData.shippingNotification} onChange={(e) => setNotificationData({...notificationData, shippingNotification: e.target.checked})} />
-                        <div className="w-11 h-6 bg-[#262626] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#d2f000]"></div>
+                        <div className="w-11 h-6 bg-[#262626] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#d2f000]"></div>
                       </label>
                     </div>
                   </div>

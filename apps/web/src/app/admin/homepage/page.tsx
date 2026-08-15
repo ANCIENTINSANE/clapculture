@@ -13,7 +13,7 @@ import {
   SectionType
 } from '@/lib/cms-store';
 import { resolveImageUrl } from '@/lib/utils';
-import { useProducts, useCategories, useCollections } from '@/lib/use-api-data';
+import { useProducts } from '@/lib/use-api-data';
 
 const generateId = (prefix: string) => `${prefix}-${Math.random().toString(36).slice(2, 9)}`;
 
@@ -28,11 +28,13 @@ const IMAGE_PRESETS = [
   { label: 'Hero 2 (Vintage Grunge)', url: '6a7fa926003c73611eef' },
   { label: 'Hero 3 (Neon Street)', url: '6a7fa92b001fdc8fc236' },
   { label: 'Mobile Banner', url: '6a7fa92400303d551b68' },
-  { label: 'Superstar Tee Mockup 1', url: '6a7fa922002c9b023447' },
-  { label: 'Superstar Tee Mockup 2', url: '6a7fa926003c73611eef' },
-  { label: 'Pokiri Tee Mockup', url: '6a7fa5f700082ba1bbc3' },
-  { label: 'Darling Tee Mockup', url: '6a7fa5fb001234ea8799' },
-  { label: 'Pushpa 2 Tee Mockup', url: '6a7fa5f5002dd6861328' },
+  { label: 'Superstar Tee Mockup 1', url: 'superstar-mockup1' },
+  { label: 'Superstar Tee Mockup 2', url: 'superstar-mockup2' },
+  { label: 'Pokiri Tee Mockup', url: 'pokiri-mock1' },
+  { label: 'Darling Tee Mockup', url: 'darling-mockup1' },
+  { label: 'Pushpa 2 Tee Mockup', url: 'aa-mockup5' },
+  { label: 'AA Rule Mockup', url: 'aa-mockup1' },
+  { label: 'Panjaa Logo', url: '6a803f110015ee9020b5' },
 ];
 
 const SYSTEM_ROUTE_GROUPS = [

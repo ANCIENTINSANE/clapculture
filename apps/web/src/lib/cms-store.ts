@@ -330,7 +330,7 @@ export const DEFAULT_HOMEPAGE_CMS: HomepageCMSData = {
           subtitle: '320 GSM Heavyweight French Terry Cotton',
           badge: 'IN STOCK',
           badgeColor: 'lime',
-          imageUrl: '6a7fa922002c9b023447',
+          imageUrl: 'superstar-mockup1',
           link: '/product/superstar-mahesh-babu-oversized-tee',
           ctaText: 'SHOP NOW',
           price: 699,
@@ -345,7 +345,7 @@ export const DEFAULT_HOMEPAGE_CMS: HomepageCMSData = {
           subtitle: '320 GSM Heavyweight Bio-Washed Cotton',
           badge: 'SOLD OUT',
           badgeColor: 'crimson',
-          imageUrl: '6a7fa5f700082ba1bbc3',
+          imageUrl: 'pokiri-mock1',
           link: '/product/pokiri-iconic-oversized-tee',
           ctaText: 'SOLD OUT',
           price: 699,
@@ -360,7 +360,7 @@ export const DEFAULT_HOMEPAGE_CMS: HomepageCMSData = {
           subtitle: '320 GSM Heavyweight Streetwear Fit',
           badge: 'SOLD OUT',
           badgeColor: 'crimson',
-          imageUrl: '6a7fa5fb001234ea8799',
+          imageUrl: 'darling-mockup1',
           link: '/product/rebel-star-darling-oversized-tee',
           ctaText: 'SOLD OUT',
           price: 699,
@@ -375,7 +375,7 @@ export const DEFAULT_HOMEPAGE_CMS: HomepageCMSData = {
           subtitle: '320 GSM Heavyweight Drop-Shoulder Tee',
           badge: 'SOLD OUT',
           badgeColor: 'crimson',
-          imageUrl: '/stock/aa-mockup1.webp',
+          imageUrl: 'aa-mockup1',
           link: '/product/icon-star-aa-rule-oversized-tee',
           ctaText: 'SOLD OUT',
           price: 699,
@@ -457,7 +457,7 @@ export const DEFAULT_HOMEPAGE_CMS: HomepageCMSData = {
   lastUpdated: new Date().toISOString()
 };
 
-const STORAGE_KEY = 'cc_homepage_cms_v2';
+const STORAGE_KEY = 'cc_homepage_cms_v3';
 
 export function getHomepageCMS(): HomepageCMSData {
   if (typeof window === 'undefined') return DEFAULT_HOMEPAGE_CMS;

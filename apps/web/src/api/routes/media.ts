@@ -19,12 +19,7 @@ media.post('/upload', adminAuth, async (c) => {
     
     const env = getEnv(c);
 
-    // Process & Compress Image into WebP format under 200KB
-    let uploadPayload: File | { buffer: Buffer; fileName: string; mimeType: string } = file;
-    if (file.type.startsWith('image/')) {
-      const processed = await processAndCompressImage(file);
-      uploadPayload = processed;
-    }
+    let uploadPayload: File = file;
 
     const uploaded = await uploadFile(env, BUCKET_ID, uploadPayload);
     const url = getFileUrl(env, BUCKET_ID, uploaded.$id);
