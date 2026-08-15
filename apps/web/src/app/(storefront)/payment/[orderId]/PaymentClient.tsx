@@ -198,6 +198,22 @@ export default function PaymentClient({ orderId }: { orderId: string }) {
             {isSubmitting ? 'VERIFYING PAYMENT...' : 'CONFIRM PAYMENT & COMPLETE ORDER →'}
           </button>
         </form>
+
+        {/* WhatsApp Payment Help Callout */}
+        <div className="mt-6 p-4 bg-[#141414] border border-charcoal rounded-xl text-center">
+          <p className="text-xs text-gray-400 mb-2">
+            Facing payment issues or want to send screenshot directly?
+          </p>
+          <a
+            href={`https://wa.me/917569684299?text=${encodeURIComponent(`Hi CLAPCULTURE, I need help with payment for Order #${orderId}`)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center gap-2 text-xs font-bold text-[#25D366] hover:underline font-mono bg-[#25D366]/10 border border-[#25D366]/30 py-2 px-4 rounded-lg transition-all hover:bg-[#25D366]/20"
+          >
+            <span className="material-symbols-outlined text-sm">chat</span>
+            <span>WhatsApp Support: +91 7569684299</span>
+          </a>
+        </div>
       </div>
     </div>
   );

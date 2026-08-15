@@ -87,6 +87,19 @@ export default async function OrderSuccessPage({ params }: { params: Promise<{ o
             CONTINUE SHOPPING
           </Link>
         </div>
+
+        {/* WhatsApp Order Inquiry */}
+        <div className="pt-2">
+          <a
+            href={`https://wa.me/917569684299?text=${encodeURIComponent(`Hi CLAPCULTURE Team, I just placed Order #${cleanId} and have a question.`)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 text-xs font-mono text-[#25D366] hover:underline"
+          >
+            <span className="material-symbols-outlined text-sm">chat</span>
+            <span>Need immediate help with this order? Chat on WhatsApp (+91 7569684299)</span>
+          </a>
+        </div>
       </div>
     </div>
   );

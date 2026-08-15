@@ -11,14 +11,14 @@ export default function SettingsPage() {
   const [storeData, setStoreData] = useState({
     name: 'ClapCulture',
     logoUrl: 'https://clapculture.com/logo.png',
-    email: 'hello@clapculture.com',
-    phone: '+91 9876543210',
-    address: '123 Streetwear Ave, Mumbai, MH 400001, India'
+    email: 'clapculture.co@gmail.com',
+    phone: '+91 7569684299',
+    address: 'Hyderabad, Telangana, India'
   });
 
   const [paymentData, setPaymentData] = useState({
-    upiId: 'clapculture@upi',
-    qrCodeUrl: 'https://clapculture.com/qr.png',
+    upiId: 'paytm.slazmi4@pty',
+    qrCodeUrl: 'https://clapculture.com/qrcode.png',
     instructions: 'Scan the QR code to pay using any UPI app. Share screenshot on WhatsApp.'
   });
 
@@ -37,7 +37,7 @@ export default function SettingsPage() {
   const [socialData, setSocialData] = useState({
     instagram: 'https://instagram.com/clapculture',
     youtube: 'https://youtube.com/@clapculture',
-    whatsapp: '+919876543210',
+    whatsapp: '+917569684299',
     twitter: 'https://x.com/clapculture'
   });
 

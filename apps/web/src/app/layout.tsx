@@ -4,6 +4,7 @@ import { CartProvider } from "@/components/cart/CartProvider";
 import { CartDrawer } from "@/components/cart/CartDrawer";
 import { OrderStoreProvider } from "@/lib/store";
 import { PwaPrompt } from "@/components/layout/PwaPrompt";
+import { WhatsAppButton } from "@/components/layout/WhatsAppButton";
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://clapculture.com'),
@@ -80,6 +81,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             {children}
             <CartDrawer />
             <PwaPrompt />
+            <WhatsAppButton />
           </OrderStoreProvider>
         </CartProvider>
       </body>

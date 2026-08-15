@@ -43,6 +43,17 @@ export function Footer() {
               <li><Link href="/shipping" className="hover:text-electric-lime transition-colors">Shipping Info</Link></li>
               <li><Link href="/returns" className="hover:text-electric-lime transition-colors">Returns & Exchanges</Link></li>
               <li><Link href="/track-order" className="hover:text-electric-lime transition-colors">Track Order</Link></li>
+              <li><Link href="/contact" className="hover:text-electric-lime transition-colors">Contact Us</Link></li>
+              <li>
+                <a 
+                  href="https://wa.me/917569684299?text=Hi%20CLAPCULTURE%20Team%2C%20I%20need%20assistance." 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="inline-flex items-center gap-1.5 text-[#25D366] hover:underline font-mono"
+                >
+                  <span>WhatsApp: 7569684299</span>
+                </a>
+              </li>
             </ul>
           </div>
 

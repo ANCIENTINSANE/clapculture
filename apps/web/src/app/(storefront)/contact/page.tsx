@@ -148,6 +148,18 @@ export default function ContactPage() {
                 <a href="mailto:clapculture.co@gmail.com" className="hover:underline text-white">clapculture.co@gmail.com</a>
               </p>
               <p className="flex items-center gap-4">
+                <span className="material-symbols-outlined text-electric-lime">chat</span>
+                <a 
+                  href="https://wa.me/917569684299?text=Hi%20CLAPCULTURE%20Team%2C%20I%20have%20an%20inquiry." 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="hover:underline text-white flex items-center gap-2"
+                >
+                  <span>WhatsApp: <strong className="text-electric-lime font-mono">+91 7569684299</strong></span>
+                  <span className="text-[10px] bg-[#25D366]/20 text-[#25D366] border border-[#25D366]/40 px-2 py-0.5 rounded font-bold uppercase">Chat Now</span>
+                </a>
+              </p>
+              <p className="flex items-center gap-4">
                 <span className="material-symbols-outlined text-electric-lime">support_agent</span>
                 <span>Direct Support Mon&ndash;Sun 10:00 AM &ndash; 8:00 PM IST</span>
               </p>
@@ -161,6 +173,15 @@ export default function ContactPage() {
           <div>
             <h2 className="font-headline-md text-2xl uppercase border-b border-charcoal pb-2 mb-4">CONNECT</h2>
             <div className="flex gap-4">
+              <a 
+                href="https://wa.me/917569684299?text=Hi%20CLAPCULTURE%20Team" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                title="Chat on WhatsApp"
+                className="w-12 h-12 bg-charcoal border border-gray-800 flex items-center justify-center hover:text-[#25D366] hover:border-[#25D366] transition-all"
+              >
+                <span className="material-symbols-outlined">chat</span>
+              </a>
               <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="w-12 h-12 bg-charcoal border border-gray-800 flex items-center justify-center hover:text-electric-lime hover:border-electric-lime transition-all">
                 <span className="material-symbols-outlined">link</span>
               </a>
