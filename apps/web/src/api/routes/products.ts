@@ -137,6 +137,7 @@ products.post('/', adminAuth, async (c) => {
     
     clearCache('products');
     clearCache('product');
+    clearCache('bootstrap');
     return c.json({ success: true, data: response }, 201);
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : 'Internal server error';
@@ -160,6 +161,7 @@ products.put('/:id', adminAuth, async (c) => {
     
     clearCache('products');
     clearCache('product');
+    clearCache('bootstrap');
     return c.json({ success: true, data: response });
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : 'Internal server error';
@@ -181,6 +183,7 @@ products.delete('/:id', adminAuth, async (c) => {
     
     clearCache('products');
     clearCache('product');
+    clearCache('bootstrap');
     return c.json({ success: true, data: { deleted: true } });
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : 'Internal server error';

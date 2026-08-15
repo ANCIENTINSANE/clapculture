@@ -38,12 +38,12 @@ export default function AddProductPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [sizes, setSizes] = useState([
-    { name: 'XS', stock: 10 },
-    { name: 'S', stock: 10 },
-    { name: 'M', stock: 15 },
-    { name: 'L', stock: 15 },
-    { name: 'XL', stock: 10 },
-    { name: 'XXL', stock: 10 }
+    { name: 'XS', active: false, stock: 0 },
+    { name: 'S', active: true, stock: 10 },
+    { name: 'M', active: true, stock: 15 },
+    { name: 'L', active: true, stock: 15 },
+    { name: 'XL', active: true, stock: 10 },
+    { name: 'XXL', active: false, stock: 0 }
   ]);
 
   const checkTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -101,9 +101,21 @@ export default function AddProductPage() {
   };
 
   const updateSizeStock = (index: number, stock: string) => {
-    const newSizes = [...sizes];
-    newSizes[index].stock = parseInt(stock) || 0;
-    setSizes(newSizes);
+    const num = Math.max(0, parseInt(stock, 10) || 0);
+    setSizes(prev => {
+      const copy = [...prev];
+      copy[index] = { ...copy[index], stock: num, active: num > 0 ? true : copy[index].active };
+      return copy;
+    });
+  };
+
+  const toggleSize = (index: number) => {
+    setSizes(prev => {
+      const copy = [...prev];
+      const nextActive = !copy[index].active;
+      copy[index] = { ...copy[index], active: nextActive, stock: nextActive ? (copy[index].stock > 0 ? copy[index].stock : 10) : 0 };
+      return copy;
+    });
   };
 
   const handleAddImage = () => {
@@ -184,8 +196,8 @@ export default function AddProductPage() {
 
     setIsSubmitting(true);
     try {
-      const totalStock = sizes.reduce((sum, s) => sum + s.stock, 0);
-      const activeSizes = sizes.filter(s => s.stock >= 0).map(s => s.name);
+      const totalStock = sizes.filter(s => s.active).reduce((sum, s) => sum + s.stock, 0);
+      const activeSizes = sizes.filter(s => s.active).map(s => s.name);
       const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
       const payload = {
         name,
@@ -194,7 +206,7 @@ export default function AddProductPage() {
         categoryId,
         price: Number(price),
         compareAtPrice: compareAtPrice ? Number(compareAtPrice) : null,
-        sizes: activeSizes.length > 0 ? activeSizes : ['S', 'M', 'L', 'XL'],
+        sizes: activeSizes.length > 0 ? activeSizes : ['M', 'L'],
         stock: totalStock,
         badges: badges.length > 0 ? badges : ['NEW DROP', '320 GSM'],
         images: images,
@@ -427,19 +439,41 @@ export default function AddProductPage() {
 
           {/* Variants */}
           <div className="bg-[#141414] border border-[#262626] rounded-xl p-5 space-y-4">
-            <h3 className="text-white font-medium">Sizes & Inventory Quantities</h3>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2">
+              <div>
+                <h3 className="text-white font-medium">Sizes & Inventory Quantities</h3>
+                <p className="text-xs text-gray-400 font-mono mt-0.5">Toggle sizes ON/OFF and set stock per size.</p>
+              </div>
+              <span className="text-xs font-mono bg-[#1a1a1a] border border-[#262626] px-3 py-1.5 rounded text-[#d2f000] font-bold">
+                Total: {sizes.filter(s => s.active).reduce((sum, s) => sum + s.stock, 0)} units
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               {sizes.map((size, idx) => (
-                <div key={size.name} className="flex items-center gap-2">
-                  <div className="w-12 h-10 flex items-center justify-center bg-[#1a1a1a] border border-[#262626] rounded font-mono font-bold text-xs text-[#d2f000]">
-                    {size.name}
-                  </div>
+                <div 
+                  key={size.name} 
+                  className={`border p-2.5 rounded-lg flex items-center gap-2 transition-all ${
+                    size.active ? 'bg-[#1a1a1a] border-[#d2f000]/60' : 'bg-[#111] border-[#262626] opacity-60'
+                  }`}
+                >
+                  <button
+                    type="button"
+                    onClick={() => toggleSize(idx)}
+                    className={`w-10 h-10 shrink-0 flex flex-col items-center justify-center rounded font-mono font-bold text-xs transition-colors ${
+                      size.active ? 'bg-[#d2f000] text-black' : 'bg-[#262626] text-gray-400'
+                    }`}
+                  >
+                    <span>{size.name}</span>
+                    <span className="text-[8px] font-bold uppercase leading-none">{size.active ? 'ON' : 'OFF'}</span>
+                  </button>
                   <input 
                     type="number"
                     min="0"
+                    disabled={!size.active}
                     value={size.stock}
                     onChange={(e) => updateSizeStock(idx, e.target.value)}
-                    className="w-full bg-[#1a1a1a] border border-[#262626] rounded h-10 px-3 text-white focus:border-[#d2f000] outline-none"
+                    className="w-full bg-[#0d0d0d] border border-[#262626] rounded h-10 px-3 text-white focus:border-[#d2f000] outline-none disabled:bg-[#151515] disabled:text-gray-600 font-mono text-sm"
                     placeholder="Stock"
                   />
                 </div>

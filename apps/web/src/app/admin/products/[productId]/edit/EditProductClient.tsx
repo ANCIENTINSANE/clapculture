@@ -39,14 +39,14 @@ export default function EditProductClient({ productId }: { productId: string }) 
   const [slugStatus, setSlugStatus] = useState<'idle' | 'checking' | 'available' | 'taken'>('idle');
   const [existingProductName, setExistingProductName] = useState<string | null>(null);
 
-  const [stockGrid, setStockGrid] = useState<Record<string, number>>({
-    XS: 0,
-    S: 0,
-    M: 0,
-    L: 0,
-    XL: 0,
-    XXL: 0,
-  });
+  const [sizesList, setSizesList] = useState<Array<{ name: string; active: boolean; stock: number }>>([
+    { name: 'XS', active: false, stock: 0 },
+    { name: 'S', active: true, stock: 10 },
+    { name: 'M', active: true, stock: 15 },
+    { name: 'L', active: true, stock: 15 },
+    { name: 'XL', active: true, stock: 10 },
+    { name: 'XXL', active: false, stock: 0 },
+  ]);
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -70,22 +70,28 @@ export default function EditProductClient({ productId }: { productId: string }) 
       if (json.success && json.data) {
         const p = json.data;
         const totalStock = Number(p.stock) || 0;
-        const productSizes = Array.isArray(p.sizes) ? p.sizes : ['S', 'M', 'L', 'XL', 'XXL'];
+        const currentSizes = Array.isArray(p.sizes) ? p.sizes : ['S', 'M', 'L', 'XL', 'XXL'];
+        const standardSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
 
-        // Initialize stock grid
-        const newGrid: Record<string, number> = {
-          XS: 0,
-          S: 0,
-          M: 0,
-          L: 0,
-          XL: 0,
-          XXL: 0,
-        };
-        productSizes.forEach((sz: string, idx: number) => {
-          newGrid[sz] = idx === 0 ? totalStock : Math.max(0, Math.floor(totalStock / productSizes.length));
+        const calculatedList = standardSizes.map((sz) => {
+          const isActive = currentSizes.includes(sz);
+          const perSizeStock = isActive ? (totalStock > 0 ? Math.max(1, Math.floor(totalStock / Math.max(1, currentSizes.length))) : 0) : 0;
+          return {
+            name: sz,
+            active: isActive,
+            stock: perSizeStock,
+          };
         });
 
-        setStockGrid(newGrid);
+        if (totalStock > 0 && currentSizes.length > 0) {
+          const firstActive = calculatedList.find(s => s.active);
+          if (firstActive) {
+            const currentSum = calculatedList.filter(s => s.active).reduce((sum, s) => sum + s.stock, 0);
+            firstActive.stock += (totalStock - currentSum);
+          }
+        }
+
+        setSizesList(calculatedList);
         setFormData({
           name: p.name || '',
           slug: p.slug || '',
@@ -164,9 +170,19 @@ export default function EditProductClient({ productId }: { productId: string }) 
     };
   }, [formData.slug, productId]);
 
-  const handleStockChange = (size: string, value: string) => {
-    const val = parseInt(value, 10) || 0;
-    setStockGrid(prev => ({ ...prev, [size]: val }));
+  const handleStockChange = (sizeName: string, value: string) => {
+    const val = Math.max(0, parseInt(value, 10) || 0);
+    setSizesList(prev => prev.map(s => s.name === sizeName ? { ...s, stock: val, active: val > 0 ? true : s.active } : s));
+  };
+
+  const toggleSize = (sizeName: string) => {
+    setSizesList(prev => prev.map(s => {
+      if (s.name === sizeName) {
+        const nextActive = !s.active;
+        return { ...s, active: nextActive, stock: nextActive ? (s.stock > 0 ? s.stock : 10) : 0 };
+      }
+      return s;
+    }));
   };
 
   const handleAddImage = () => {
@@ -240,10 +256,8 @@ export default function EditProductClient({ productId }: { productId: string }) 
     setIsSaving(true);
     try {
       const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
-      const activeSizes = Object.entries(stockGrid)
-        .filter(([, count]) => count >= 0)
-        .map(([size]) => size);
-      const totalStock = Object.values(stockGrid).reduce((sum, count) => sum + count, 0);
+      const selectedSizes = sizesList.filter(s => s.active).map(s => s.name);
+      const totalStock = sizesList.filter(s => s.active).reduce((sum, s) => sum + s.stock, 0);
 
       const payload = {
         name: formData.name,
@@ -252,7 +266,7 @@ export default function EditProductClient({ productId }: { productId: string }) 
         categoryId: formData.categoryId,
         price: Number(formData.price) || 699,
         compareAtPrice: formData.compareAtPrice ? Number(formData.compareAtPrice) : null,
-        sizes: activeSizes.length > 0 ? activeSizes : ['S', 'M', 'L', 'XL', 'XXL'],
+        sizes: selectedSizes.length > 0 ? selectedSizes : ['M', 'L'],
         stock: totalStock,
         badges: formData.badges,
         images: formData.images.length > 0 ? formData.images : ['/stock/superstar-mockup1.webp'],
@@ -573,17 +587,50 @@ export default function EditProductClient({ productId }: { productId: string }) 
 
           {/* Size & Inventory Grid */}
           <div className="bg-[#141414] border border-[#262626] rounded-xl p-6">
-            <h3 className="text-sm font-bold uppercase text-white mb-4">Size & Stock Quantities</h3>
-            <div className="grid grid-cols-2 sm:grid-cols-6 gap-3">
-              {Object.entries(stockGrid).map(([size, count]) => (
-                <div key={size} className="bg-[#1a1a1a] border border-[#262626] p-3 rounded-lg text-center">
-                  <span className="text-xs font-bold text-[#d2f000] block mb-1 font-mono">{size}</span>
+            <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 mb-4">
+              <div>
+                <h3 className="text-sm font-bold uppercase text-white">Size & Stock Quantities</h3>
+                <p className="text-xs text-gray-400 mt-0.5 font-mono">
+                  Toggle which sizes are available and set individual inventory count.
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-mono bg-[#1a1a1a] border border-[#262626] px-3 py-1.5 rounded-lg text-electric-lime font-bold">
+                  Total Stock: {sizesList.filter(s => s.active).reduce((sum, s) => sum + s.stock, 0)} units
+                </span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
+              {sizesList.map((sizeItem) => (
+                <div
+                  key={sizeItem.name}
+                  className={`border p-3 rounded-lg text-center transition-all ${
+                    sizeItem.active
+                      ? 'bg-[#1a1a1a] border-[#d2f000]/60'
+                      : 'bg-[#111] border-[#262626] opacity-60'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-bold font-mono text-white">{sizeItem.name}</span>
+                    <button
+                      type="button"
+                      onClick={() => toggleSize(sizeItem.name)}
+                      className={`text-[10px] px-1.5 py-0.5 rounded font-mono font-bold uppercase transition-colors ${
+                        sizeItem.active ? 'bg-[#d2f000] text-black' : 'bg-[#262626] text-gray-400 hover:text-white'
+                      }`}
+                    >
+                      {sizeItem.active ? 'ACTIVE' : 'OFF'}
+                    </button>
+                  </div>
                   <input
                     type="number"
                     min="0"
-                    value={count}
-                    onChange={(e) => handleStockChange(size, e.target.value)}
-                    className="w-full bg-[#0d0d0d] border border-[#262626] text-center text-sm rounded py-1 text-white focus:border-[#d2f000] outline-none"
+                    disabled={!sizeItem.active}
+                    value={sizeItem.stock}
+                    onChange={(e) => handleStockChange(sizeItem.name, e.target.value)}
+                    className="w-full bg-[#0d0d0d] border border-[#262626] text-center text-sm rounded py-1 text-white focus:border-[#d2f000] outline-none disabled:bg-[#151515] disabled:text-gray-600 font-mono"
+                    placeholder="0"
                   />
                 </div>
               ))}

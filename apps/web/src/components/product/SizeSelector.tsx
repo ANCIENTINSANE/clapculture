@@ -15,12 +15,7 @@ const ALL_SIZES: Size[] = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL'];
 
 export function SizeSelector({ sizes, selectedSize, onSelect, outOfStock = [] }: SizeSelectorProps) {
   return (
-    <div>
-      <div className="flex justify-between items-center mb-2">
-        <span className="font-bold uppercase text-sm">Size</span>
-        <button className="text-xs text-gray-400 hover:text-white underline uppercase">Size Guide</button>
-      </div>
-      <div className="flex flex-wrap gap-2">
+    <div className="flex flex-wrap gap-2">
         {ALL_SIZES.map((size) => {
           const isAvailable = sizes.includes(size);
           const isOutOfStock = outOfStock.includes(size);
@@ -50,6 +45,5 @@ export function SizeSelector({ sizes, selectedSize, onSelect, outOfStock = [] }:
           );
         })}
       </div>
-    </div>
   );
 }

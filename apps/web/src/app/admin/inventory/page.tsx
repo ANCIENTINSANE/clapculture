@@ -101,7 +101,7 @@ export default function InventoryPage() {
 
         // Persist stock to API
         if (targetItem?.productId) {
-          const token = localStorage.getItem('adminToken');
+          const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
           fetch(`/api/products/${targetItem.productId}`, {
             method: 'PUT',
             headers: {
