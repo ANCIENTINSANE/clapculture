@@ -194,6 +194,118 @@ export default function AdminOrderClient({ orderId }: { orderId: string }) {
       })
     : 'Recent Order';
 
+  // ─── WhatsApp Automated Updates ─────────────────────────────────────────
+  const [waTemplate, setWaTemplate] = useState<'AUTO' | 'CONFIRMED' | 'SHIPPED' | 'PROCESSING' | 'DELIVERED' | 'PAYMENT_QUERY'>('AUTO');
+  const [customWaMsg, setCustomWaMsg] = useState('');
+
+  const cleanPhone = React.useMemo(() => {
+    const raw = (customer.phone || '').replace(/\D/g, '');
+    if (!raw) return '';
+    if (raw.length === 10) return `91${raw}`;
+    if (raw.startsWith('0') && raw.length === 11) return `91${raw.slice(1)}`;
+    return raw;
+  }, [customer.phone]);
+
+  const itemsSummary = React.useMemo(() => {
+    if (!items || items.length === 0) return '• CLAPCULTURE Streetwear Item';
+    return items.map(it => `• *${it.name}* (Size: ${it.size || 'M'}, Qty: ${it.quantity || 1})`).join('\n');
+  }, [items]);
+
+  const generatedWhatsAppMessage = React.useMemo(() => {
+    const custName = customer.fullName ? customer.fullName.trim().split(' ')[0] : 'there';
+    const totalAmount = formatCurrency(order?.total || 0);
+    const tracking = trackingNumber || order?.trackingNumber || 'TRK-CLAP-PENDING';
+    const effectiveStatus = waTemplate === 'AUTO' 
+      ? (orderStatus === 'PLACED' && paymentStatus === 'VERIFIED' ? 'CONFIRMED' : orderStatus)
+      : waTemplate;
+
+    if (effectiveStatus === 'SHIPPED') {
+      return `🚚 *Hey ${custName}!*
+
+Great news! Your *CLAPCULTURE* Order *#${cleanId}* has been *DISPATCHED & SHIPPED*! 🚀
+
+📦 *Courier Tracking Number:* ${tracking}
+🛍️ *Items in this package:*
+${itemsSummary}
+
+💰 *Total Paid:* ${totalAmount}
+
+📍 Track your order live anytime here:
+https://clapculture.com/track-order?orderId=${cleanId}
+
+Thank you for rocking with the culture! ⚡
+_Team CLAPCULTURE_`;
+    }
+
+    if (effectiveStatus === 'PROCESSING') {
+      return `⚡ *Hey ${custName}!*
+
+Your *CLAPCULTURE* Order *#${cleanId}* is currently being *PACKED & QUALITY CHECKED* at our hub! 📦✨
+
+🛍️ *Order Items:*
+${itemsSummary}
+💰 *Total Amount:* ${totalAmount}
+
+We will notify you with your courier tracking link the moment it is handed over for dispatch.
+
+Stay tuned,
+_Team CLAPCULTURE_ 🔥`;
+    }
+
+    if (effectiveStatus === 'DELIVERED') {
+      return `🎉 *Hey ${custName}!*
+
+Your *CLAPCULTURE* Order *#${cleanId}* has been marked as *DELIVERED*! 📦✨
+
+We hope you love your new fit! Tag us on Instagram *@clapculture* with your drip to get featured on our page.
+
+Thank you for choosing *CLAPCULTURE* ⚡`;
+    }
+
+    if (effectiveStatus === 'PAYMENT_QUERY' || paymentStatus === 'REJECTED' || (paymentStatus === 'SUBMITTED' && orderStatus === 'PLACED')) {
+      return `⚠️ *Hey ${custName},*
+
+This is *CLAPCULTURE* regarding your Order *#${cleanId}*.
+
+We are reviewing your UPI payment (UTR: *${order?.transactionId || 'Pending'}*). Please reply directly to this message with your payment confirmation screenshot or UTR reference so we can verify and process your order immediately! ⚡
+
+_Team CLAPCULTURE_`;
+    }
+
+    // Default: CONFIRMED
+    return `🔥 *Hey ${custName}!*
+
+Your order with *CLAPCULTURE* (*#${cleanId}*) is *CONFIRMED*! 🎉
+
+🛍️ *Order Summary:*
+${itemsSummary}
+
+💰 *Total Amount:* ${totalAmount}
+💳 *Payment Status:* VERIFIED ✅
+
+We are now preparing your package for shipping. You will receive live tracking updates right here on WhatsApp!
+
+📍 Track your order anytime:
+https://clapculture.com/track-order?orderId=${cleanId}
+
+Stay rebel,
+_Team CLAPCULTURE_ ⚡`;
+  }, [customer.fullName, cleanId, itemsSummary, order?.total, order?.transactionId, order?.trackingNumber, trackingNumber, waTemplate, paymentStatus, orderStatus]);
+
+  useEffect(() => {
+    setCustomWaMsg(generatedWhatsAppMessage);
+  }, [generatedWhatsAppMessage]);
+
+  const handleOpenWhatsApp = () => {
+    if (!cleanPhone) {
+      showToast('No valid customer phone number found', true);
+      return;
+    }
+    const textToSend = customWaMsg.trim() || generatedWhatsAppMessage;
+    const url = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(textToSend)}`;
+    window.open(url, '_blank');
+  };
+
   if (loading) {
     return (
       <div className="bg-[#0a0a0a] min-h-screen p-6 text-white flex flex-col items-center justify-center">
@@ -241,7 +353,16 @@ export default function AdminOrderClient({ orderId }: { orderId: string }) {
                 Placed on {orderDate} via UPI Payment
               </p>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3">
+              <button
+                type="button"
+                onClick={handleOpenWhatsApp}
+                className="bg-[#25D366] hover:bg-[#20bd5a] text-black font-bold px-4 py-2 rounded-lg text-xs transition-colors flex items-center gap-1.5 cursor-pointer shadow-lg shadow-green-900/20"
+                title={`Open WhatsApp chat with ${customer.fullName || 'Customer'}`}
+              >
+                <span className="material-symbols-outlined text-base">chat</span>
+                WHATSAPP CUSTOMER
+              </button>
               <button
                 type="button"
                 disabled={isUpdating || paymentStatus === 'VERIFIED'}
@@ -263,6 +384,91 @@ export default function AdminOrderClient({ orderId }: { orderId: string }) {
               >
                 REJECT PAYMENT
               </button>
+            </div>
+          </div>
+
+          {/* WhatsApp Quick Customer Notification Card */}
+          <div className="my-6 bg-[#161c16] border border-[#25D366]/30 rounded-xl p-6 relative overflow-hidden">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-[#25D366] animate-pulse" />
+                <h3 className="text-xs font-bold uppercase text-[#25D366] font-mono tracking-wider flex items-center gap-1.5">
+                  <span className="material-symbols-outlined text-base">chat</span>
+                  WHATSAPP CUSTOMER NOTIFICATION
+                </h3>
+              </div>
+              <div className="flex items-center gap-2 text-xs font-mono">
+                <span className="text-gray-400">Recipient:</span>
+                <span className="bg-[#1f2d1f] text-[#25D366] px-2 py-0.5 rounded border border-[#25D366]/30 font-bold">
+                  +{cleanPhone || 'No Phone'}
+                </span>
+              </div>
+            </div>
+
+            {/* Template Selector Pills */}
+            <div className="flex flex-wrap gap-2 mb-4">
+              <span className="text-[11px] font-mono text-gray-400 self-center mr-1">Templates:</span>
+              {[
+                { id: 'AUTO', label: '⚡ Auto (Current Status)' },
+                { id: 'CONFIRMED', label: '✅ Order Confirmed' },
+                { id: 'PROCESSING', label: '📦 Packing / Hub' },
+                { id: 'SHIPPED', label: '🚚 Dispatched & Tracking' },
+                { id: 'DELIVERED', label: '🎉 Delivered' },
+                { id: 'PAYMENT_QUERY', label: '⚠️ Payment Help / UTR' },
+              ].map((t) => (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => setWaTemplate(t.id as any)}
+                  className={`text-xs font-mono px-3 py-1.5 rounded-lg border transition-all cursor-pointer ${
+                    waTemplate === t.id
+                      ? 'bg-[#25D366] text-black border-[#25D366] font-bold shadow-md'
+                      : 'bg-[#141414] text-gray-300 border-[#333] hover:border-gray-500'
+                  }`}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Editable Message Box */}
+            <div className="space-y-3">
+              <label className="block text-[11px] font-mono text-gray-400">
+                Message Preview (Pre-filled automatically, editable):
+              </label>
+              <textarea
+                rows={7}
+                value={customWaMsg}
+                onChange={(e) => setCustomWaMsg(e.target.value)}
+                className="w-full bg-[#0d120d] border border-[#25D366]/20 rounded-lg p-3 text-xs md:text-sm font-mono text-gray-200 focus:border-[#25D366] outline-none resize-y leading-relaxed"
+                placeholder="Type your WhatsApp message..."
+              />
+              <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
+                <p className="text-[11px] text-gray-400 font-mono flex items-center gap-1">
+                  <span className="text-[#25D366]">💡</span>
+                  Clicking below will open WhatsApp with this customer&apos;s chat and pre-fill the text automatically.
+                </p>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard.writeText(customWaMsg || generatedWhatsAppMessage);
+                      showToast('📋 WhatsApp message copied to clipboard!');
+                    }}
+                    className="bg-[#222] hover:bg-[#333] text-gray-300 px-3 py-2 rounded-lg text-xs font-mono border border-[#444] transition-colors cursor-pointer"
+                  >
+                    Copy Text
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleOpenWhatsApp}
+                    className="bg-[#25D366] hover:bg-[#20bd5a] text-black font-bold px-5 py-2 rounded-lg text-xs font-mono uppercase tracking-wider flex items-center gap-2 transition-all cursor-pointer shadow-lg shadow-green-900/30"
+                  >
+                    <span className="material-symbols-outlined text-base">send</span>
+                    SEND VIA WHATSAPP
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -341,15 +547,29 @@ export default function AdminOrderClient({ orderId }: { orderId: string }) {
 
           {/* Customer Delivery Details */}
           <div className="my-6 bg-[#1a1a1a] border border-[#262626] rounded-xl p-6">
-            <h3 className="text-xs font-bold uppercase text-white font-mono tracking-wider mb-4">
-              📍 CUSTOMER & SHIPPING ADDRESS
-            </h3>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xs font-bold uppercase text-white font-mono tracking-wider">
+                📍 CUSTOMER & SHIPPING ADDRESS
+              </h3>
+              {cleanPhone && (
+                <button
+                  type="button"
+                  onClick={handleOpenWhatsApp}
+                  className="bg-[#25D366]/20 hover:bg-[#25D366]/30 text-[#25D366] border border-[#25D366]/30 text-xs px-2.5 py-1 rounded font-mono font-bold flex items-center gap-1 cursor-pointer transition-colors"
+                >
+                  <span className="material-symbols-outlined text-sm">chat</span>
+                  Chat on WhatsApp
+                </button>
+              )}
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs font-mono">
               <div>
                 <span className="text-[#737373] block mb-1">Customer Name:</span>
                 <p className="text-sm font-bold text-white">{customer.fullName || 'Valued Rebel'}</p>
                 <p className="text-[#a3a3a3] mt-1">{customer.email || 'customer@example.com'}</p>
-                <p className="text-[#a3a3a3]">{customer.phone || '+91 9876543210'}</p>
+                <p className="text-[#25D366] font-bold mt-0.5 flex items-center gap-1">
+                  <span>{customer.phone || '+91 9876543210'}</span>
+                </p>
               </div>
               <div>
                 <span className="text-[#737373] block mb-1">Delivery Address:</span>

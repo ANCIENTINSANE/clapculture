@@ -24,7 +24,7 @@ export default function ProductClient({ product, relatedProducts }: ProductClien
   const [activeTab, setActiveTab] = useState('description');
   const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
   const [sizeError, setSizeError] = useState('');
-  
+
   const { addToCart } = useCart();
   const isOutOfStock = product.stock <= 0;
 
@@ -75,8 +75,8 @@ export default function ProductClient({ product, relatedProducts }: ProductClien
           </div>
           <div className="w-full md:w-1/6 flex md:flex-col gap-4 overflow-x-auto md:overflow-visible hide-scrollbar pb-2 md:pb-0">
             {product.images.map((img, idx) => (
-              <button 
-                key={idx} 
+              <button
+                key={idx}
                 className={`w-20 md:w-full aspect-4/5 bg-charcoal shrink-0 border-2 ${activeImage === img ? 'border-electric-lime' : 'border-transparent hover:border-gray-500'}`}
                 onClick={() => setActiveImage(img || '6a7fa922002c9b023447')}
               >
@@ -89,7 +89,7 @@ export default function ProductClient({ product, relatedProducts }: ProductClien
         {/* Info Panel */}
         <div className="w-full lg:w-2/5 flex flex-col">
           <h1 className="font-headline-xl text-5xl md:text-6xl mb-4 leading-none uppercase">{product.name}</h1>
-          
+
           <div className="flex items-center gap-4 mb-6">
             <span className="text-3xl font-bold">{formatCurrency(product.price)}</span>
             {product.compareAtPrice && (
@@ -99,7 +99,7 @@ export default function ProductClient({ product, relatedProducts }: ProductClien
 
           <div className="flex items-center gap-2 mb-8 text-electric-lime">
             <div className="flex">
-              {[1,2,3,4,5].map(i => (
+              {[1, 2, 3, 4, 5].map(i => (
                 <span key={i} className="material-symbols-outlined text-xl">{i === 5 ? 'star_half' : 'star'}</span>
               ))}
             </div>
@@ -111,7 +111,7 @@ export default function ProductClient({ product, relatedProducts }: ProductClien
               <span className="font-label-caps text-sm text-gray-400">
                 SELECT SIZE {selectedSize && <span className="text-electric-lime font-bold">({selectedSize})</span>}
               </span>
-              <button 
+              <button
                 type="button"
                 onClick={() => setIsSizeGuideOpen(true)}
                 className="text-sm underline hover:text-electric-lime transition-colors"
@@ -119,14 +119,14 @@ export default function ProductClient({ product, relatedProducts }: ProductClien
                 SIZE GUIDE
               </button>
             </div>
-            
-            <SizeSelector 
-              sizes={product.sizes} 
-              selectedSize={selectedSize} 
+
+            <SizeSelector
+              sizes={product.sizes}
+              selectedSize={selectedSize}
               onSelect={(sz) => {
                 setSelectedSize(sz);
                 setSizeError('');
-              }} 
+              }}
             />
             {sizeError && <p className="text-red-500 text-xs mt-2 font-bold">{sizeError}</p>}
           </div>
@@ -148,30 +148,28 @@ export default function ProductClient({ product, relatedProducts }: ProductClien
           ) : (
             <p className="text-sm text-green-500 font-label-caps mb-8 flex items-center gap-2">
               <span className="material-symbols-outlined text-sm">check_circle</span>
-              IN STOCK — SHIPS IN 24 HOURS
+              IN STOCK
             </p>
           )}
 
           <div className="flex flex-col gap-4 mb-12">
-            <button 
+            <button
               onClick={handleAddToCart}
               disabled={isOutOfStock}
-              className={`w-full font-headline-md text-xl py-4 transition-colors ${
-                isOutOfStock 
-                  ? 'bg-gray-800 text-gray-500 cursor-not-allowed' 
+              className={`w-full font-headline-md text-xl py-4 transition-colors ${isOutOfStock
+                  ? 'bg-gray-800 text-gray-500 cursor-not-allowed'
                   : 'bg-electric-lime text-black hover:bg-white'
-              }`}
+                }`}
             >
               {isOutOfStock ? 'OUT OF STOCK' : 'ADD TO CART'}
             </button>
-            <button 
+            <button
               onClick={handleBuyNow}
               disabled={isOutOfStock}
-              className={`w-full bg-transparent border text-white font-headline-md text-xl py-4 transition-colors ${
-                isOutOfStock
+              className={`w-full bg-transparent border text-white font-headline-md text-xl py-4 transition-colors ${isOutOfStock
                   ? 'border-gray-800 text-gray-600 cursor-not-allowed'
                   : 'border-white hover:bg-white hover:text-black'
-              }`}
+                }`}
             >
               BUY IT NOW
             </button>
@@ -181,7 +179,7 @@ export default function ProductClient({ product, relatedProducts }: ProductClien
           <div className="border-t border-charcoal">
             {['description', 'material & care', 'shipping info'].map((tab) => (
               <div key={tab} className="border-b border-charcoal">
-                <button 
+                <button
                   className="w-full py-4 flex justify-between items-center font-label-caps text-sm hover:text-electric-lime"
                   onClick={() => setActiveTab(activeTab === tab ? '' : tab)}
                 >
@@ -213,7 +211,7 @@ export default function ProductClient({ product, relatedProducts }: ProductClien
           <span className="text-xs text-gray-400 truncate">{product.name}</span>
           <span className="font-bold">{formatCurrency(product.price)}</span>
         </div>
-        <button 
+        <button
           onClick={handleAddToCart}
           disabled={isOutOfStock}
           className="bg-electric-lime text-black px-6 py-3 font-bold text-sm disabled:opacity-50"
@@ -228,7 +226,7 @@ export default function ProductClient({ product, relatedProducts }: ProductClien
           <p className="text-gray-300 text-xs md:text-sm">
             All measurements are in <span className="text-electric-lime font-bold">inches</span>. Our garments feature a signature relaxed streetwear fit.
           </p>
-          
+
           <div className="overflow-x-auto border border-gray-700 rounded-lg shadow-inner">
             <table className="w-full text-center border-collapse text-xs md:text-sm">
               <thead>
