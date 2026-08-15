@@ -45,6 +45,13 @@ function notifyListeners() {
   bootstrapListeners.forEach(fn => fn());
 }
 
+export function subscribeToBootstrap(listener: () => void) {
+  bootstrapListeners.push(listener);
+  return () => {
+    bootstrapListeners = bootstrapListeners.filter(fn => fn !== listener);
+  };
+}
+
 function getLocalCache(): BootstrapData | null {
   if (typeof window === 'undefined') return null;
   try {

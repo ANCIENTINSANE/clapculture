@@ -1,7 +1,7 @@
 'use client';
 
 import { useSyncExternalStore } from 'react';
-import { getBootstrapHomepage } from './use-api-data';
+import { getBootstrapHomepage, subscribeToBootstrap } from './use-api-data';
 
 export type AspectRatioType = 'portrait' | 'tall' | 'square' | 'landscape' | 'banner' | 'wide';
 
@@ -535,20 +535,25 @@ function subscribeCMS(callback: () => void) {
   window.addEventListener('homepage-cms-updated', handleUpdate);
   window.addEventListener('storage', handleUpdate);
 
-  // Read homepage from bootstrap cache instead of a separate API call
-  // This avoids an extra Appwrite read — the bootstrap call already fetched it
-  const bootstrapHomepage = getBootstrapHomepage();
-  if (bootstrapHomepage && (bootstrapHomepage as Record<string, unknown>).sections) {
-    currentCMSData = bootstrapHomepage as unknown as HomepageCMSData;
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(bootstrapHomepage));
-    } catch {}
-    callback();
-  }
+  // Read homepage from bootstrap cache or listen to new API fetch
+  const updateFromBootstrap = () => {
+    const bootstrapHomepage = getBootstrapHomepage();
+    if (bootstrapHomepage && (bootstrapHomepage as Record<string, unknown>).sections) {
+      currentCMSData = bootstrapHomepage as unknown as HomepageCMSData;
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(bootstrapHomepage));
+      } catch {}
+      callback();
+    }
+  };
+
+  updateFromBootstrap();
+  const unsubscribeBootstrap = subscribeToBootstrap(updateFromBootstrap);
 
   return () => {
     window.removeEventListener('homepage-cms-updated', handleUpdate);
     window.removeEventListener('storage', handleUpdate);
+    unsubscribeBootstrap();
   };
 }
 

@@ -8,9 +8,11 @@ import { Footer } from '@/components/layout/Footer';
 import { PromoBar } from '@/components/layout/PromoBar';
 import { useCart } from '@/components/cart/CartProvider';
 import { useHomepageCMS } from '@/lib/cms-store';
+import { useBootstrap } from '@/lib/use-api-data';
 import { resolveImageUrl } from '@/lib/utils';
 
 export default function Home() {
+  useBootstrap(); // Trigger data fetch on mount to update CMS seamlessly
   const { data: cmsData } = useHomepageCMS();
   const [currentHeroSlideIndex, setCurrentHeroSlideIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
