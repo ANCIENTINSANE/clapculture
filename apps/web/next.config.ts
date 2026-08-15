@@ -3,6 +3,7 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   // Ensure server-side env vars are available at runtime
   env: {
+    NEXT_PUBLIC_BUILD_ID: Date.now().toString(),
     APPWRITE_ENDPOINT: process.env.APPWRITE_ENDPOINT,
     APPWRITE_PROJECT_ID: process.env.APPWRITE_PROJECT_ID,
     APPWRITE_API_KEY: process.env.APPWRITE_API_KEY,

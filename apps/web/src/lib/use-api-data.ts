@@ -1,89 +1,190 @@
 /**
- * useApiData — a custom hook for fetching data from internal API routes.
- * Provides client-side SWR-like caching so components don't refetch needlessly.
- * All storefront pages use this hook to replace mock-data imports.
+ * useApiData — Bootstrap-powered data hooks for the storefront.
+ * 
+ * Instead of 4 separate API calls per page load, everything comes from
+ * a single /api/bootstrap call. Data is cached in localStorage with a
+ * build-hash stamp so deploys automatically bust stale mobile caches.
+ * 
+ * For 2M monthly visitors on Appwrite free tier:
+ *   - Server cache (10 min) → ~576 Appwrite reads/day
+ *   - CDN cache (Cloudflare) → most requests never hit the API
+ *   - localStorage (30 min + build hash) → repeat visitors hit zero APIs
  */
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Product, Collection, Category } from '@clapculture/shared';
 
-// ─── Client-side in-memory cache ─────────────────────────────────────
-interface CacheEntry<T> {
-  data: T;
-  timestamp: number;
+// ─── Build-version cache busting ─────────────────────────────────────
+const BUILD_ID = process.env.NEXT_PUBLIC_BUILD_ID || 'dev';
+const STORAGE_KEY = `cc_bootstrap`;
+const CACHE_TTL = 30 * 60 * 1000; // 30 minutes client-side
+
+interface BootstrapData {
+  products: Product[];
+  categories: Category[];
+  collections: Collection[];
+  homepage: Record<string, unknown> | null;
+  buildId: string;
+  cachedAt: string;
 }
 
-const clientCache = new Map<string, CacheEntry<unknown>>();
-const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+interface CachedBootstrap {
+  data: BootstrapData;
+  storedAt: number;
+  buildId: string;
+}
 
-function getCached<T>(key: string): T | null {
-  const entry = clientCache.get(key);
-  if (!entry) return null;
-  if (Date.now() - entry.timestamp > CACHE_TTL) {
-    clientCache.delete(key);
+// ─── Module-level singleton ──────────────────────────────────────────
+// This ensures all hooks share the same data and only one fetch happens.
+let bootstrapPromise: Promise<BootstrapData | null> | null = null;
+let bootstrapData: BootstrapData | null = null;
+let bootstrapListeners: Array<() => void> = [];
+
+function notifyListeners() {
+  bootstrapListeners.forEach(fn => fn());
+}
+
+function getLocalCache(): BootstrapData | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const cached: CachedBootstrap = JSON.parse(raw);
+    
+    // Build mismatch → stale from a previous deploy
+    if (cached.buildId !== BUILD_ID) {
+      localStorage.removeItem(STORAGE_KEY);
+      return null;
+    }
+    
+    // TTL expired
+    if (Date.now() - cached.storedAt > CACHE_TTL) {
+      localStorage.removeItem(STORAGE_KEY);
+      return null;
+    }
+    
+    return cached.data;
+  } catch {
     return null;
   }
-  return entry.data as T;
 }
 
-function setCache<T>(key: string, data: T): void {
-  clientCache.set(key, { data, timestamp: Date.now() });
+function setLocalCache(data: BootstrapData): void {
+  if (typeof window === 'undefined') return;
+  try {
+    const entry: CachedBootstrap = {
+      data,
+      storedAt: Date.now(),
+      buildId: BUILD_ID,
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(entry));
+  } catch {
+    // localStorage full or unavailable — that's fine, we still have in-memory
+  }
 }
 
-// ─── Generic fetch hook ──────────────────────────────────────────────
-function useApiData<T>(endpoint: string, fallback: T): { data: T; loading: boolean; error: string | null; refetch: () => void } {
-  const [data, setData] = useState<T>(() => {
-    const cached = getCached<T>(endpoint);
-    return cached ?? fallback;
-  });
-  const [loading, setLoading] = useState(() => !getCached(endpoint));
-  const [error, setError] = useState<string | null>(null);
-  const fetchedRef = useRef(false);
-
-  const fetchData = useCallback(async () => {
-    try {
-      setLoading(true);
-      const res = await fetch(endpoint);
-      if (!res.ok) throw new Error(`API ${res.status}`);
-      const json = await res.json();
-      if (json.success && json.data) {
-        setData(json.data);
-        setCache(endpoint, json.data);
-        setError(null);
-      } else if (json.error) {
-        throw new Error(json.error);
-      }
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : 'Fetch failed';
-      setError(msg);
-      // Keep existing data (cached or fallback) on error
-    } finally {
-      setLoading(false);
+async function fetchBootstrap(): Promise<BootstrapData | null> {
+  try {
+    const res = await fetch('/api/bootstrap');
+    if (!res.ok) throw new Error(`Bootstrap API ${res.status}`);
+    const json = await res.json();
+    if (json.success && json.data) {
+      return json.data as BootstrapData;
     }
-  }, [endpoint]);
+    return null;
+  } catch (err) {
+    console.error('Bootstrap fetch failed:', err);
+    return null;
+  }
+}
+
+function ensureBootstrap(): Promise<BootstrapData | null> {
+  // Already loaded in memory for this session
+  if (bootstrapData) return Promise.resolve(bootstrapData);
+  
+  // Already fetching — deduplicate
+  if (bootstrapPromise) return bootstrapPromise;
+  
+  // Check localStorage first
+  const cached = getLocalCache();
+  if (cached) {
+    bootstrapData = cached;
+    notifyListeners();
+    return Promise.resolve(cached);
+  }
+  
+  // Fetch fresh
+  bootstrapPromise = fetchBootstrap().then(data => {
+    if (data) {
+      bootstrapData = data;
+      setLocalCache(data);
+      notifyListeners();
+    }
+    bootstrapPromise = null;
+    return data;
+  });
+  
+  return bootstrapPromise;
+}
+
+// ─── React hook ──────────────────────────────────────────────────────
+function useBootstrap(): { data: BootstrapData | null; loading: boolean; refetch: () => void } {
+  const [data, setData] = useState<BootstrapData | null>(() => bootstrapData || getLocalCache());
+  const [loading, setLoading] = useState(!data);
+  const mountedRef = useRef(true);
 
   useEffect(() => {
-    if (fetchedRef.current) return;
-    fetchedRef.current = true;
+    mountedRef.current = true;
 
-    const cached = getCached<T>(endpoint);
-    if (cached) {
-      setData(cached);
-      setLoading(false);
-      return;
+    const listener = () => {
+      if (mountedRef.current && bootstrapData) {
+        setData(bootstrapData);
+        setLoading(false);
+      }
+    };
+    bootstrapListeners.push(listener);
+
+    if (!bootstrapData) {
+      ensureBootstrap().then(() => {
+        if (mountedRef.current) {
+          setData(bootstrapData);
+          setLoading(false);
+        }
+      });
     }
-    fetchData();
-  }, [endpoint, fetchData]);
 
-  return { data, loading, error, refetch: fetchData };
+    return () => {
+      mountedRef.current = false;
+      bootstrapListeners = bootstrapListeners.filter(fn => fn !== listener);
+    };
+  }, []);
+
+  const refetch = useCallback(() => {
+    bootstrapData = null;
+    bootstrapPromise = null;
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem(STORAGE_KEY);
+    }
+    setLoading(true);
+    ensureBootstrap().then(() => {
+      if (mountedRef.current) {
+        setData(bootstrapData);
+        setLoading(false);
+      }
+    });
+  }, []);
+
+  return { data, loading, refetch };
 }
 
-// ─── Typed data hooks ────────────────────────────────────────────────
+// ─── Typed data hooks (same API surface as before) ───────────────────
 
 export function useProducts() {
-  const result = useApiData<Product[]>('/api/products?limit=100', []);
-  const normalized = (result.data || []).map((p: Product, idx: number) => {
+  const { data: boot, loading, refetch } = useBootstrap();
+  const products = boot?.products || [];
+
+  const normalized = products.map((p: Product, idx: number) => {
     const raw = p as unknown as Record<string, unknown>;
     return {
       ...p,
@@ -94,15 +195,18 @@ export function useProducts() {
     } as Product;
   });
 
-  return {
-    ...result,
-    data: normalized,
-  };
+  return { data: normalized, loading, error: null, refetch };
 }
 
 export function useProduct(slug: string) {
-  const result = useApiData<Product | null>(`/api/products/${slug}`, null);
-  const p = result.data;
+  const { data: boot, loading, refetch } = useBootstrap();
+  const products = boot?.products || [];
+
+  const p = products.find((prod: Product) => {
+    const raw = prod as unknown as Record<string, unknown>;
+    return prod.slug === slug || raw.$id === slug;
+  }) || null;
+
   const raw = p as unknown as Record<string, unknown> | null;
   const normalized = p && raw
     ? ({
@@ -114,15 +218,14 @@ export function useProduct(slug: string) {
       } as Product)
     : null;
 
-  return {
-    ...result,
-    data: normalized,
-  };
+  return { data: normalized, loading, error: null, refetch };
 }
 
 export function useCollections() {
-  const result = useApiData<Collection[]>('/api/collections', []);
-  const normalized = (result.data || []).map((c: Collection, idx: number) => {
+  const { data: boot, loading, refetch } = useBootstrap();
+  const collections = boot?.collections || [];
+
+  const normalized = collections.map((c: Collection, idx: number) => {
     const raw = c as unknown as Record<string, unknown>;
     return {
       ...c,
@@ -131,15 +234,14 @@ export function useCollections() {
     } as Collection;
   });
 
-  return {
-    ...result,
-    data: normalized,
-  };
+  return { data: normalized, loading, error: null, refetch };
 }
 
 export function useCategories() {
-  const result = useApiData<Category[]>('/api/categories', []);
-  const normalized = (result.data || []).map((c: Category, idx: number) => {
+  const { data: boot, loading, refetch } = useBootstrap();
+  const categories = boot?.categories || [];
+
+  const normalized = categories.map((c: Category, idx: number) => {
     const raw = c as unknown as Record<string, unknown>;
     return {
       ...c,
@@ -147,10 +249,7 @@ export function useCategories() {
     } as Category;
   });
 
-  return {
-    ...result,
-    data: normalized,
-  };
+  return { data: normalized, loading, error: null, refetch };
 }
 
 // Star collections derived from collections data
@@ -193,6 +292,49 @@ export function useStarCollections(): StarCollection[] {
   });
 
   return stars;
+}
+
+// ─── Bootstrap homepage data accessor (for cms-store) ────────────────
+export function getBootstrapHomepage(): Record<string, unknown> | null {
+  if (bootstrapData?.homepage) return bootstrapData.homepage;
+  const cached = getLocalCache();
+  return cached?.homepage || null;
+}
+
+// Re-export for backward compat
+function useApiData<T>(endpoint: string, fallback: T): { data: T; loading: boolean; error: string | null; refetch: () => void } {
+  const [data, setData] = useState<T>(fallback);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const fetchedRef = useRef(false);
+
+  const fetchData = useCallback(async () => {
+    try {
+      setLoading(true);
+      const res = await fetch(endpoint);
+      if (!res.ok) throw new Error(`API ${res.status}`);
+      const json = await res.json();
+      if (json.success && json.data) {
+        setData(json.data);
+        setError(null);
+      } else if (json.error) {
+        throw new Error(json.error);
+      }
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Fetch failed';
+      setError(msg);
+    } finally {
+      setLoading(false);
+    }
+  }, [endpoint]);
+
+  useEffect(() => {
+    if (fetchedRef.current) return;
+    fetchedRef.current = true;
+    fetchData();
+  }, [endpoint, fetchData]);
+
+  return { data, loading, error, refetch: fetchData };
 }
 
 export { useApiData };

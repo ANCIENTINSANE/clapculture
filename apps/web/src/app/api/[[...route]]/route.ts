@@ -22,6 +22,7 @@ import settings from '@/api/routes/settings';
 import newsletter from '@/api/routes/newsletter';
 import contact from '@/api/routes/contact';
 import auth from '@/api/routes/auth';
+import bootstrap from '@/api/routes/bootstrap';
 
 const app = new Hono().basePath('/api');
 
@@ -59,6 +60,7 @@ app.route('/settings', settings);
 app.route('/newsletter', newsletter);
 app.route('/contact', contact);
 app.route('/auth', auth);
+app.route('/bootstrap', bootstrap);
 
 export const GET = handle(app);
 export const POST = handle(app);
