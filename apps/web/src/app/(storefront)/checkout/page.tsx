@@ -168,7 +168,7 @@ export default function CheckoutPage() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
 
@@ -179,12 +179,23 @@ export default function CheckoutPage() {
     const updatedForm = { ...form, phone: fullPhone };
 
     setCheckoutInfo(updatedForm);
-    const orderId = generateOrderId().replace('#', '');
-    createOrder(orderId, items, subtotal, shipping, updatedForm);
+
+    let nextOrderId = 'CLAP01001';
+    try {
+      const res = await fetch('/api/orders/next-id');
+      const json = await res.json();
+      if (json.success && json.data?.orderId) {
+        nextOrderId = json.data.orderId.replace('#', '');
+      }
+    } catch {
+      nextOrderId = generateOrderId().replace('#', '');
+    }
+
+    createOrder(nextOrderId, items, subtotal, shipping, updatedForm);
 
     setTimeout(() => {
-      router.push(`/payment/${orderId}`);
-    }, 600);
+      router.push(`/payment/${nextOrderId}`);
+    }, 300);
   };
 
   const filteredStates = INDIAN_STATES.filter((s) =>

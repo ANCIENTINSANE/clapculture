@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { ID, Query } from 'node-appwrite';
 import { getAppwriteClient } from '../lib/appwrite';
-import { getDbId, getEnv, generateOrderId } from '../lib/utils';
+import { getDbId, getEnv, generateOrderId, getNextSequentialOrderId } from '../lib/utils';
 import { adminAuth } from '../middleware/auth';
 import { upsertCustomerAndUser } from './customers';
 import {
@@ -14,6 +14,18 @@ import {
 
 const orders = new Hono();
 
+// Get the next sequential order ID (e.g. #CLAP01001)
+orders.get('/next-id', async (c) => {
+  try {
+    const { databases } = getAppwriteClient(getEnv(c));
+    const dbId = getDbId(c);
+    const orderId = await getNextSequentialOrderId(databases, dbId);
+    return c.json({ success: true, data: { orderId } });
+  } catch {
+    return c.json({ success: true, data: { orderId: '#CLAP01001' } });
+  }
+});
+
 orders.post('/', async (c) => {
   try {
     const body = await c.req.json();
@@ -21,7 +33,10 @@ orders.post('/', async (c) => {
     const { databases } = getAppwriteClient(env);
     const dbId = getDbId(c);
     
-    const customOrderId = body.orderId || generateOrderId();
+    let customOrderId = body.orderId;
+    if (!customOrderId) {
+      customOrderId = await getNextSequentialOrderId(databases, dbId);
+    }
 
     const customerObj = typeof body.customer === 'string' ? JSON.parse(body.customer) : (body.customer || {});
     if (body.screenshotUrl) customerObj.screenshotUrl = body.screenshotUrl;

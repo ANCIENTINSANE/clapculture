@@ -1,9 +1,36 @@
 import { Context } from 'hono';
+import { Query, Databases } from 'node-appwrite';
 import { AppwriteEnv } from './appwrite';
 
+export const getNextSequentialOrderId = async (databases: Databases, dbId: string): Promise<string> => {
+  try {
+    const list = await databases.listDocuments(dbId, 'orders', [
+      Query.limit(100),
+      Query.orderDesc('$createdAt'),
+    ]);
+
+    let highestSeq = 1000;
+    for (const doc of list.documents) {
+      const raw = String(doc.orderId || '').replace('#', '').trim();
+      const match = raw.match(/^CLAP0?(\d{4,})$/i);
+      if (match) {
+        const num = parseInt(match[1], 10);
+        if (num >= 1000 && num < 100000 && num > highestSeq) {
+          highestSeq = num;
+        }
+      }
+    }
+
+    const nextNum = highestSeq + 1;
+    const padded = String(nextNum).padStart(5, '0');
+    return `#CLAP${padded}`;
+  } catch {
+    return '#CLAP01001';
+  }
+};
+
 export const generateOrderId = (): string => {
-  const randomNum = Math.floor(10000 + Math.random() * 90000);
-  return `#CLAP${randomNum}`;
+  return '#CLAP01001';
 };
 
 export const slugify = (text: string): string => {

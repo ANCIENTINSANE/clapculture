@@ -26,8 +26,11 @@ export function slugify(text: string) {
     .replace(/-+$/, '');
 }
 
-export function generateOrderId() {
-  return '#CLAP' + Math.floor(10000 + Math.random() * 90000).toString();
+export function generateOrderId(seq?: number) {
+  if (seq) {
+    return `#CLAP${String(seq).padStart(5, '0')}`;
+  }
+  return `#CLAP01001`;
 }
 
 export function getStatusColor(status: string) {
