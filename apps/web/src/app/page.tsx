@@ -248,18 +248,18 @@ export default function Home() {
                   <div className="flex items-center gap-4 mt-10 p-3 bg-black/40 backdrop-blur-md rounded-xl border border-gray-800 w-fit">
                     <div className="flex -space-x-3">
                       <img
-                        src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80"
-                        alt="Fan 1"
+                        src="/happyfan1.webp"
+                        alt="Happy Fan 1"
                         className="w-10 h-10 rounded-full border-2 border-deep-black object-cover"
                       />
                       <img
-                        src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80"
-                        alt="Fan 2"
+                        src="/happyfan2.webp"
+                        alt="Happy Fan 2"
                         className="w-10 h-10 rounded-full border-2 border-deep-black object-cover"
                       />
                       <img
-                        src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80"
-                        alt="Fan 3"
+                        src="/happyfan3.webp"
+                        alt="Happy Fan 3"
                         className="w-10 h-10 rounded-full border-2 border-deep-black object-cover"
                       />
                     </div>
