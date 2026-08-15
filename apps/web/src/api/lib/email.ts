@@ -647,7 +647,7 @@ export async function sendOrderDeliveredEmail(
         WEAR IT LOUD. WEAR IT PROUD.
       </div>
       <p style="font-size: 13px; color: #a3a3a3; margin: 8px 0 0 0;">
-        Tag us on Instagram <strong>@clapculture</strong> to get featured on our official drop feed.
+        Tag us on Instagram <a href="https://www.instagram.com/clapculture_" target="_blank" style="color: #d2f000; text-decoration: none;"><strong>@clapculture_</strong></a> to get featured on our official drop feed.
       </p>
     </div>
 

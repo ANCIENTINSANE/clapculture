@@ -160,6 +160,18 @@ export default function ContactPage() {
                 </a>
               </p>
               <p className="flex items-center gap-4">
+                <span className="material-symbols-outlined text-electric-lime">photo_camera</span>
+                <a 
+                  href="https://www.instagram.com/clapculture_" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="hover:underline text-white flex items-center gap-2"
+                >
+                  <span>Instagram: <strong className="text-electric-lime font-mono">@clapculture_</strong></span>
+                  <span className="text-[10px] bg-pink-500/20 text-pink-400 border border-pink-500/40 px-2 py-0.5 rounded font-bold uppercase">Follow</span>
+                </a>
+              </p>
+              <p className="flex items-center gap-4">
                 <span className="material-symbols-outlined text-electric-lime">support_agent</span>
                 <span>Direct Support Mon&ndash;Sun 10:00 AM &ndash; 8:00 PM IST</span>
               </p>
@@ -182,10 +194,20 @@ export default function ContactPage() {
               >
                 <span className="material-symbols-outlined">chat</span>
               </a>
-              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="w-12 h-12 bg-charcoal border border-gray-800 flex items-center justify-center hover:text-electric-lime hover:border-electric-lime transition-all">
-                <span className="material-symbols-outlined">link</span>
+              <a 
+                href="https://www.instagram.com/clapculture_" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                title="Follow us on Instagram (@clapculture_)"
+                className="w-12 h-12 bg-charcoal border border-gray-800 flex items-center justify-center hover:text-pink-500 hover:border-pink-500 transition-all"
+              >
+                <span className="material-symbols-outlined">photo_camera</span>
               </a>
-              <a href="mailto:clapculture.co@gmail.com" className="w-12 h-12 bg-charcoal border border-gray-800 flex items-center justify-center hover:text-electric-lime hover:border-electric-lime transition-all">
+              <a 
+                href="mailto:clapculture.co@gmail.com" 
+                title="Send Email"
+                className="w-12 h-12 bg-charcoal border border-gray-800 flex items-center justify-center hover:text-electric-lime hover:border-electric-lime transition-all"
+              >
                 <span className="material-symbols-outlined">alternate_email</span>
               </a>
             </div>

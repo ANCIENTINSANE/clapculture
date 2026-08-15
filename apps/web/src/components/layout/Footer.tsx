@@ -10,9 +10,31 @@ export function Footer() {
             <Link href="/" className="text-3xl md:text-4xl 2xl:text-6xl font-headline-md text-white tracking-wider mb-4 md:mb-6 inline-block">
               CLAPCULTURE
             </Link>
-            <p className="text-gray-400 text-xs md:text-sm 2xl:text-base max-w-sm">
+            <p className="text-gray-400 text-xs md:text-sm 2xl:text-base max-w-sm mb-4">
               Redefining streetwear for the modern rebel. High-quality apparel designed to make a statement.
             </p>
+            <div className="flex items-center gap-3">
+              <a
+                href="https://www.instagram.com/clapculture_"
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Follow us on Instagram (@clapculture_)"
+                className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-pink-400 font-mono transition-colors bg-charcoal border border-gray-800 px-3 py-1.5 rounded"
+              >
+                <span className="material-symbols-outlined text-sm">photo_camera</span>
+                <span>@clapculture_</span>
+              </a>
+              <a
+                href="https://wa.me/917569684299?text=Hi%20CLAPCULTURE%20Team"
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Chat on WhatsApp (+91 7569684299)"
+                className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-[#25D366] font-mono transition-colors bg-charcoal border border-gray-800 px-3 py-1.5 rounded"
+              >
+                <span className="material-symbols-outlined text-sm">chat</span>
+                <span>WhatsApp</span>
+              </a>
+            </div>
           </div>
 
           <div>

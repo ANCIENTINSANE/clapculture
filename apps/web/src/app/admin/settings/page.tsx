@@ -35,7 +35,7 @@ export default function SettingsPage() {
   });
 
   const [socialData, setSocialData] = useState({
-    instagram: 'https://instagram.com/clapculture',
+    instagram: 'https://www.instagram.com/clapculture_',
     youtube: 'https://youtube.com/@clapculture',
     whatsapp: '+917569684299',
     twitter: 'https://x.com/clapculture'
