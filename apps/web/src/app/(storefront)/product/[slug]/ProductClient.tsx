@@ -225,29 +225,52 @@ export default function ProductClient({ product, relatedProducts }: ProductClien
       {/* Size Guide Modal */}
       <Modal isOpen={isSizeGuideOpen} onClose={() => setIsSizeGuideOpen(false)} title="SIZE GUIDE (OVERSIZED FIT)">
         <div className="text-sm space-y-4">
-          <p className="text-gray-300">All measurements are in inches. Our products feature an intentional relaxed/oversized fit.</p>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-xs">
+          <p className="text-gray-300 text-xs md:text-sm">
+            All measurements are in <span className="text-electric-lime font-bold">inches</span>. Our garments feature a signature relaxed streetwear fit.
+          </p>
+          
+          <div className="overflow-x-auto border border-gray-700 rounded-lg shadow-inner">
+            <table className="w-full text-center border-collapse text-xs md:text-sm">
               <thead>
-                <tr className="border-b border-charcoal text-electric-lime">
-                  <th className="p-2">SIZE</th>
-                  <th className="p-2">CHEST</th>
-                  <th className="p-2">LENGTH</th>
-                  <th className="p-2">SHOULDER</th>
+                <tr className="bg-[#2b3240] text-white divide-x divide-gray-700">
+                  <th className="p-3 bg-[#1e2430] text-left font-bold text-gray-300 w-24 tracking-wider">SIZE</th>
+                  <th className="p-3 font-bold">XS</th>
+                  <th className="p-3 font-bold">S</th>
+                  <th className="p-3 font-bold">M</th>
+                  <th className="p-3 font-bold">L</th>
+                  <th className="p-3 font-bold">XL</th>
+                  <th className="p-3 font-bold">XXL</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-charcoal text-gray-300">
-                <tr><td className="p-2 font-bold text-white">XS</td><td className="p-2">40 in</td><td className="p-2">27 in</td><td className="p-2">20 in</td></tr>
-                <tr><td className="p-2 font-bold text-white">S</td><td className="p-2">42 in</td><td className="p-2">28 in</td><td className="p-2">21 in</td></tr>
-                <tr><td className="p-2 font-bold text-white">M</td><td className="p-2">44 in</td><td className="p-2">29 in</td><td className="p-2">22 in</td></tr>
-                <tr><td className="p-2 font-bold text-white">L</td><td className="p-2">46 in</td><td className="p-2">30 in</td><td className="p-2">23 in</td></tr>
-                <tr><td className="p-2 font-bold text-white">XL</td><td className="p-2">48 in</td><td className="p-2">31 in</td><td className="p-2">24 in</td></tr>
-                <tr><td className="p-2 font-bold text-white">XXL</td><td className="p-2">50 in</td><td className="p-2">32 in</td><td className="p-2">25 in</td></tr>
-                <tr><td className="p-2 font-bold text-white">XXXL</td><td className="p-2">52 in</td><td className="p-2">33 in</td><td className="p-2">26 in</td></tr>
+              <tbody className="divide-y divide-gray-700 bg-[#161a22]">
+                <tr className="divide-x divide-gray-700">
+                  <td className="p-3 bg-[#1e2430] text-left font-bold text-gray-300 tracking-wider">CHEST</td>
+                  <td className="p-3 text-white font-mono font-medium">41</td>
+                  <td className="p-3 text-white font-mono font-medium">43</td>
+                  <td className="p-3 text-white font-mono font-medium">45</td>
+                  <td className="p-3 text-white font-mono font-medium">47</td>
+                  <td className="p-3 text-white font-mono font-medium">49</td>
+                  <td className="p-3 text-white font-mono font-medium">51</td>
+                </tr>
+                <tr className="divide-x divide-gray-700">
+                  <td className="p-3 bg-[#1e2430] text-left font-bold text-gray-300 tracking-wider">LENGTH</td>
+                  <td className="p-3 text-white font-mono font-medium">27</td>
+                  <td className="p-3 text-white font-mono font-medium">27.5</td>
+                  <td className="p-3 text-white font-mono font-medium">28.5</td>
+                  <td className="p-3 text-white font-mono font-medium">29.5</td>
+                  <td className="p-3 text-white font-mono font-medium">30.5</td>
+                  <td className="p-3 text-white font-mono font-medium">31.5</td>
+                </tr>
               </tbody>
             </table>
           </div>
-          <p className="text-xs text-gray-500">Pro tip: If you prefer a regular fit instead of oversized, order one size down.</p>
+
+          <div className="bg-[#181818] border border-gray-800 rounded-lg p-3 text-xs text-gray-400 space-y-1.5">
+            <p className="text-gray-300 font-semibold flex items-center gap-1.5">
+              <span className="text-electric-lime">📏</span> Fit Note:
+            </p>
+            <p>• If you prefer a classic/regular fit instead of oversized, order one size down.</p>
+          </div>
         </div>
       </Modal>
     </div>
