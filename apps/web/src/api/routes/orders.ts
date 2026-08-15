@@ -23,7 +23,10 @@ orders.post('/', async (c) => {
     
     const customOrderId = body.orderId || generateOrderId();
 
-    const customerStr = typeof body.customer === 'string' ? body.customer : JSON.stringify(body.customer || {});
+    const customerObj = typeof body.customer === 'string' ? JSON.parse(body.customer) : (body.customer || {});
+    if (body.screenshotUrl) customerObj.screenshotUrl = body.screenshotUrl;
+    if (body.paymentProof) customerObj.paymentProof = body.paymentProof;
+    const customerStr = JSON.stringify(customerObj);
     const itemsStr = typeof body.items === 'string' ? body.items : JSON.stringify(body.items || []);
 
     const orderData = {
@@ -126,12 +129,30 @@ orders.get('/track', async (c) => {
       return c.json({ success: false, error: 'Contact details do not match order' }, 403);
     }
     
-    return c.json({ success: true, data: order });
+    return c.json({ success: true, data: enrichOrderDoc(order) });
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : 'Failed to track order';
     return c.json({ success: false, error: msg }, 500);
   }
 });
+
+function enrichOrderDoc(doc: Record<string, unknown>) {
+  let customerObj: Record<string, unknown> = {};
+  if (typeof doc.customer === 'string') {
+    try {
+      customerObj = JSON.parse(doc.customer);
+    } catch {}
+  } else if (doc.customer && typeof doc.customer === 'object') {
+    customerObj = doc.customer as Record<string, unknown>;
+  }
+
+  const screenshot = (customerObj.screenshotUrl || customerObj.paymentProof || doc.screenshotUrl || doc.paymentProof || '') as string;
+  return {
+    ...doc,
+    screenshotUrl: screenshot,
+    paymentProof: screenshot,
+  };
+}
 
 orders.get('/:orderId', async (c) => {
   try {
@@ -143,7 +164,7 @@ orders.get('/:orderId', async (c) => {
     // 1. Try finding by document ID
     try {
       const doc = await databases.getDocument(dbId, 'orders', cleanId);
-      if (doc) return c.json({ success: true, data: doc });
+      if (doc) return c.json({ success: true, data: enrichOrderDoc(doc) });
     } catch {}
 
     // 2. Try querying by orderId (case-insensitive variations)
@@ -155,7 +176,7 @@ orders.get('/:orderId', async (c) => {
         [Query.equal('orderId', v), Query.limit(1)]
       );
       if (response.documents.length > 0) {
-        return c.json({ success: true, data: response.documents[0] });
+        return c.json({ success: true, data: enrichOrderDoc(response.documents[0]) });
       }
     }
     
@@ -260,7 +281,7 @@ orders.get('/', adminAuth, async (c) => {
       queries
     );
     
-    return c.json({ success: true, data: response.documents });
+    return c.json({ success: true, data: response.documents.map((d) => enrichOrderDoc(d)) });
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : 'Failed to list orders';
     return c.json({ success: false, error: msg }, 500);

@@ -16,6 +16,7 @@ export default function PaymentClient({ orderId }: { orderId: string }) {
   const total = order?.total || 3498;
 
   const [screenshotUrl, setScreenshotUrl] = useState('');
+  const [screenshotFile, setScreenshotFile] = useState<File | null>(null);
   const [utrNumber, setUtrNumber] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [copiedUpi, setCopiedUpi] = useState(false);
@@ -32,6 +33,7 @@ export default function PaymentClient({ orderId }: { orderId: string }) {
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      setScreenshotFile(file);
       setScreenshotUrl(URL.createObjectURL(file));
     }
   };
@@ -42,7 +44,28 @@ export default function PaymentClient({ orderId }: { orderId: string }) {
 
     const formattedOrderId = orderId.startsWith('CLAP') ? orderId : `CLAP${orderId}`;
 
-    const customerData = order?.customer || {
+    // 1. Upload payment screenshot to Appwrite Storage media bucket
+    let uploadedScreenshotUrl = '';
+    if (screenshotFile) {
+      try {
+        const formData = new FormData();
+        formData.append('file', screenshotFile);
+        const uploadRes = await fetch('/api/payments/upload-proof', {
+          method: 'POST',
+          body: formData,
+        });
+        const uploadData = await uploadRes.json();
+        if (uploadData.success && uploadData.data?.url) {
+          uploadedScreenshotUrl = uploadData.data.url;
+        } else if (uploadData.success && uploadData.data?.fileId) {
+          uploadedScreenshotUrl = uploadData.data.fileId;
+        }
+      } catch (err) {
+        console.error('Error uploading payment screenshot to storage:', err);
+      }
+    }
+
+    const rawCustomerData = order?.customer || {
       fullName: 'Valued Customer',
       email: 'customer@example.com',
       phone: '+91 9876543210',
@@ -53,11 +76,17 @@ export default function PaymentClient({ orderId }: { orderId: string }) {
       pincode: '500001',
     };
 
+    const customerObj = typeof rawCustomerData === 'string' ? JSON.parse(rawCustomerData) : { ...rawCustomerData };
+    if (uploadedScreenshotUrl) {
+      customerObj.screenshotUrl = uploadedScreenshotUrl;
+      customerObj.paymentProof = uploadedScreenshotUrl;
+    }
+
     const itemsData = (order?.items && order.items.length > 0) ? order.items : [];
 
     const orderPayload = {
       orderId: formattedOrderId,
-      customer: typeof customerData === 'string' ? customerData : JSON.stringify(customerData),
+      customer: JSON.stringify(customerObj),
       items: typeof itemsData === 'string' ? itemsData : JSON.stringify(itemsData),
       subtotal: order?.subtotal || total,
       shipping: order?.shipping || 0,
@@ -66,6 +95,8 @@ export default function PaymentClient({ orderId }: { orderId: string }) {
       orderStatus: 'PLACED',
       transactionId: utrNumber.trim(),
       trackingNumber: 'TRK-CLAP-PENDING',
+      screenshotUrl: uploadedScreenshotUrl || undefined,
+      paymentProof: uploadedScreenshotUrl || undefined,
     };
 
     try {
@@ -84,7 +115,7 @@ export default function PaymentClient({ orderId }: { orderId: string }) {
     }
 
     if (order) {
-      updatePaymentInfo(utrNumber.trim(), screenshotUrl || 'https://placehold.co/600x800?text=Payment+Screenshot');
+      updatePaymentInfo(utrNumber.trim(), uploadedScreenshotUrl || screenshotUrl || 'https://placehold.co/600x800?text=Payment+Screenshot');
     }
 
     clearCart();

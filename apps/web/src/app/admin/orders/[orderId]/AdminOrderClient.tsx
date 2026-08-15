@@ -23,6 +23,8 @@ interface OrderCustomer {
   city?: string;
   state?: string;
   pincode?: string;
+  screenshotUrl?: string;
+  paymentProof?: string;
 }
 
 interface OrderDoc {
@@ -38,6 +40,7 @@ interface OrderDoc {
   transactionId?: string;
   trackingNumber?: string;
   screenshotUrl?: string;
+  paymentProof?: string;
   $createdAt?: string;
 }
 
@@ -279,19 +282,39 @@ export default function AdminOrderClient({ orderId }: { orderId: string }) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <span className="text-xs text-[#737373] block mb-2 font-mono">Payment Proof Screenshot:</span>
-                <div className="border border-[#262626] rounded-lg p-2 bg-[#0d0d0d] overflow-hidden flex items-center justify-center min-h-48">
-                  {order?.screenshotUrl && !order.screenshotUrl.includes('placehold') ? (
-                    <img
-                      src={resolveImageUrl(order.screenshotUrl)}
-                      alt="Payment Screenshot"
-                      className="w-full max-h-64 object-contain rounded"
-                    />
-                  ) : (
-                    <div className="text-center text-gray-500 py-8">
-                      <span className="material-symbols-outlined text-4xl block mb-1 text-gray-600">receipt_long</span>
-                      <p className="text-xs font-mono">UPI Screenshot Submitted via App</p>
-                    </div>
-                  )}
+                <div className="border border-[#262626] rounded-lg p-3 bg-[#0d0d0d] overflow-hidden flex flex-col items-center justify-center min-h-48">
+                  {(() => {
+                    const screenshot = order?.screenshotUrl || order?.paymentProof || customer?.screenshotUrl || customer?.paymentProof || '';
+                    if (screenshot && !screenshot.includes('placehold')) {
+                      const fullUrl = resolveImageUrl(screenshot);
+                      return (
+                        <div className="w-full flex flex-col items-center gap-2">
+                          <a
+                            href={fullUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="group block relative w-full text-center"
+                          >
+                            <img
+                              src={fullUrl}
+                              alt="Payment Screenshot"
+                              className="max-h-72 max-w-full mx-auto object-contain rounded border border-[#262626] group-hover:border-electric-lime transition-all"
+                            />
+                            <div className="mt-2 flex items-center justify-center gap-1.5 text-xs text-electric-lime font-mono group-hover:underline">
+                              <span className="material-symbols-outlined text-sm">open_in_new</span>
+                              <span>Click to view full resolution image</span>
+                            </div>
+                          </a>
+                        </div>
+                      );
+                    }
+                    return (
+                      <div className="text-center text-gray-500 py-8">
+                        <span className="material-symbols-outlined text-4xl block mb-1 text-gray-600">receipt_long</span>
+                        <p className="text-xs font-mono">No Screenshot Uploaded</p>
+                      </div>
+                    );
+                  })()}
                 </div>
               </div>
 
