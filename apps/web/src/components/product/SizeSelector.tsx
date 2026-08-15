@@ -38,7 +38,7 @@ export function SizeSelector({ sizes, selectedSize, onSelect, outOfStock = [] }:
               {size}
               {isDisabled && (
                 <div className="absolute inset-0 w-full h-full">
-                  <div className="absolute top-1/2 left-0 w-full h-[1px] bg-charcoal -rotate-45 transform origin-center"></div>
+                  <div className="absolute top-1/2 left-0 w-full h-px bg-charcoal -rotate-45 transform origin-center"></div>
                 </div>
               )}
             </button>
