@@ -1840,13 +1840,17 @@ export default function HomepageCMSPage() {
               <button
                 onClick={() => {
                   const { slide, isNew } = editingSlide;
+                  const finalizedSlide = {
+                    ...slide,
+                    mobileImage: slide.desktopImage || slide.mobileImage
+                  };
                   setFormData(prev => ({
                     ...prev,
                     hero: {
                       ...prev.hero,
                       slides: isNew 
-                        ? [...prev.hero.slides, slide]
-                        : prev.hero.slides.map(s => s.id === slide.id ? slide : s)
+                        ? [...prev.hero.slides, finalizedSlide]
+                        : prev.hero.slides.map(s => s.id === slide.id ? finalizedSlide : s)
                     }
                   }));
                   setEditingSlide(null);

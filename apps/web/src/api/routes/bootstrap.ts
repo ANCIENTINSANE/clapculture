@@ -14,7 +14,7 @@ import { getCached, setCached } from '../lib/cache';
 const bootstrap = new Hono();
 
 const BOOTSTRAP_CACHE_KEY = 'bootstrap_all';
-const BOOTSTRAP_TTL = 600; // 10 minutes
+const BOOTSTRAP_TTL = 15; // 15 seconds short server cache for fast CMS updates
 
 bootstrap.get('/', async (c) => {
   try {
@@ -24,7 +24,7 @@ bootstrap.get('/', async (c) => {
       const cached = getCached<Record<string, unknown>>(BOOTSTRAP_CACHE_KEY);
       if (cached) {
         c.header('X-Cache', 'HIT');
-        c.header('Cache-Control', 'public, max-age=600, s-maxage=600');
+        c.header('Cache-Control', 'public, max-age=15, s-maxage=15, stale-while-revalidate=30');
         c.header('X-Build-Id', process.env.NEXT_PUBLIC_BUILD_ID || 'dev');
         return c.json({ success: true, data: cached });
       }
@@ -65,7 +65,7 @@ bootstrap.get('/', async (c) => {
     setCached(BOOTSTRAP_CACHE_KEY, payload, BOOTSTRAP_TTL);
 
     c.header('X-Cache', 'MISS');
-    c.header('Cache-Control', 'public, max-age=600, s-maxage=600');
+    c.header('Cache-Control', 'public, max-age=15, s-maxage=15, stale-while-revalidate=30');
     c.header('X-Build-Id', process.env.NEXT_PUBLIC_BUILD_ID || 'dev');
     return c.json({ success: true, data: payload });
   } catch (error: unknown) {

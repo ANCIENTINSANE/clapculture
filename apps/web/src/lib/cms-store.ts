@@ -88,48 +88,18 @@ export const DEFAULT_HOMEPAGE_CMS: HomepageCMSData = {
     active: true,
     slides: [
       {
-        id: 'slide-1',
-        badge: 'NEW DROP LIVE',
-        titleLine1: 'BORN TO',
-        titleLine2: 'STAND OUT',
+        id: 'slide-gjt7taw',
+        badge: 'NEW DROP',
+        titleLine1: 'PANJAA',
+        titleLine2: 'THE NEW DROP',
         subtitle: 'CLAP CULTURE',
-        description: 'Unapologetic streetwear for the modern rebel. Elevate your everyday fit with our latest exclusive collection.',
+        description: 'A bold oversized hoodie made for the ones who wear their culture loud. Includes a surprise PANJAA keychain + wall poster with every order.',
         primaryCtaText: 'SHOP NOW',
-        primaryCtaLink: '/shop',
-        secondaryCtaText: 'EXPLORE COLLECTIONS',
+        primaryCtaLink: '/product/panjaa-pawan-kalyan-graphic-oversized-hoodie-surprise-kit',
+        secondaryCtaText: 'COLLECTIONS',
         secondaryCtaLink: '/collections',
-        desktopImage: '6a7fa922002c9b023447',
-        mobileImage: '6a7fa92400303d551b68',
-        active: true,
-      },
-      {
-        id: 'slide-2',
-        badge: 'EXCLUSIVE EDITION',
-        titleLine1: 'ICONIC',
-        titleLine2: 'HEAVYWEIGHT',
-        subtitle: 'REBEL ESSENTIALS',
-        description: 'Precision cut bio-washed cotton engineered for durability, comfort, and uncompromising attitude.',
-        primaryCtaText: 'EXPLORE DROPS',
-        primaryCtaLink: '/shop',
-        secondaryCtaText: 'VIEW LOOKBOOK',
-        secondaryCtaLink: '/collections',
-        desktopImage: '6a7fa926003c73611eef',
-        mobileImage: '6a7fa926003c73611eef',
-        active: true,
-      },
-      {
-        id: 'slide-3',
-        badge: 'LIMITED RUN',
-        titleLine1: 'CINEMATIC',
-        titleLine2: 'STREETWEAR',
-        subtitle: 'LEGEND SERIES',
-        description: 'Pay homage to iconic cinema legends with custom illustrated graphics and oversized silhouettes.',
-        primaryCtaText: 'SHOP STAR EDITION',
-        primaryCtaLink: '/shop?star=pawan-kalyan',
-        secondaryCtaText: 'ALL HEROES',
-        secondaryCtaLink: '/shop',
-        desktopImage: '6a7fa92b001fdc8fc236',
-        mobileImage: '6a7fa92b001fdc8fc236',
+        desktopImage: '6a803f110015ee9020b5',
+        mobileImage: '6a803f110015ee9020b5',
         active: true,
       }
     ],
@@ -457,7 +427,7 @@ export const DEFAULT_HOMEPAGE_CMS: HomepageCMSData = {
   lastUpdated: new Date().toISOString()
 };
 
-const STORAGE_KEY = 'cc_homepage_cms_v3';
+const STORAGE_KEY = 'cc_homepage_cms_v4';
 
 export function getHomepageCMS(): HomepageCMSData {
   if (typeof window === 'undefined') return DEFAULT_HOMEPAGE_CMS;

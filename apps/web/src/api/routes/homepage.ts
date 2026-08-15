@@ -90,6 +90,7 @@ homepage.put('/', adminAuth, async (c) => {
     }
 
     clearCache('homepage');
+    clearCache('bootstrap');
     return c.json({ success: true, data: result });
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : 'Internal server error';

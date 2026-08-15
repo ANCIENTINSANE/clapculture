@@ -17,8 +17,8 @@ import { Product, Collection, Category } from '@clapculture/shared';
 
 // ─── Build-version cache busting ─────────────────────────────────────
 const BUILD_ID = process.env.NEXT_PUBLIC_BUILD_ID || 'dev';
-const STORAGE_KEY = `cc_bootstrap`;
-const CACHE_TTL = 30 * 60 * 1000; // 30 minutes client-side
+const STORAGE_KEY = `cc_bootstrap_v4`;
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes client-side
 
 interface BootstrapData {
   products: Product[];
@@ -93,7 +93,7 @@ function setLocalCache(data: BootstrapData): void {
 
 async function fetchBootstrap(): Promise<BootstrapData | null> {
   try {
-    const res = await fetch('/api/bootstrap');
+    const res = await fetch(`/api/bootstrap?t=${Date.now()}`, { cache: 'no-store' });
     if (!res.ok) throw new Error(`Bootstrap API ${res.status}`);
     const json = await res.json();
     if (json.success && json.data) {
@@ -106,22 +106,8 @@ async function fetchBootstrap(): Promise<BootstrapData | null> {
   }
 }
 
-function ensureBootstrap(): Promise<BootstrapData | null> {
-  // Already loaded in memory for this session
-  if (bootstrapData) return Promise.resolve(bootstrapData);
-  
-  // Already fetching — deduplicate
-  if (bootstrapPromise) return bootstrapPromise;
-  
-  // Check localStorage first
-  const cached = getLocalCache();
-  if (cached) {
-    bootstrapData = cached;
-    notifyListeners();
-    return Promise.resolve(cached);
-  }
-  
-  // Fetch fresh
+function triggerBackgroundRevalidate() {
+  if (bootstrapPromise) return;
   bootstrapPromise = fetchBootstrap().then(data => {
     if (data) {
       bootstrapData = data;
@@ -131,8 +117,21 @@ function ensureBootstrap(): Promise<BootstrapData | null> {
     bootstrapPromise = null;
     return data;
   });
+}
+
+function ensureBootstrap(): Promise<BootstrapData | null> {
+  // Check localStorage first
+  const cached = getLocalCache();
+  if (cached && !bootstrapData) {
+    bootstrapData = cached;
+    notifyListeners();
+  }
+
+  // Always revalidate in background on page load
+  triggerBackgroundRevalidate();
   
-  return bootstrapPromise;
+  if (bootstrapData) return Promise.resolve(bootstrapData);
+  return bootstrapPromise || Promise.resolve(null);
 }
 
 // ─── React hook ──────────────────────────────────────────────────────
