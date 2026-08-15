@@ -542,7 +542,7 @@ _Team CLAPCULTURE_ ⚡`;
                 </div>
                 <div>
                   <span className="text-xs text-[#737373] block">Payment Channel:</span>
-                  <p className="text-xs text-gray-300 mt-0.5">Direct UPI (clapculture@upi)</p>
+                  <p className="text-xs text-gray-300 mt-0.5">Direct UPI (paytm.s1qzmi4@pty)</p>
                 </div>
               </div>
             </div>

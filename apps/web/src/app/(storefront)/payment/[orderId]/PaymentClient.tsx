@@ -21,8 +21,11 @@ export default function PaymentClient({ orderId }: { orderId: string }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [copiedUpi, setCopiedUpi] = useState(false);
 
-  const upiId = 'paytm.slazmi4@pty';
-  const qrCodeUrl = resolveImageUrl('/qrcode.png');
+  const upiId = 'paytm.s1qzmi4@pty';
+  const cleanOrderId = (orderId || '').replace('#', '');
+  const upiIntentString = `upi://pay?pa=${upiId}&pn=CLAPCULTURE&am=${total}&cu=INR&tn=Order%20${cleanOrderId}`;
+  const dynamicQrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(upiIntentString)}`;
+  const qrCodeUrl = dynamicQrCodeUrl || resolveImageUrl('/qrcode.png');
 
   const handleCopyUpi = () => {
     navigator.clipboard.writeText(upiId);
@@ -156,18 +159,26 @@ export default function PaymentClient({ orderId }: { orderId: string }) {
             <img src={qrCodeUrl} alt="UPI QR Code" className="w-56 h-56 object-contain" />
           </div>
 
-          <div className="w-full max-w-sm flex items-center justify-between bg-deep-black border border-charcoal rounded-lg p-3">
+          <div className="w-full max-w-sm flex items-center justify-between bg-deep-black border border-charcoal rounded-lg p-3 mb-3">
             <div>
               <span className="text-[10px] text-gray-500 font-label-caps uppercase block text-left">UPI ID</span>
               <span className="text-sm font-mono font-bold text-white">{upiId}</span>
             </div>
             <button
+              type="button"
               onClick={handleCopyUpi}
-              className="bg-charcoal hover:bg-electric-lime hover:text-black text-white px-3 py-1.5 rounded text-xs font-label-caps uppercase font-bold transition-all"
+              className="bg-charcoal hover:bg-electric-lime hover:text-black text-white px-3 py-1.5 rounded text-xs font-label-caps uppercase font-bold transition-all cursor-pointer"
             >
               {copiedUpi ? 'COPIED!' : 'COPY'}
             </button>
           </div>
+
+          <a
+            href={upiIntentString}
+            className="w-full max-w-sm bg-[#25D366]/10 hover:bg-[#25D366] text-[#25D366] hover:text-black border border-[#25D366]/40 py-2.5 px-4 rounded-lg text-xs font-bold font-mono tracking-wider transition-colors flex items-center justify-center gap-2"
+          >
+            <span>📱</span> TAP TO OPEN UPI APP (GPay / PhonePe / Paytm)
+          </a>
         </div>
 
         {/* Payment Verification Form */}
