@@ -232,32 +232,26 @@ export default function ProductClient({ product, relatedProducts }: ProductClien
               <thead>
                 <tr className="bg-[#2b3240] text-white divide-x divide-gray-700">
                   <th className="p-3 bg-[#1e2430] text-left font-bold text-gray-300 w-24 tracking-wider">SIZE</th>
-                  <th className="p-3 font-bold">XS</th>
                   <th className="p-3 font-bold">S</th>
                   <th className="p-3 font-bold">M</th>
                   <th className="p-3 font-bold">L</th>
                   <th className="p-3 font-bold">XL</th>
-                  <th className="p-3 font-bold">XXL</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-700 bg-[#161a22]">
                 <tr className="divide-x divide-gray-700">
                   <td className="p-3 bg-[#1e2430] text-left font-bold text-gray-300 tracking-wider">CHEST</td>
-                  <td className="p-3 text-white font-mono font-medium">41</td>
                   <td className="p-3 text-white font-mono font-medium">43</td>
                   <td className="p-3 text-white font-mono font-medium">45</td>
                   <td className="p-3 text-white font-mono font-medium">47</td>
                   <td className="p-3 text-white font-mono font-medium">49</td>
-                  <td className="p-3 text-white font-mono font-medium">51</td>
                 </tr>
                 <tr className="divide-x divide-gray-700">
                   <td className="p-3 bg-[#1e2430] text-left font-bold text-gray-300 tracking-wider">LENGTH</td>
-                  <td className="p-3 text-white font-mono font-medium">27</td>
                   <td className="p-3 text-white font-mono font-medium">27.5</td>
                   <td className="p-3 text-white font-mono font-medium">28.5</td>
                   <td className="p-3 text-white font-mono font-medium">29.5</td>
                   <td className="p-3 text-white font-mono font-medium">30.5</td>
-                  <td className="p-3 text-white font-mono font-medium">31.5</td>
                 </tr>
               </tbody>
             </table>
