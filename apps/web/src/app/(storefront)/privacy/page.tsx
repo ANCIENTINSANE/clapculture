@@ -1,5 +1,4 @@
 import React from 'react';
-import Link from 'next/link';
 
 export const metadata = {
   title: 'Privacy Policy | CLAPCULTURE',
@@ -46,7 +45,7 @@ export default function PrivacyPage() {
 
             <div className="space-y-4">
               <div className="bg-black/50 border border-charcoal rounded-lg p-4">
-                <h3 className="text-white font-bold text-sm uppercase mb-2 font-mono text-electric-lime">A. Personal and Contact Information</h3>
+                <h3 className="text-electric-lime font-bold text-sm uppercase mb-2 font-mono">A. Personal and Contact Information</h3>
                 <ul className="list-disc list-inside space-y-1 text-xs md:text-sm text-gray-300">
                   <li>Full name</li>
                   <li>Email address</li>
@@ -58,7 +57,7 @@ export default function PrivacyPage() {
               </div>
 
               <div className="bg-black/50 border border-charcoal rounded-lg p-4">
-                <h3 className="text-white font-bold text-sm uppercase mb-2 font-mono text-electric-lime">B. Order and Transaction Information</h3>
+                <h3 className="text-electric-lime font-bold text-sm uppercase mb-2 font-mono">B. Order and Transaction Information</h3>
                 <ul className="list-disc list-inside space-y-1 text-xs md:text-sm text-gray-300">
                   <li>Products purchased and order numbers</li>
                   <li>Order date, time, and order value</li>
@@ -71,7 +70,7 @@ export default function PrivacyPage() {
               </div>
 
               <div className="bg-black/50 border border-charcoal rounded-lg p-4">
-                <h3 className="text-white font-bold text-sm uppercase mb-2 font-mono text-electric-lime">C. Website and Technical Information</h3>
+                <h3 className="text-electric-lime font-bold text-sm uppercase mb-2 font-mono">C. Website and Technical Information</h3>
                 <ul className="list-disc list-inside space-y-1 text-xs md:text-sm text-gray-300">
                   <li>IP address, device type, operating system, and browser type</li>
                   <li>Approximate location derived from technical signals</li>
@@ -80,7 +79,7 @@ export default function PrivacyPage() {
               </div>
 
               <div className="bg-black/50 border border-charcoal rounded-lg p-4">
-                <h3 className="text-white font-bold text-sm uppercase mb-2 font-mono text-electric-lime">D. Cookies and Similar Technologies</h3>
+                <h3 className="text-electric-lime font-bold text-sm uppercase mb-2 font-mono">D. Cookies and Similar Technologies</h3>
                 <p className="text-xs md:text-sm text-gray-300">
                   We use cookies and local storage to keep our website functioning properly, preserve cart contents, maintain session states, understand site analytics, and improve performance.
                 </p>
@@ -108,7 +107,7 @@ export default function PrivacyPage() {
           </section>
 
           {/* Section 3: PAYMENT & FRAUD WARNING */}
-          <section className="bg-gradient-to-r from-red-950/40 via-[#1a1414] to-red-950/40 border-2 border-red-500/60 rounded-xl p-6 md:p-8">
+          <section className="bg-linear-to-r from-red-950/40 via-[#1a1414] to-red-950/40 border-2 border-red-500/60 rounded-xl p-6 md:p-8">
             <h2 className="text-xl md:text-2xl font-headline-md text-red-400 uppercase tracking-wide mb-3 flex items-center gap-2">
               <span>🚨</span> 03. PAYMENT INFORMATION &amp; OFFICIAL UPI NOTICE
             </h2>

@@ -157,7 +157,7 @@ export default function RefundPolicyPage() {
           </section>
 
           {/* Section 9: FRAUD WARNING & UPI ID */}
-          <section className="bg-gradient-to-r from-red-950/40 via-[#1a1414] to-red-950/40 border-2 border-red-500/60 rounded-xl p-6 md:p-8">
+          <section className="bg-linear-to-r from-red-950/40 via-[#1a1414] to-red-950/40 border-2 border-red-500/60 rounded-xl p-6 md:p-8">
             <div className="flex items-center gap-2 text-red-400 font-headline-md text-xl md:text-2xl uppercase tracking-wide mb-3">
               <span>🚨</span> 09. OFFICIAL PAYMENT &amp; FRAUD WARNING
             </div>

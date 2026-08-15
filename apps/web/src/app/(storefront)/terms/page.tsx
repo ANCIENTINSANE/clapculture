@@ -78,7 +78,7 @@ export default function TermsPage() {
           </section>
 
           {/* 4. Payment Terms & Fraud Notice */}
-          <section className="bg-gradient-to-r from-red-950/40 via-[#1a1414] to-red-950/40 border-2 border-red-500/60 rounded-xl p-6 md:p-8">
+          <section className="bg-linear-to-r from-red-950/40 via-[#1a1414] to-red-950/40 border-2 border-red-500/60 rounded-xl p-6 md:p-8">
             <h2 className="text-xl md:text-2xl font-headline-md text-red-400 uppercase tracking-wide mb-3 flex items-center gap-2">
               <span>🚨</span> 04. OFFICIAL PAYMENT NOTICE &amp; FRAUD WARNING
             </h2>
