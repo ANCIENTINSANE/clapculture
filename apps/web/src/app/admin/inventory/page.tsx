@@ -34,14 +34,26 @@ export default function InventoryPage() {
             const sizes = Array.isArray(p.sizes) ? p.sizes : ['Free Size'];
             const stockTotal = Number(p.stock) || 0;
 
+            let sizeStockMap: Record<string, number> = {};
+            if (p.sizeStock) {
+              try {
+                sizeStockMap = typeof p.sizeStock === 'string' ? JSON.parse(p.sizeStock as string) : (p.sizeStock as Record<string, number>);
+              } catch {}
+            }
+
             sizes.forEach((sz, idx) => {
+              const szStr = String(sz);
+              const exactSizeStock = (sizeStockMap && typeof sizeStockMap[szStr] === 'number')
+                ? sizeStockMap[szStr]
+                : (idx === 0 ? stockTotal : Math.max(0, Math.floor(stockTotal / Math.max(1, sizes.length))));
+
               items.push({
                 id: `${pId}-${sz}`,
                 productId: pId,
                 product: pName,
                 sku: `${pSlug.toUpperCase().slice(0, 10)}-${sz}`,
-                size: String(sz),
-                stock: idx === 0 ? stockTotal : Math.max(0, Math.floor(stockTotal / sizes.length)),
+                size: szStr,
+                stock: exactSizeStock,
               });
             });
           });

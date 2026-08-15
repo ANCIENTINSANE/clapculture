@@ -69,11 +69,32 @@ export default function EditProductClient({ productId }: { productId: string }) 
       const json = await res.json();
       if (json.success && json.data) {
         const p = json.data;
+        let parsedSizeStock: Record<string, number> = {};
+        if (p.sizeStock) {
+          try {
+            parsedSizeStock = typeof p.sizeStock === 'string' ? JSON.parse(p.sizeStock) : p.sizeStock;
+          } catch {
+            parsedSizeStock = {};
+          }
+        }
+
         const totalStock = Number(p.stock) || 0;
         const currentSizes = Array.isArray(p.sizes) ? p.sizes : ['S', 'M', 'L', 'XL', 'XXL'];
         const standardSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
 
+        const hasExactMap = Object.keys(parsedSizeStock).length > 0;
+
         const calculatedList = standardSizes.map((sz) => {
+          if (hasExactMap) {
+            const stockVal = typeof parsedSizeStock[sz] === 'number' ? parsedSizeStock[sz] : 0;
+            const isActive = currentSizes.includes(sz) || stockVal > 0;
+            return {
+              name: sz,
+              active: isActive,
+              stock: stockVal,
+            };
+          }
+
           const isActive = currentSizes.includes(sz);
           const perSizeStock = isActive ? (totalStock > 0 ? Math.max(1, Math.floor(totalStock / Math.max(1, currentSizes.length))) : 0) : 0;
           return {
@@ -83,7 +104,7 @@ export default function EditProductClient({ productId }: { productId: string }) 
           };
         });
 
-        if (totalStock > 0 && currentSizes.length > 0) {
+        if (!hasExactMap && totalStock > 0 && currentSizes.length > 0) {
           const firstActive = calculatedList.find(s => s.active);
           if (firstActive) {
             const currentSum = calculatedList.filter(s => s.active).reduce((sum, s) => sum + s.stock, 0);
@@ -259,6 +280,13 @@ export default function EditProductClient({ productId }: { productId: string }) 
       const selectedSizes = sizesList.filter(s => s.active).map(s => s.name);
       const totalStock = sizesList.filter(s => s.active).reduce((sum, s) => sum + s.stock, 0);
 
+      const sizeStockMap: Record<string, number> = {};
+      sizesList.forEach(s => {
+        if (s.active) {
+          sizeStockMap[s.name] = s.stock;
+        }
+      });
+
       const payload = {
         name: formData.name,
         slug: formData.slug || slugify(formData.name),
@@ -268,6 +296,7 @@ export default function EditProductClient({ productId }: { productId: string }) 
         compareAtPrice: formData.compareAtPrice ? Number(formData.compareAtPrice) : null,
         sizes: selectedSizes.length > 0 ? selectedSizes : ['M', 'L'],
         stock: totalStock,
+        sizeStock: JSON.stringify(sizeStockMap),
         badges: formData.badges,
         images: formData.images.length > 0 ? formData.images : ['/stock/superstar-mockup1.webp'],
       };

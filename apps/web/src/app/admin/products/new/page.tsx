@@ -198,6 +198,14 @@ export default function AddProductPage() {
     try {
       const totalStock = sizes.filter(s => s.active).reduce((sum, s) => sum + s.stock, 0);
       const activeSizes = sizes.filter(s => s.active).map(s => s.name);
+      
+      const sizeStockMap: Record<string, number> = {};
+      sizes.forEach(s => {
+        if (s.active) {
+          sizeStockMap[s.name] = s.stock;
+        }
+      });
+
       const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
       const payload = {
         name,
@@ -208,6 +216,7 @@ export default function AddProductPage() {
         compareAtPrice: compareAtPrice ? Number(compareAtPrice) : null,
         sizes: activeSizes.length > 0 ? activeSizes : ['M', 'L'],
         stock: totalStock,
+        sizeStock: JSON.stringify(sizeStockMap),
         badges: badges.length > 0 ? badges : ['NEW DROP', '320 GSM'],
         images: images,
       };
