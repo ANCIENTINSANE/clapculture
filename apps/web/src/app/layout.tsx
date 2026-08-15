@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import "./globals.css";
 import { CartProvider } from "@/components/cart/CartProvider";
 import { CartDrawer } from "@/components/cart/CartDrawer";
@@ -75,6 +76,20 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="theme-color" content="#d2f000" />
       </head>
       <body className="bg-background text-on-background font-body-sm w-full max-w-[100vw] overflow-x-hidden selection:bg-electric-lime selection:text-black min-h-full flex flex-col">
+        {/* Google Analytics (gtag.js) */}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-XPZSTT29KE"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-XPZSTT29KE');
+          `}
+        </Script>
+
         <div className="noise-overlay"></div>
         <CartProvider>
           <OrderStoreProvider>
