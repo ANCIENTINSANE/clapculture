@@ -3,6 +3,7 @@
 
 import React, { useRef, useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { PromoBar } from '@/components/layout/PromoBar';
@@ -12,6 +13,7 @@ import { useBootstrap } from '@/lib/use-api-data';
 import { resolveImageUrl } from '@/lib/utils';
 
 export default function Home() {
+  const router = useRouter();
   useBootstrap(); // Trigger data fetch on mount to update CMS seamlessly
   const { data: cmsData } = useHomepageCMS();
   const [currentHeroSlideIndex, setCurrentHeroSlideIndex] = useState(0);
@@ -171,9 +173,14 @@ export default function Home() {
           <section className="grid grid-cols-1 lg:grid-cols-12 min-h-[85vh] border-b border-charcoal">
             {/* Left main hero slide (8 cols or 12 cols if side banner disabled) */}
             <div
+              onClick={(e) => {
+                const target = e.target as HTMLElement;
+                if (target.closest('button') || target.closest('a') || target.closest('.hero-thumb')) return;
+                router.push(currentSlide?.primaryCtaLink || '/shop');
+              }}
               className={`${
                 cmsData.hero.sideBanner.active ? 'lg:col-span-8' : 'lg:col-span-12'
-              } relative flex flex-col justify-center p-6 md:p-12 xl:p-16 2xl:p-24 overflow-hidden min-h-[60vh] lg:min-h-0 bg-charcoal`}
+              } relative flex flex-col justify-center p-6 md:p-12 xl:p-16 2xl:p-24 overflow-hidden min-h-[60vh] lg:min-h-0 bg-charcoal cursor-pointer group`}
             >
               {/* Slideshow background layers */}
               {activeHeroSlides.map((slide, sIdx) => (
@@ -206,7 +213,7 @@ export default function Home() {
                     </div>
                   )}
 
-                  <h1 className="text-4xl sm:text-5xl md:text-8xl lg:text-[120px] 2xl:text-[160px] font-hero-lg leading-none uppercase mb-2 overflow-hidden text-ellipsis">
+                  <h1 className="text-4xl sm:text-5xl md:text-8xl lg:text-[120px] 2xl:text-[160px] font-hero-lg leading-none uppercase mb-2 overflow-hidden text-ellipsis group-hover:text-white">
                     {currentSlide.titleLine1} <br />
                     {currentSlide.titleLine2}
                   </h1>
@@ -277,14 +284,17 @@ export default function Home() {
 
               {/* Thumbnails Navigator */}
               {activeHeroSlides.length > 1 && (
-                <div className="absolute right-8 top-1/2 -translate-y-1/2 hidden md:flex flex-col gap-4 z-10">
+                <div className="absolute right-8 top-1/2 -translate-y-1/2 hidden md:flex flex-col gap-4 z-10 hero-thumb">
                   {activeHeroSlides.map((slide, sIdx) => (
                     <img
                       key={slide.id}
                       src={resolveImageUrl(slide.desktopImage)}
                       alt={`Slide ${sIdx + 1}`}
-                      onClick={() => setCurrentHeroSlideIndex(sIdx)}
-                      className={`w-20 h-24 object-cover border-2 transition-all cursor-pointer hover:opacity-100 hover:border-electric-lime ${
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setCurrentHeroSlideIndex(sIdx);
+                      }}
+                      className={`w-20 h-24 object-cover border-2 transition-all cursor-pointer hover:opacity-100 hover:border-electric-lime hero-thumb ${
                         currentHeroSlideIndex === sIdx
                           ? 'border-electric-lime opacity-100 scale-105'
                           : 'border-transparent opacity-60'
@@ -295,11 +305,14 @@ export default function Home() {
               )}
             </div>
 
-            {/* Right Hero Side Banner Tile */}
+            {/* Right Hero Side Banner Tile - Fully Clickable */}
             {cmsData.hero.sideBanner.active && (
-              <div className="lg:col-span-4 relative bg-charcoal flex flex-col justify-between p-6 md:p-12 xl:p-16 border-t lg:border-t-0 lg:border-l border-charcoal overflow-hidden min-h-[40vh] lg:min-h-0">
+              <Link
+                href={cmsData.hero.sideBanner.link || '/category/tees'}
+                className="lg:col-span-4 relative bg-charcoal flex flex-col justify-between p-6 md:p-12 xl:p-16 border-t lg:border-t-0 lg:border-l border-charcoal overflow-hidden min-h-[40vh] lg:min-h-0 cursor-pointer group"
+              >
                 <div
-                  className="absolute inset-0 bg-cover bg-center opacity-40 transition-transform duration-700 hover:scale-105"
+                  className="absolute inset-0 bg-cover bg-center opacity-40 transition-transform duration-700 group-hover:scale-105"
                   style={{ backgroundImage: `url('${resolveImageUrl(cmsData.hero.sideBanner.imageUrl || '/herobg1-desktop.png')}')` }}
                 />
                 <div className="absolute inset-0 bg-linear-to-t from-deep-black via-deep-black/60 to-transparent"></div>
@@ -311,23 +324,22 @@ export default function Home() {
                 </div>
 
                 <div className="relative z-10 mt-auto">
-                  <h2 className="text-3xl md:text-5xl font-headline-xl uppercase text-white mb-2 leading-tight">
+                  <h2 className="text-3xl md:text-5xl font-headline-xl uppercase text-white mb-2 leading-tight group-hover:text-electric-lime transition-colors">
                     {cmsData.hero.sideBanner.title}
                   </h2>
                   <p className="text-xs md:text-sm text-gray-300 mb-4 max-w-xs">
                     {cmsData.hero.sideBanner.description}
                   </p>
-                  <Link
-                    href={cmsData.hero.sideBanner.link || '/category/tees'}
-                    className="font-label-caps text-xs text-electric-lime uppercase font-bold flex items-center gap-1 hover:underline group"
+                  <div
+                    className="font-label-caps text-xs text-electric-lime uppercase font-bold flex items-center gap-1 group-hover:underline"
                   >
                     {cmsData.hero.sideBanner.ctaText || 'SHOP OVERSIZED'}
                     <span className="material-symbols-outlined text-xs group-hover:translate-x-1 transition-transform">
                       arrow_forward
                     </span>
-                  </Link>
+                  </div>
                 </div>
-              </div>
+              </Link>
             )}
           </section>
         )}
@@ -562,56 +574,61 @@ export default function Home() {
                   >
                     {activeTiles.map((product) => (
                       <div key={product.id} className="w-65 md:w-80 shrink-0 group">
-                        <div className="relative aspect-3/4 bg-charcoal overflow-hidden border border-charcoal mb-4">
-                          <img
-                            src={resolveImageUrl(product.imageUrl)}
-                            alt={product.title}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                          />
-                          {product.badge && (
-                            <span className={`absolute top-3 left-3 font-label-caps text-[9px] md:text-[10px] px-2 py-0.5 font-bold uppercase rounded-sm ${getBadgeClass(product.badgeColor)}`}>
-                              {product.badge}
-                            </span>
-                          )}
-                          <button
-                            onClick={() =>
-                              addToCart(
-                                {
-                                  id: product.id,
-                                  name: product.title,
-                                  slug: product.link.replace('/product/', '') || 'drop-item',
-                                  price: product.price || 1299,
-                                  description: product.subtitle || '',
-                                  images: [product.imageUrl],
-                                  sizes: ['M'],
-                                  stock: 10,
-                                  categoryId: 'drops',
-                                },
-                                'M',
-                                1
-                              )
-                            }
-                            className="absolute bottom-3 left-3 right-3 bg-white text-black font-label-caps text-xs py-3 uppercase font-bold hover:bg-electric-lime transition-colors opacity-0 group-hover:opacity-100 cursor-pointer text-center"
-                          >
-                            {product.ctaText || 'QUICK ADD'}
-                          </button>
-                        </div>
-                        <Link href={product.link || '/shop'}>
-                          <h3 className="font-bold text-sm md:text-base text-white group-hover:text-electric-lime transition-colors truncate">
-                            {product.title}
-                          </h3>
-                          {product.price !== undefined && (
-                            <div className="flex items-center gap-2 mt-1">
-                              <span className="text-electric-lime font-bold text-sm md:text-base">
-                                ₹{product.price}
+                        <Link href={product.link || '/shop'} className="block cursor-pointer">
+                          <div className="relative aspect-3/4 bg-charcoal overflow-hidden border border-charcoal mb-4">
+                            <img
+                              src={resolveImageUrl(product.imageUrl)}
+                              alt={product.title}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            />
+                            {product.badge && (
+                              <span className={`absolute top-3 left-3 font-label-caps text-[9px] md:text-[10px] px-2 py-0.5 font-bold uppercase rounded-sm ${getBadgeClass(product.badgeColor)}`}>
+                                {product.badge}
                               </span>
-                              {product.compareAtPrice && (
-                                <span className="text-gray-500 line-through text-xs md:text-sm">
-                                  ₹{product.compareAtPrice}
+                            )}
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                addToCart(
+                                  {
+                                    id: product.id,
+                                    name: product.title,
+                                    slug: product.link.replace('/product/', '') || 'drop-item',
+                                    price: product.price || 1299,
+                                    description: product.subtitle || '',
+                                    images: [product.imageUrl],
+                                    sizes: ['M'],
+                                    stock: 10,
+                                    categoryId: 'drops',
+                                  },
+                                  'M',
+                                  1
+                                );
+                              }}
+                              className="absolute bottom-3 left-3 right-3 bg-white text-black font-label-caps text-xs py-3 uppercase font-bold hover:bg-electric-lime transition-colors opacity-0 group-hover:opacity-100 cursor-pointer text-center z-10"
+                            >
+                              {product.ctaText || 'QUICK ADD'}
+                            </button>
+                          </div>
+                          <div>
+                            <h3 className="font-bold text-sm md:text-base text-white group-hover:text-electric-lime transition-colors truncate">
+                              {product.title}
+                            </h3>
+                            {product.price !== undefined && (
+                              <div className="flex items-center gap-2 mt-1">
+                                <span className="text-electric-lime font-bold text-sm md:text-base">
+                                  ₹{product.price}
                                 </span>
-                              )}
-                            </div>
-                          )}
+                                {product.compareAtPrice && (
+                                  <span className="text-gray-500 line-through text-xs md:text-sm">
+                                    ₹{product.compareAtPrice}
+                                  </span>
+                                )}
+                              </div>
+                            )}
+                          </div>
                         </Link>
                       </div>
                     ))}
