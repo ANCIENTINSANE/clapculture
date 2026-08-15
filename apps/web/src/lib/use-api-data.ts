@@ -136,7 +136,7 @@ function ensureBootstrap(): Promise<BootstrapData | null> {
 }
 
 // ─── React hook ──────────────────────────────────────────────────────
-function useBootstrap(): { data: BootstrapData | null; loading: boolean; refetch: () => void } {
+export function useBootstrap(): { data: BootstrapData | null; loading: boolean; refetch: () => void } {
   const [data, setData] = useState<BootstrapData | null>(() => bootstrapData || getLocalCache());
   const [loading, setLoading] = useState(!data);
   const mountedRef = useRef(true);
