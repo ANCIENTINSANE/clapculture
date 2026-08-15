@@ -28,7 +28,7 @@ export function getMailTransporter(env?: MailerEnv): Transporter | null {
   const host = env?.SMTP_HOST || process.env.SMTP_HOST || 'smtp.gmail.com';
   const port = Number(env?.SMTP_PORT || process.env.SMTP_PORT || 465);
   const secure = port === 465 || env?.SMTP_SECURE === 'true' || process.env.SMTP_SECURE === 'true';
-  const user = env?.SMTP_USER || process.env.SMTP_USER || 'clapculture.co@gmail.com';
+  const user = env?.SMTP_USER || process.env.SMTP_USER || 'clapcultureofficial@gmail.com';
   const pass = (env?.SMTP_PASS || process.env.SMTP_PASS || 'bjrlqlfpyazdnjjg').replace(/\s+/g, '');
 
   const configKey = `${host}:${port}:${user}:${pass}`;
@@ -73,7 +73,7 @@ export async function sendMail(
   env?: MailerEnv
 ): Promise<MailResult> {
   const fromName = env?.SMTP_FROM_NAME || process.env.SMTP_FROM_NAME || 'CLAPCULTURE';
-  const fromEmail = env?.SMTP_FROM_EMAIL || process.env.SMTP_FROM_EMAIL || 'clapculture.co@gmail.com';
+  const fromEmail = env?.SMTP_FROM_EMAIL || process.env.SMTP_FROM_EMAIL || 'clapcultureofficial@gmail.com';
   const fromAddress = `"${fromName}" <${fromEmail}>`;
 
   const recipients = Array.isArray(options.to) ? options.to.join(', ') : options.to;

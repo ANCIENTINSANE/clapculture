@@ -9,9 +9,9 @@ export default function SettingsPage() {
 
   // Mock State
   const [storeData, setStoreData] = useState({
-    name: 'ClapCulture',
+    name: 'CLAPCULTURE',
     logoUrl: 'https://clapculture.com/logo.png',
-    email: 'clapculture.co@gmail.com',
+    email: 'clapcultureofficial@gmail.com',
     phone: '+91 7569684299',
     address: 'Hyderabad, Telangana, India'
   });

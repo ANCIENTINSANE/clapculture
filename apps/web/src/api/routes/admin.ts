@@ -126,7 +126,7 @@ admin.post('/email/test', async (c) => {
 
     const body = await c.req.json().catch(() => ({}));
     const env = getEnv(c);
-    const targetEmail = body.to || env?.SMTP_USER || process.env.SMTP_USER || 'clapculture.co@gmail.com';
+    const targetEmail = body.to || env?.SMTP_USER || process.env.SMTP_USER || 'clapcultureofficial@gmail.com';
     const type = (body.type || 'test').toLowerCase();
 
     let result;

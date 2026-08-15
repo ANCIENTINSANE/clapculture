@@ -145,7 +145,7 @@ export default function ContactPage() {
             <div className="space-y-4 text-gray-300 font-body-sm">
               <p className="flex items-center gap-4">
                 <span className="material-symbols-outlined text-electric-lime">mail</span>
-                <a href="mailto:clapculture.co@gmail.com" className="hover:underline text-white">clapculture.co@gmail.com</a>
+                <a href="mailto:clapcultureofficial@gmail.com" className="hover:underline text-white">clapcultureofficial@gmail.com</a>
               </p>
               <p className="flex items-center gap-4">
                 <span className="material-symbols-outlined text-electric-lime">chat</span>
@@ -204,7 +204,7 @@ export default function ContactPage() {
                 <span className="material-symbols-outlined">photo_camera</span>
               </a>
               <a 
-                href="mailto:clapculture.co@gmail.com" 
+                href="mailto:clapcultureofficial@gmail.com" 
                 title="Send Email"
                 className="w-12 h-12 bg-charcoal border border-gray-800 flex items-center justify-center hover:text-electric-lime hover:border-electric-lime transition-all"
               >

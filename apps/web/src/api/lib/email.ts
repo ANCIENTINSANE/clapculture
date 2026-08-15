@@ -714,7 +714,7 @@ export async function sendOrderCancelledEmail(
     </div>
 
     <p style="font-size: 13px; color: #a3a3a3; margin: 0;">
-      If you did not request this cancellation or have questions, reach us at <a href="mailto:clapculture.co@gmail.com" style="color: #d2f000;">clapculture.co@gmail.com</a>.
+      If you did not request this cancellation or have questions, reach us at <a href="mailto:clapcultureofficial@gmail.com" style="color: #d2f000;">clapcultureofficial@gmail.com</a>.
     </p>
   `;
 
@@ -924,7 +924,7 @@ export async function sendContactInquiryEmail(
   env: AppwriteEnv | undefined,
   data: ContactInquiryData
 ): Promise<{ customerResult: MailResult; adminResult: MailResult }> {
-  const adminEmail = env?.ADMIN_NOTIFICATION_EMAIL || process.env.ADMIN_NOTIFICATION_EMAIL || 'clapculture.co@gmail.com';
+  const adminEmail = env?.ADMIN_NOTIFICATION_EMAIL || process.env.ADMIN_NOTIFICATION_EMAIL || 'clapcultureofficial@gmail.com';
   const baseUrl = env?.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 
   // 1. Customer Auto-Reply Email
@@ -1023,7 +1023,7 @@ export async function sendAdminAlertEmail(
   env: AppwriteEnv | undefined,
   data: AdminAlertData
 ): Promise<MailResult> {
-  const adminEmail = env?.ADMIN_NOTIFICATION_EMAIL || process.env.ADMIN_NOTIFICATION_EMAIL || 'clapculture.co@gmail.com';
+  const adminEmail = env?.ADMIN_NOTIFICATION_EMAIL || process.env.ADMIN_NOTIFICATION_EMAIL || 'clapcultureofficial@gmail.com';
   const baseUrl = env?.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 
   const bodyHtml = `
@@ -1115,7 +1115,7 @@ export async function sendTestEmail(
   env: AppwriteEnv | undefined,
   targetEmail?: string
 ): Promise<MailResult> {
-  const recipient = targetEmail || env?.SMTP_USER || process.env.SMTP_USER || 'clapculture.co@gmail.com';
+  const recipient = targetEmail || env?.SMTP_USER || process.env.SMTP_USER || 'clapcultureofficial@gmail.com';
   const baseUrl = env?.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 
   const bodyHtml = `
@@ -1138,7 +1138,7 @@ export async function sendTestEmail(
         </tr>
         <tr style="border-bottom: 1px solid #222;">
           <td style="padding: 8px 0; color: #737373;">AUTHENTICATED USER:</td>
-          <td style="padding: 8px 0; color: #d2f000; text-align: right;">${env?.SMTP_USER || process.env.SMTP_USER || 'clapculture.co@gmail.com'}</td>
+          <td style="padding: 8px 0; color: #d2f000; text-align: right;">${env?.SMTP_USER || process.env.SMTP_USER || 'clapcultureofficial@gmail.com'}</td>
         </tr>
         <tr>
           <td style="padding: 8px 0; color: #737373;">DISPATCH TIMESTAMP:</td>

@@ -15,7 +15,7 @@ export default function ReturnsPage() {
 
         <section>
           <h2 className="font-headline-md text-2xl uppercase mb-4 text-white">HOW TO RETURN</h2>
-          <p>To initiate a return, please contact us at hello@clapculture.com with your order number and reason for return. We will provide you with a return shipping address and instructions.</p>
+          <p>To initiate a return, please contact us at <a href="mailto:clapcultureofficial@gmail.com" className="text-electric-lime underline">clapcultureofficial@gmail.com</a> with your order number and reason for return. We will provide you with a return shipping address and instructions.</p>
         </section>
 
         <section>

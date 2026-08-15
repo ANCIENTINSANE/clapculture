@@ -206,8 +206,8 @@ export function buildClapCultureEmailTemplate(options: EmailTemplateOptions): st
               </p>
 
               <!-- Need Help Box -->
-              <p style="margin: 0 0 16px 0; font-size: 12px; color: #737373;">
-                Have questions? Reach us directly at <a href="mailto:clapculture.co@gmail.com" style="color: #d2f000; text-decoration: underline;">clapculture.co@gmail.com</a>
+              <p style="margin: 0; color: #737373; font-size: 11px;">
+                Have questions? Reach us directly at <a href="mailto:clapcultureofficial@gmail.com" style="color: #d2f000; text-decoration: underline;">clapcultureofficial@gmail.com</a>
               </p>
 
               <!-- Copyright & Developer Credits -->
