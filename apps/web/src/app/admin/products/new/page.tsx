@@ -34,6 +34,8 @@ export default function AddProductPage() {
   const [badges, setBadges] = useState<string[]>(['NEW DROP', '320 GSM']);
   const [images, setImages] = useState<string[]>([]);
   const [newImageUrl, setNewImageUrl] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [sizes, setSizes] = useState([
     { name: 'XS', stock: 10 },
@@ -105,9 +107,52 @@ export default function AddProductPage() {
   };
 
   const handleAddImage = () => {
-    if (!newImageUrl.trim()) return;
+    if (!newImageUrl.trim()) {
+      // If empty, fallback to opening file picker
+      fileInputRef.current?.click();
+      return;
+    }
     setImages(prev => [...prev, newImageUrl.trim()]);
     setNewImageUrl('');
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setIsUploading(true);
+    const token = localStorage.getItem('adminToken');
+
+    try {
+      const uploadPromises = Array.from(files).map(async (file) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        const res = await fetch('/api/media/upload', {
+          method: 'POST',
+          headers: {
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: formData,
+        });
+        const data = await res.json();
+        if (data.success) {
+          return data.data.id;
+        }
+        return null;
+      });
+
+      const uploadedIds = (await Promise.all(uploadPromises)).filter(Boolean);
+      if (uploadedIds.length > 0) {
+        setImages(prev => [...prev, ...uploadedIds as string[]]);
+        showNotification(`Successfully uploaded ${uploadedIds.length} image(s)!`);
+      }
+    } catch (err) {
+      console.error('Upload failed', err);
+      showNotification('Failed to upload image', true);
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
   };
 
   const handleRemoveImage = (index: number) => {
@@ -313,12 +358,27 @@ export default function AddProductPage() {
               <span className="text-xs text-gray-500 font-mono">({images.length} added)</span>
             </div>
 
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileUpload}
+              className="hidden"
+              multiple
+              accept="image/*"
+            />
             {images.length === 0 ? (
-              <div className="border-2 border-dashed border-[#262626] rounded-xl p-6 text-center">
-                <span className="material-symbols-outlined text-3xl text-gray-500 mb-1 block">add_photo_alternate</span>
-                <p className="text-sm text-gray-300 font-medium mb-1">No images added yet</p>
+              <div 
+                className="border-2 border-dashed border-[#262626] rounded-xl p-6 text-center cursor-pointer hover:border-[#d2f000] hover:bg-[#1a1a1a] transition-all"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <span className="material-symbols-outlined text-3xl text-gray-500 mb-1 block">
+                  {isUploading ? 'cloud_upload' : 'add_photo_alternate'}
+                </span>
+                <p className="text-sm text-gray-300 font-medium mb-1">
+                  {isUploading ? 'Uploading...' : 'No images added yet'}
+                </p>
                 <p className="text-xs text-gray-500">
-                  Add image URLs or use existing stock webps below to upload photos for this product.
+                  {isUploading ? 'Please wait while images are optimized...' : 'Click here to upload files, or paste an image URL below.'}
                 </p>
               </div>
             ) : (
@@ -345,15 +405,22 @@ export default function AddProductPage() {
                 type="text"
                 value={newImageUrl}
                 onChange={(e) => setNewImageUrl(e.target.value)}
-                placeholder="Enter image URL or path (e.g. /stock/superstar-mockup1.webp)"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleAddImage();
+                  }
+                }}
+                placeholder="Enter image URL or Appwrite ID"
                 className="flex-1 bg-[#1a1a1a] border border-[#262626] rounded-lg px-3 py-2 text-sm text-white focus:border-[#d2f000] outline-none"
               />
               <button
                 type="button"
                 onClick={handleAddImage}
-                className="px-4 py-2 bg-[#262626] text-white rounded-lg text-sm font-bold hover:bg-[#d2f000] hover:text-black transition-colors"
+                disabled={isUploading}
+                className="px-4 py-2 bg-[#262626] text-white rounded-lg text-sm font-bold hover:bg-[#d2f000] hover:text-black transition-colors disabled:opacity-50"
               >
-                Add Image
+                {newImageUrl.trim() ? 'Add URL' : 'Upload File'}
               </button>
             </div>
           </div>

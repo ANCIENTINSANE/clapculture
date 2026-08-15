@@ -33,6 +33,8 @@ export default function EditProductClient({ productId }: { productId: string }) 
     badges: [] as string[],
   });
 
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [slugStatus, setSlugStatus] = useState<'idle' | 'checking' | 'available' | 'taken'>('idle');
   const [existingProductName, setExistingProductName] = useState<string | null>(null);
@@ -168,12 +170,57 @@ export default function EditProductClient({ productId }: { productId: string }) 
   };
 
   const handleAddImage = () => {
-    if (!formData.newImageUrl.trim()) return;
+    if (!formData.newImageUrl.trim()) {
+      fileInputRef.current?.click();
+      return;
+    }
     setFormData(prev => ({
       ...prev,
       images: [...prev.images, prev.newImageUrl.trim()],
       newImageUrl: '',
     }));
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setIsUploading(true);
+    const token = localStorage.getItem('adminToken');
+
+    try {
+      const uploadPromises = Array.from(files).map(async (file) => {
+        const uploadFormData = new FormData();
+        uploadFormData.append('file', file);
+        const res = await fetch('/api/media/upload', {
+          method: 'POST',
+          headers: {
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: uploadFormData,
+        });
+        const data = await res.json();
+        if (data.success) {
+          return data.data.id;
+        }
+        return null;
+      });
+
+      const uploadedIds = (await Promise.all(uploadPromises)).filter(Boolean);
+      if (uploadedIds.length > 0) {
+        setFormData(prev => ({
+          ...prev,
+          images: [...prev.images, ...uploadedIds as string[]]
+        }));
+        showNotification(`Successfully uploaded ${uploadedIds.length} image(s)!`);
+      }
+    } catch (err) {
+      console.error('Upload failed', err);
+      showNotification('Failed to upload image', true);
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
   };
 
   const handleRemoveImage = (index: number) => {
@@ -459,36 +506,67 @@ export default function EditProductClient({ productId }: { productId: string }) 
           {/* Images Section */}
           <div className="bg-[#141414] border border-[#262626] rounded-xl p-6">
             <h3 className="text-sm font-bold uppercase text-white mb-4">Product Images</h3>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
-              {formData.images.map((img, idx) => (
-                <div key={idx} className="relative aspect-3/4 bg-[#1a1a1a] border border-[#262626] rounded-lg overflow-hidden group">
-
-                  <img src={resolveImageUrl(img)} alt="" className="w-full h-full object-cover" />
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveImage(idx)}
-                    className="absolute top-2 right-2 p-1 bg-red-600/80 hover:bg-red-600 text-white rounded-full transition-colors"
-                  >
-                    <span className="material-symbols-outlined text-sm block">close</span>
-                  </button>
-                </div>
-              ))}
-            </div>
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileUpload}
+              className="hidden"
+              multiple
+              accept="image/*"
+            />
+            {formData.images.length === 0 ? (
+              <div 
+                className="border-2 border-dashed border-[#262626] rounded-xl p-6 text-center cursor-pointer hover:border-[#d2f000] hover:bg-[#1a1a1a] transition-all mb-4"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <span className="material-symbols-outlined text-3xl text-gray-500 mb-1 block">
+                  {isUploading ? 'cloud_upload' : 'add_photo_alternate'}
+                </span>
+                <p className="text-sm text-gray-300 font-medium mb-1">
+                  {isUploading ? 'Uploading...' : 'No images added yet'}
+                </p>
+                <p className="text-xs text-gray-500">
+                  {isUploading ? 'Please wait while images are optimized...' : 'Click here to upload files, or paste an image URL below.'}
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
+                {formData.images.map((img, idx) => (
+                  <div key={idx} className="relative aspect-3/4 bg-[#1a1a1a] border border-[#262626] rounded-lg overflow-hidden group">
+                    <img src={resolveImageUrl(img)} alt="" className="w-full h-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveImage(idx)}
+                      className="absolute top-2 right-2 p-1 bg-red-600/80 hover:bg-red-600 text-white rounded-full transition-colors"
+                    >
+                      <span className="material-symbols-outlined text-sm block">close</span>
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
 
             <div className="flex gap-2">
               <input
                 type="text"
                 value={formData.newImageUrl}
                 onChange={(e) => setFormData(p => ({ ...p, newImageUrl: e.target.value }))}
-                placeholder="Image path or URL (e.g. /stock/superstar-mockup1.webp)"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleAddImage();
+                  }
+                }}
+                placeholder="Image path or Appwrite ID"
                 className="flex-1 bg-[#1a1a1a] border border-[#262626] rounded-lg px-4 py-2 text-sm text-white focus:border-[#d2f000] outline-none"
               />
               <button
                 type="button"
                 onClick={handleAddImage}
-                className="px-4 py-2 bg-[#262626] text-white rounded-lg text-sm font-bold hover:bg-electric-lime hover:text-black transition-colors"
+                disabled={isUploading}
+                className="px-4 py-2 bg-[#262626] text-white rounded-lg text-sm font-bold hover:bg-electric-lime hover:text-black transition-colors disabled:opacity-50"
               >
-                Add Image
+                {formData.newImageUrl.trim() ? 'Add URL' : 'Upload File'}
               </button>
             </div>
           </div>
