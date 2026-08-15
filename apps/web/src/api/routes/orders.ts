@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { ID, Query } from 'node-appwrite';
 import { getAppwriteClient } from '../lib/appwrite';
-import { getDbId, getEnv, generateOrderId, getNextSequentialOrderId } from '../lib/utils';
+import { getDbId, getEnv, getNextSequentialOrderId } from '../lib/utils';
 import { adminAuth } from '../middleware/auth';
 import { upsertCustomerAndUser } from './customers';
 import {
@@ -170,6 +170,10 @@ function enrichOrderDoc(doc: Record<string, unknown>) {
 
 orders.get('/:orderId', async (c) => {
   try {
+    c.header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+    c.header('Pragma', 'no-cache');
+    c.header('Expires', '0');
+
     const rawId = c.req.param('orderId') || '';
     const cleanId = rawId.replace('#', '').trim();
     const { databases } = getAppwriteClient(getEnv(c));

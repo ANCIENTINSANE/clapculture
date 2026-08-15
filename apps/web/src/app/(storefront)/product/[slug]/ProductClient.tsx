@@ -263,7 +263,7 @@ export default function ProductClient({ product, relatedProducts }: ProductClien
             </table>
           </div>
 
-          <div className="bg-[#181818] border border-gray-800 rounded-lg p-3 text-xs text-gray-400 space-y-1.5">
+          <div className="bg-soft-charcoal border border-gray-800 rounded-lg p-3 text-xs text-gray-400 space-y-1.5">
             <p className="text-gray-300 font-semibold flex items-center gap-1.5">
               <span className="text-electric-lime">📏</span> Fit Note:
             </p>

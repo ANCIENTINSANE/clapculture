@@ -27,6 +27,7 @@ export interface OrderData {
   createdAt: string;
   transactionId?: string;
   screenshotUrl?: string;
+  trackingNumber?: string;
 }
 
 // ─── Context ─────────────────────────────────────────────────────────

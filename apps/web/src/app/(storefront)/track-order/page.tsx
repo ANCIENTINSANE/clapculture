@@ -26,7 +26,10 @@ function TrackOrderContent() {
     const cleanId = searchId.replace('#', '').trim();
 
     try {
-      const res = await fetch(`/api/orders/${cleanId}`);
+      const res = await fetch(`/api/orders/${cleanId}?t=${Date.now()}`, {
+        cache: 'no-store',
+        headers: { 'Cache-Control': 'no-cache' }
+      });
       if (res.ok) {
         const json = await res.json();
         if (json.success && json.data) {
@@ -52,6 +55,7 @@ function TrackOrderContent() {
             paymentStatus: doc.paymentStatus || 'SUBMITTED',
             orderStatus: doc.orderStatus || 'PLACED',
             transactionId: doc.transactionId,
+            trackingNumber: doc.trackingNumber,
             createdAt: doc.$createdAt || new Date().toISOString(),
           };
 
@@ -106,13 +110,14 @@ function TrackOrderContent() {
   const currentStepIndex = useMemo(() => {
     if (!dbOrder) return 0;
     
-    const pStatus = dbOrder.paymentStatus || 'PENDING';
-    const oStatus = dbOrder.orderStatus || 'PLACED';
+    const pStatus = (dbOrder.paymentStatus || '').toUpperCase();
+    const oStatus = (dbOrder.orderStatus || '').toUpperCase();
 
     if (oStatus === 'DELIVERED') return 6;
     if (oStatus === 'SHIPPED') return 5;
     if (oStatus === 'PROCESSING' || oStatus === 'PACKED') return 4;
-    if (oStatus === 'CONFIRMED' || pStatus === 'VERIFIED') return 3;
+    if (oStatus === 'CONFIRMED') return 3;
+    if (pStatus === 'VERIFIED') return 2;
     if (pStatus === 'SUBMITTED') return 1;
     
     return 0;
@@ -248,6 +253,25 @@ function TrackOrderContent() {
                 );
               })}
             </div>
+
+            {/* Live Courier Tracking Number if available */}
+            {dbOrder.trackingNumber && (
+              <div className="mt-8 bg-[#141414] border border-electric-lime/40 rounded-xl p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                <div>
+                  <span className="text-[10px] font-mono text-gray-400 uppercase tracking-widest block">
+                    COURIER TRACKING / AWB NUMBER
+                  </span>
+                  <span className="text-base font-mono font-bold text-electric-lime tracking-wider">
+                    {dbOrder.trackingNumber}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="bg-electric-lime/10 text-electric-lime border border-electric-lime/30 px-3 py-1 rounded text-xs font-mono font-bold">
+                    {dbOrder.orderStatus === 'DELIVERED' ? 'DELIVERED' : 'IN TRANSIT'}
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Ordered Items Preview */}

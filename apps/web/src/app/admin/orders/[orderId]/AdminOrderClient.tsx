@@ -195,8 +195,9 @@ export default function AdminOrderClient({ orderId }: { orderId: string }) {
     : 'Recent Order';
 
   // ─── WhatsApp Automated Updates ─────────────────────────────────────────
-  const [waTemplate, setWaTemplate] = useState<'AUTO' | 'CONFIRMED' | 'SHIPPED' | 'PROCESSING' | 'DELIVERED' | 'PAYMENT_QUERY'>('AUTO');
-  const [customWaMsg, setCustomWaMsg] = useState('');
+  type WhatsAppTemplateType = 'AUTO' | 'CONFIRMED' | 'SHIPPED' | 'PROCESSING' | 'DELIVERED' | 'PAYMENT_QUERY';
+  const [waTemplate, setWaTemplate] = useState<WhatsAppTemplateType>('AUTO');
+  const [customWaMsg, setCustomWaMsg] = useState<string | null>(null);
 
   const cleanPhone = React.useMemo(() => {
     const raw = (customer.phone || '').replace(/\D/g, '');
@@ -292,17 +293,16 @@ Stay rebel,
 _Team CLAPCULTURE_ ⚡`;
   }, [customer.fullName, cleanId, itemsSummary, order?.total, order?.transactionId, order?.trackingNumber, trackingNumber, waTemplate, paymentStatus, orderStatus]);
 
-  useEffect(() => {
-    setCustomWaMsg(generatedWhatsAppMessage);
-  }, [generatedWhatsAppMessage]);
+  const activeWhatsAppMessage = customWaMsg !== null ? customWaMsg : generatedWhatsAppMessage;
 
   const handleOpenWhatsApp = () => {
     if (!cleanPhone) {
       showToast('No valid customer phone number found', true);
       return;
     }
-    const textToSend = customWaMsg.trim() || generatedWhatsAppMessage;
-    const url = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(textToSend)}`;
+    const textToSend = (activeWhatsAppMessage || '').trim();
+    // Direct API URL without 302 redirect preserves all Unicode emojis and text formatting
+    const url = `https://api.whatsapp.com/send/?phone=${cleanPhone}&text=${encodeURIComponent(textToSend)}`;
     window.open(url, '_blank');
   };
 
@@ -408,18 +408,21 @@ _Team CLAPCULTURE_ ⚡`;
             {/* Template Selector Pills */}
             <div className="flex flex-wrap gap-2 mb-4">
               <span className="text-[11px] font-mono text-gray-400 self-center mr-1">Templates:</span>
-              {[
+              {([
                 { id: 'AUTO', label: '⚡ Auto (Current Status)' },
                 { id: 'CONFIRMED', label: '✅ Order Confirmed' },
                 { id: 'PROCESSING', label: '📦 Packing / Hub' },
                 { id: 'SHIPPED', label: '🚚 Dispatched & Tracking' },
                 { id: 'DELIVERED', label: '🎉 Delivered' },
                 { id: 'PAYMENT_QUERY', label: '⚠️ Payment Help / UTR' },
-              ].map((t) => (
+              ] as const).map((t) => (
                 <button
                   key={t.id}
                   type="button"
-                  onClick={() => setWaTemplate(t.id as any)}
+                  onClick={() => {
+                    setWaTemplate(t.id);
+                    setCustomWaMsg(null);
+                  }}
                   className={`text-xs font-mono px-3 py-1.5 rounded-lg border transition-all cursor-pointer ${
                     waTemplate === t.id
                       ? 'bg-[#25D366] text-black border-[#25D366] font-bold shadow-md'
@@ -438,7 +441,7 @@ _Team CLAPCULTURE_ ⚡`;
               </label>
               <textarea
                 rows={7}
-                value={customWaMsg}
+                value={activeWhatsAppMessage}
                 onChange={(e) => setCustomWaMsg(e.target.value)}
                 className="w-full bg-[#0d120d] border border-[#25D366]/20 rounded-lg p-3 text-xs md:text-sm font-mono text-gray-200 focus:border-[#25D366] outline-none resize-y leading-relaxed"
                 placeholder="Type your WhatsApp message..."
@@ -452,7 +455,7 @@ _Team CLAPCULTURE_ ⚡`;
                   <button
                     type="button"
                     onClick={() => {
-                      navigator.clipboard.writeText(customWaMsg || generatedWhatsAppMessage);
+                      navigator.clipboard.writeText(activeWhatsAppMessage);
                       showToast('📋 WhatsApp message copied to clipboard!');
                     }}
                     className="bg-[#222] hover:bg-[#333] text-gray-300 px-3 py-2 rounded-lg text-xs font-mono border border-[#444] transition-colors cursor-pointer"
