@@ -8,6 +8,41 @@ import { processAndCompressImage } from '../lib/image';
 const media = new Hono();
 const BUCKET_ID = 'media';
 
+// Public CDN-cached image proxy for Appwrite storage files
+media.get('/file/:id', async (c) => {
+  try {
+    const id = c.req.param('id') || '';
+    if (!id) {
+      return c.json({ error: 'File ID required' }, 400);
+    }
+
+    const env = getEnv(c);
+    const endpoint = env.APPWRITE_ENDPOINT || 'https://sgp.cloud.appwrite.io/v1';
+    const projectId = env.APPWRITE_PROJECT_ID || '6a7dfa97003713198186';
+    
+    const appwriteUrl = `${endpoint}/storage/buckets/${BUCKET_ID}/files/${id}/view?project=${projectId}`;
+    
+    const res = await fetch(appwriteUrl);
+    if (!res.ok) {
+      return c.json({ error: 'Image not found' }, res.status as any);
+    }
+    
+    const contentType = res.headers.get('content-type') || 'image/webp';
+    const body = await res.arrayBuffer();
+    
+    return c.body(body, 200, {
+      'Content-Type': contentType,
+      'Cache-Control': 'public, max-age=31536000, immutable',
+      'CDN-Cache-Control': 'public, max-age=31536000, immutable',
+      'Cloudflare-CDN-Cache-Control': 'public, max-age=31536000, immutable',
+      'X-Content-Type-Options': 'nosniff',
+    });
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : 'Error streaming image';
+    return c.json({ error: msg }, 500);
+  }
+});
+
 media.post('/upload', adminAuth, async (c) => {
   try {
     const body = await c.req.parseBody();

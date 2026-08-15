@@ -58,35 +58,43 @@ export function getStatusColor(status: string) {
 
 export function resolveImageUrl(url: string | undefined | null): string {
   if (!url) return '';
-  // If it's already an absolute URL, clean it and return
-  if (url.startsWith('http')) {
-    try {
-      const urlObj = new URL(url);
-      urlObj.searchParams.delete('mode');
-      urlObj.searchParams.delete('impersonateuserid');
-      return urlObj.toString();
-    } catch {
-      return url;
-    }
-  }
+  
   if (url.startsWith('data:')) {
     return url;
   }
-  
+
+  // If already pointing to our CDN-cached media proxy
+  if (url.startsWith('/api/media/file/')) {
+    return url;
+  }
+
+  // If it's an Appwrite storage URL, extract the fileId and route through our CDN proxy
+  if (url.includes('/storage/buckets/media/files/')) {
+    const match = url.match(/\/files\/([^/?#]+)/);
+    if (match && match[1]) {
+      return `/api/media/file/${match[1]}`;
+    }
+  }
+
+  // If it's another absolute external URL (e.g. unsplash or external CDN)
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url;
+  }
+
+  // Local assets starting with '/'
+  if (url.startsWith('/')) {
+    return url;
+  }
+
   // Extract the filename or file ID
   const parts = url.split('/');
   const fileId = parts[parts.length - 1];
-  
-  // If the fileId contains a dot (e.g. .png, .jpg), it's a local asset (or a file with extension).
-  // Appwrite IDs generated via ID.unique() are 20 character strings without extensions.
+
+  // If the fileId contains a dot (e.g. .png, .jpg, .webp), it's a local public asset
   if (fileId.includes('.')) {
-    return url.startsWith('/') ? url : `/${url}`;
+    return `/${url}`;
   }
-  
-  // Construct the Appwrite storage URL for Appwrite File IDs
-  const endpoint = process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT || 'https://sgp.cloud.appwrite.io/v1';
-  const projectId = process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID || '6a7dfa97003713198186';
-  const bucketId = 'media';
-  
-  return `${endpoint}/storage/buckets/${bucketId}/files/${fileId}/view?project=${projectId}`;
+
+  // Otherwise, it's an Appwrite File ID -> route through CDN proxy
+  return `/api/media/file/${fileId}`;
 }

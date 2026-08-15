@@ -91,9 +91,10 @@ function setLocalCache(data: BootstrapData): void {
   }
 }
 
-async function fetchBootstrap(): Promise<BootstrapData | null> {
+async function fetchBootstrap(forceRefresh = false): Promise<BootstrapData | null> {
   try {
-    const res = await fetch(`/api/bootstrap?t=${Date.now()}`, { cache: 'no-store' });
+    const url = forceRefresh ? `/api/bootstrap?refresh=true&t=${Date.now()}` : `/api/bootstrap`;
+    const res = await fetch(url);
     if (!res.ok) throw new Error(`Bootstrap API ${res.status}`);
     const json = await res.json();
     if (json.success && json.data) {
@@ -106,9 +107,9 @@ async function fetchBootstrap(): Promise<BootstrapData | null> {
   }
 }
 
-function triggerBackgroundRevalidate() {
+function triggerBackgroundRevalidate(force = false) {
   if (bootstrapPromise) return;
-  bootstrapPromise = fetchBootstrap().then(data => {
+  bootstrapPromise = fetchBootstrap(force).then(data => {
     if (data) {
       bootstrapData = data;
       setLocalCache(data);
@@ -122,12 +123,15 @@ function triggerBackgroundRevalidate() {
 function ensureBootstrap(): Promise<BootstrapData | null> {
   // Check localStorage first
   const cached = getLocalCache();
-  if (cached && !bootstrapData) {
-    bootstrapData = cached;
-    notifyListeners();
+  if (cached) {
+    if (!bootstrapData) {
+      bootstrapData = cached;
+      notifyListeners();
+    }
+    return Promise.resolve(cached);
   }
 
-  // Always revalidate in background on page load
+  // Only revalidate if no cache exists
   triggerBackgroundRevalidate();
   
   if (bootstrapData) return Promise.resolve(bootstrapData);
