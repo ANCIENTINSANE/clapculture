@@ -97,33 +97,75 @@ function TrackOrderContent() {
   };
 
   const steps = [
-    { key: 'PLACED', label: 'ORDER PLACED' },
-    { key: 'SUBMITTED', label: 'PAYMENT SUBMITTED' },
-    { key: 'VERIFIED', label: 'PAYMENT VERIFIED' },
-    { key: 'CONFIRMED', label: 'ORDER CONFIRMED' },
-    { key: 'PROCESSING', label: 'PROCESSING & PACKING' },
-    { key: 'SHIPPED', label: 'SHIPPED / IN TRANSIT' },
-    { key: 'DELIVERED', label: 'DELIVERED' },
+    { 
+      key: 'PLACED', 
+      label: 'ORDER PLACED',
+      completedDesc: 'Order details registered',
+      activeDesc: 'Registering order details...',
+      pendingDesc: 'Pending registration'
+    },
+    { 
+      key: 'SUBMITTED', 
+      label: 'PAYMENT SUBMITTED',
+      completedDesc: 'UPI payment reference submitted',
+      activeDesc: 'Awaiting payment reference submission',
+      pendingDesc: 'Pending payment submission'
+    },
+    { 
+      key: 'VERIFIED', 
+      label: 'PAYMENT VERIFIED',
+      completedDesc: 'Payment verified & approved',
+      activeDesc: 'Finance team verifying UTR reference...',
+      pendingDesc: 'Pending verification'
+    },
+    { 
+      key: 'CONFIRMED', 
+      label: 'ORDER CONFIRMED',
+      completedDesc: 'Order confirmed by CLAPCULTURE team',
+      activeDesc: 'Reviewing and confirming order...',
+      pendingDesc: 'Pending order confirmation'
+    },
+    { 
+      key: 'PROCESSING', 
+      label: 'PROCESSING & PACKING',
+      completedDesc: 'Quality checked & packed for dispatch',
+      activeDesc: 'Currently packing & quality checking at hub',
+      pendingDesc: 'Scheduled for packing'
+    },
+    { 
+      key: 'SHIPPED', 
+      label: 'SHIPPED / IN TRANSIT',
+      completedDesc: 'Dispatched with express courier',
+      activeDesc: 'In transit to your delivery destination',
+      pendingDesc: 'Scheduled for dispatch'
+    },
+    { 
+      key: 'DELIVERED', 
+      label: 'DELIVERED',
+      completedDesc: 'Package delivered to shipping address',
+      activeDesc: 'Out for delivery to your doorstep',
+      pendingDesc: 'Pending delivery'
+    },
   ];
 
   // Determine current timeline step index strictly based on payment & order status
+  // When a milestone is completed, the NEXT step becomes the active "In Progress" step
   const currentStepIndex = useMemo(() => {
     if (!dbOrder) return 0;
     
     const pStatus = (dbOrder.paymentStatus || '').toUpperCase();
     const oStatus = (dbOrder.orderStatus || '').toUpperCase();
 
-    if (oStatus === 'DELIVERED') return 6;
-    if (oStatus === 'SHIPPED') return 5;
-    if (oStatus === 'PROCESSING' || oStatus === 'PACKED') return 4;
-    if (oStatus === 'CONFIRMED') return 3;
-    if (pStatus === 'VERIFIED') return 2;
-    if (pStatus === 'SUBMITTED') return 1;
+    if (oStatus === 'DELIVERED') return 7; // All 7 steps complete!
+    if (oStatus === 'SHIPPED') return 6; // DELIVERED is currently in progress
+    if (oStatus === 'PROCESSING' || oStatus === 'PACKED') return 5; // SHIPPED is currently in progress
+    if (oStatus === 'CONFIRMED' || pStatus === 'VERIFIED') return 4; // PROCESSING & PACKING is currently in progress
+    if (pStatus === 'SUBMITTED') return 2; // PAYMENT VERIFICATION is in progress
     
-    return 0;
+    return 1; // PAYMENT SUBMISSION is in progress
   }, [dbOrder]);
 
-  const isConfirmed = currentStepIndex >= 3;
+  const isConfirmed = currentStepIndex >= 4;
   const isPaymentVerified = dbOrder?.paymentStatus === 'VERIFIED' || isConfirmed;
 
   return (
@@ -152,7 +194,7 @@ function TrackOrderContent() {
               required
               value={orderId}
               onChange={(e) => setOrderId(e.target.value)}
-              placeholder="e.g. CLAP10245"
+              placeholder="e.g. CLAP01002"
               className="w-full bg-black border border-gray-700 p-4 text-white font-mono focus:outline-none focus:border-electric-lime text-base rounded"
             />
           </div>
@@ -194,7 +236,15 @@ function TrackOrderContent() {
             </div>
             
             <div className="flex flex-col items-end gap-2">
-              {isPaymentVerified ? (
+              {currentStepIndex === 7 ? (
+                <span className="bg-[#25D366] text-black text-xs font-bold px-3 py-1.5 uppercase rounded tracking-wider font-mono">
+                  🎉 ORDER DELIVERED
+                </span>
+              ) : currentStepIndex >= 6 ? (
+                <span className="bg-electric-lime text-black text-xs font-bold px-3 py-1.5 uppercase rounded tracking-wider font-mono">
+                  🚚 IN TRANSIT / DISPATCHED
+                </span>
+              ) : isPaymentVerified ? (
                 <span className="bg-electric-lime text-black text-xs font-bold px-3 py-1.5 uppercase rounded tracking-wider font-mono">
                   ✓ ORDER CONFIRMED & VERIFIED
                 </span>
@@ -221,32 +271,65 @@ function TrackOrderContent() {
             <h3 className="font-headline-md text-xl text-white mb-6 uppercase tracking-wider">
               SHIPMENT PROGRESS
             </h3>
-            <div className="relative pl-8 space-y-6">
-              {/* Vertical Progress Line */}
-              <div className="absolute left-3.5 top-3 bottom-3 w-0.5 bg-gray-800"></div>
-
+            
+            {/* Perfectly Aligned Timeline: Each step has its own centered dot & connector */}
+            <div className="space-y-0 pl-1">
               {steps.map((step, idx) => {
                 const isCompleted = idx < currentStepIndex;
                 const isCurrent = idx === currentStepIndex;
-
-                let dotClass = "bg-gray-800 border-2 border-charcoal";
-                let textClass = "text-gray-500";
-                
-                if (isCompleted) {
-                  dotClass = "bg-electric-lime border-2 border-electric-lime shadow-[0_0_10px_rgba(210,240,0,0.6)]";
-                  textClass = "text-white opacity-80";
-                } else if (isCurrent) {
-                  dotClass = "bg-black border-2 border-electric-lime animate-pulse";
-                  textClass = "text-electric-lime font-bold";
-                }
+                const isLast = idx === steps.length - 1;
 
                 return (
-                  <div key={step.key} className="relative z-10 flex items-start gap-4">
-                    <div className={`absolute -left-9.5 w-4 h-4 rounded-full mt-1 ${dotClass}`}></div>
-                    <div className="grow">
-                      <h4 className={`font-label-caps tracking-widest text-sm ${textClass}`}>{step.label}</h4>
-                      <p className={`text-xs mt-0.5 ${isCurrent ? 'text-gray-300 font-bold' : 'text-gray-600'}`}>
-                        {isCompleted ? '✓ Completed' : isCurrent ? 'Active - Current Status' : 'Pending Verification'}
+                  <div key={step.key} className="flex items-start gap-4">
+                    {/* Node Column: Dot + Vertical Line */}
+                    <div className="flex flex-col items-center shrink-0 w-6">
+                      {/* Node Circle */}
+                      <div className="relative flex items-center justify-center">
+                        {isCompleted ? (
+                          <div className="w-5 h-5 rounded-full bg-electric-lime text-black flex items-center justify-center shadow-[0_0_8px_rgba(210,240,0,0.6)]">
+                            <span className="text-[10px] font-bold">✓</span>
+                          </div>
+                        ) : isCurrent ? (
+                          <div className="relative flex items-center justify-center">
+                            <div className="w-5 h-5 rounded-full border-2 border-electric-lime bg-black flex items-center justify-center shadow-[0_0_10px_rgba(210,240,0,0.7)]">
+                              <div className="w-2 h-2 rounded-full bg-electric-lime animate-pulse" />
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="w-5 h-5 rounded-full border-2 border-gray-800 bg-[#141414] flex items-center justify-center">
+                            <div className="w-1.5 h-1.5 rounded-full bg-gray-700" />
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Connecting Line between steps */}
+                      {!isLast && (
+                        <div 
+                          className={`w-0.5 min-h-[36px] my-1 transition-colors ${
+                            idx < currentStepIndex ? 'bg-electric-lime' : 'bg-gray-800'
+                          }`} 
+                        />
+                      )}
+                    </div>
+
+                    {/* Content Column */}
+                    <div className={`grow pt-0 ${isLast ? 'pb-2' : 'pb-6'}`}>
+                      <div className="flex items-center gap-2">
+                        <h4 className={`font-label-caps tracking-widest text-sm ${
+                          isCompleted ? 'text-white font-semibold' : isCurrent ? 'text-electric-lime font-bold' : 'text-gray-500'
+                        }`}>
+                          {step.label}
+                        </h4>
+                        {isCurrent && (
+                          <span className="bg-electric-lime/10 text-electric-lime border border-electric-lime/30 text-[9px] px-1.5 py-0.5 rounded font-mono uppercase font-bold">
+                            Active
+                          </span>
+                        )}
+                      </div>
+                      <p className={`text-xs mt-0.5 ${
+                        isCurrent ? 'text-gray-200 font-medium' : isCompleted ? 'text-gray-400' : 'text-gray-600'
+                      }`}>
+                        {isCompleted ? (step.completedDesc || '✓ Completed') : isCurrent ? (step.activeDesc || 'Active - Current Status') : (step.pendingDesc || 'Pending Verification')}
                       </p>
                     </div>
                   </div>
