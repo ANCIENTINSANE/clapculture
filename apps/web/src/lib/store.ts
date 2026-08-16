@@ -60,25 +60,39 @@ const emptyCheckoutInfo: CheckoutInfo = {
 const OrderStoreContext = createContext<OrderStoreContextType | undefined>(undefined);
 
 export function OrderStoreProvider({ children }: { children: ReactNode }) {
-  const [checkoutInfo, setCheckoutInfoState] = useState<CheckoutInfo>(emptyCheckoutInfo);
-  const [orders, setOrders] = useState<OrderData[]>([]);
-  const [currentOrder, setCurrentOrder] = useState<OrderData | null>(null);
+  const [checkoutInfo, setCheckoutInfoState] = useState<CheckoutInfo>(() => {
+    if (typeof window === 'undefined') return emptyCheckoutInfo;
+    try {
+      const stored = sessionStorage.getItem('cc_checkout');
+      return stored ? JSON.parse(stored) : emptyCheckoutInfo;
+    } catch {
+      return emptyCheckoutInfo;
+    }
+  });
+
+  const [orders, setOrders] = useState<OrderData[]>(() => {
+    if (typeof window === 'undefined') return [];
+    try {
+      const stored = sessionStorage.getItem('cc_orders');
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const [currentOrder, setCurrentOrder] = useState<OrderData | null>(() => {
+    if (typeof window === 'undefined') return null;
+    try {
+      const stored = sessionStorage.getItem('cc_current_order');
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
+  });
+
   const [isHydrated, setIsHydrated] = useState(false);
 
-  // Hydrate from sessionStorage once mounted on client
   useEffect(() => {
-    try {
-      const storedCheckout = sessionStorage.getItem('cc_checkout');
-      if (storedCheckout) setCheckoutInfoState(JSON.parse(storedCheckout));
-
-      const storedOrders = sessionStorage.getItem('cc_orders');
-      if (storedOrders) setOrders(JSON.parse(storedOrders));
-
-      const storedCurrentOrder = sessionStorage.getItem('cc_current_order');
-      if (storedCurrentOrder) setCurrentOrder(JSON.parse(storedCurrentOrder));
-    } catch (e) {
-      console.error('Failed to load order store from sessionStorage:', e);
-    }
     setIsHydrated(true);
   }, []);
 

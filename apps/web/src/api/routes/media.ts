@@ -3,7 +3,6 @@ import { adminAuth } from '../middleware/auth';
 import { uploadFile, getFileUrl } from '../lib/storage';
 import { getAppwriteClient } from '../lib/appwrite';
 import { getEnv } from '../lib/utils';
-import { processAndCompressImage } from '../lib/image';
 
 const media = new Hono();
 const BUCKET_ID = 'media';
@@ -41,7 +40,7 @@ media.get('/file/:id', async (c) => {
     
     // Fetch from Appwrite Storage with Cloudflare cache headers
     const res = await fetch(appwriteUrl, {
-      // @ts-ignore Cloudflare specific options
+      // @ts-expect-error Cloudflare specific options
       cf: {
         cacheEverything: true,
         cacheTtl: 31536000,
@@ -98,7 +97,7 @@ media.post('/upload', adminAuth, async (c) => {
     
     const env = getEnv(c);
 
-    let uploadPayload: File = file;
+    const uploadPayload: File = file;
 
     const uploaded = await uploadFile(env, BUCKET_ID, uploadPayload);
     const url = getFileUrl(env, BUCKET_ID, uploaded.$id);

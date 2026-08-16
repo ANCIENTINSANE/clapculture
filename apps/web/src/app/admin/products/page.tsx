@@ -63,10 +63,47 @@ export default function ProductsPage() {
       setLoading(false);
     }
   }, []);
-
   useEffect(() => {
-    loadDynamicProducts();
-  }, [loadDynamicProducts]);
+    let cancelled = false;
+    const load = async () => {
+      try {
+        setLoading(true);
+        const res = await fetch('/api/products?limit=100&includeHidden=true');
+        if (res.ok && !cancelled) {
+          const data = await res.json();
+          if (data.success && Array.isArray(data.data)) {
+            const mapped: AdminProduct[] = data.data.map((doc: Record<string, unknown>) => {
+              const images = Array.isArray(doc.images) ? doc.images : [];
+              const rawImg = images[0] || '';
+              const image = resolveImageUrl(rawImg) || '/herobg1-desktop.png';
+              
+              const isDocActive = doc.isActive !== false && !(Array.isArray(doc.badges) && (doc.badges.includes('HIDDEN') || doc.badges.includes('DISABLED')));
+              
+              return {
+                id: (doc.$id || doc.id || '') as string,
+                slug: (doc.slug || doc.$id || '') as string,
+                name: (doc.name || 'Untitled Product') as string,
+                image,
+                category: (doc.category || 'Tees') as string,
+                price: `₹${doc.price || 699}`,
+                stock: Number(doc.stock) || 0,
+                isActive: isDocActive,
+                stockStatus: (Number(doc.stock) || 0) > 0 ? 'In Stock' : 'Sold Out',
+                created: doc.$createdAt ? new Date(doc.$createdAt as string).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : 'Recently',
+              };
+            });
+            setProducts(mapped);
+          }
+        }
+      } catch {
+        if (!cancelled) showNotification('Failed to load products from database', true);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+    load();
+    return () => { cancelled = true; };
+  }, []);
 
   const handleToggleVisibility = async (productId: string, currentIsActive: boolean) => {
     setTogglingId(productId);

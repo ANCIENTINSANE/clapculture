@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { compressImageFile } from '@/lib/image-compression';
 
 type MediaItem = {
@@ -37,7 +37,7 @@ export default function MediaLibrary() {
     setTimeout(() => setToastMessage(null), 3000);
   };
 
-  const fetchMedia = async () => {
+  const fetchMedia = useCallback(async () => {
     try {
       const res = await fetch('/api/media');
       const json = await res.json();
@@ -50,11 +50,26 @@ export default function MediaLibrary() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    fetchMedia();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    let cancelled = false;
+    const load = async () => {
+      try {
+        const res = await fetch('/api/media');
+        const json = await res.json();
+        if (json.success && json.data && !cancelled) {
+          setMedia(json.data);
+        }
+      } catch (err) {
+        console.error('Failed to fetch media', err);
+        if (!cancelled) showToast('Failed to load media');
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+    load();
+    return () => { cancelled = true; };
   }, []);
 
   const filteredMedia = media.filter(item => 

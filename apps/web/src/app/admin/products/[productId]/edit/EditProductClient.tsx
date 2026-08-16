@@ -4,7 +4,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { formatCurrency, resolveImageUrl } from '@/lib/utils';
+import { resolveImageUrl } from '@/lib/utils';
 import { compressImageFile } from '@/lib/image-compression';
 import { BadgeTagSelector } from '@/components/admin/BadgeTagSelector';
 
