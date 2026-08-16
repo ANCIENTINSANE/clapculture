@@ -12,6 +12,7 @@ categories.get('/', async (c) => {
     const cached = getCached('categories_all');
     if (cached) {
       c.header('X-Cache', 'HIT');
+      c.header('Cache-Control', 'public, max-age=60, s-maxage=300, stale-while-revalidate=600');
       return c.json({ success: true, data: cached });
     }
 
@@ -23,8 +24,9 @@ categories.get('/', async (c) => {
       'categories'
     );
     
-    setCached('categories_all', response.documents, 120);
+    setCached('categories_all', response.documents, 300);
     c.header('X-Cache', 'MISS');
+    c.header('Cache-Control', 'public, max-age=60, s-maxage=300, stale-while-revalidate=600');
     return c.json({ success: true, data: response.documents });
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : 'Internal server error';

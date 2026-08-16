@@ -65,10 +65,9 @@ function getLocalCache(): BootstrapData | null {
       return null;
     }
     
-    // TTL expired
+    // If cache is expired, trigger background update without blocking UI
     if (Date.now() - cached.storedAt > CACHE_TTL) {
-      localStorage.removeItem(STORAGE_KEY);
-      return null;
+      setTimeout(() => triggerBackgroundRevalidate(), 100);
     }
     
     return cached.data;

@@ -35,7 +35,7 @@ export async function getServerProducts(limit = 100): Promise<Product[]> {
     
     // Storefront queries only return visible/active products
     const products = allProducts.filter(isProductVisible);
-    setCached(cacheKey, products, 120);
+    setCached(cacheKey, products, 300); // 5 minutes cache
     return products;
   } catch (e) {
     console.log('getServerProducts error:', (e as Error).message);
@@ -49,9 +49,19 @@ export async function getServerProductBySlug(slugOrId: string): Promise<Product 
   if (cached !== null && cached !== undefined) return cached;
 
   try {
+    // 1. Try resolving from cached products array first (0 Appwrite database calls)
+    const allProducts = await getServerProducts(100);
+    const existing = allProducts.find(
+      (p) => p.slug === slugOrId || p.id === slugOrId || (p as unknown as Record<string, unknown>).$id === slugOrId
+    );
+    if (existing) {
+      if (!isProductVisible(existing)) return null;
+      setCached(cacheKey, existing, 300);
+      return existing;
+    }
+
+    // 2. Direct document ID lookup
     const { databases } = getAppwriteClient();
-    
-    // 1. Try by document ID first
     try {
       const doc = await databases.getDocument(DB_ID, 'products', slugOrId);
       if (doc) {
@@ -60,18 +70,17 @@ export async function getServerProductBySlug(slugOrId: string): Promise<Product 
           id: doc.$id || doc.id,
         } as unknown as Product;
         
-        // If product is disabled/hidden, return null to trigger 404 page
         if (!isProductVisible(product)) {
           return null;
         }
-        setCached(cacheKey, product, 120);
+        setCached(cacheKey, product, 300);
         return product;
       }
     } catch {
       // Continue to slug lookup
     }
 
-    // 2. Query by slug
+    // 3. Direct query by slug
     const res = await databases.listDocuments(DB_ID, 'products', [
       Query.equal('slug', slugOrId),
       Query.limit(1),
@@ -83,12 +92,11 @@ export async function getServerProductBySlug(slugOrId: string): Promise<Product 
       id: doc.$id || doc.id,
     } as unknown as Product;
     
-    // If product is disabled/hidden, return null to trigger 404 page
     if (!isProductVisible(product)) {
       return null;
     }
     
-    setCached(cacheKey, product, 120);
+    setCached(cacheKey, product, 300);
     return product;
   } catch (e) {
     console.log('getServerProductBySlug error:', (e as Error).message);

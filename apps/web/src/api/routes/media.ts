@@ -16,27 +16,71 @@ media.get('/file/:id', async (c) => {
       return c.json({ error: 'File ID required' }, 400);
     }
 
+    const cacheUrl = new URL(c.req.url);
+    const cacheKey = new Request(cacheUrl.toString(), { method: 'GET' });
+    
+    // 1. Check Cloudflare Global Edge Cache
+    let cfCache: Cache | undefined;
+    try {
+      if (typeof caches !== 'undefined' && (caches as unknown as Record<string, Cache>).default) {
+        cfCache = (caches as unknown as Record<string, Cache>).default;
+        const cachedResponse = await cfCache.match(cacheKey);
+        if (cachedResponse) {
+          const resClone = new Response(cachedResponse.body, cachedResponse);
+          resClone.headers.set('X-CF-Cache', 'HIT');
+          return resClone;
+        }
+      }
+    } catch {}
+
     const env = getEnv(c);
     const endpoint = env.APPWRITE_ENDPOINT || 'https://sgp.cloud.appwrite.io/v1';
     const projectId = env.APPWRITE_PROJECT_ID || '6a7dfa97003713198186';
     
     const appwriteUrl = `${endpoint}/storage/buckets/${BUCKET_ID}/files/${id}/view?project=${projectId}`;
     
-    const res = await fetch(appwriteUrl);
+    // Fetch from Appwrite Storage with Cloudflare cache headers
+    const res = await fetch(appwriteUrl, {
+      // @ts-ignore Cloudflare specific options
+      cf: {
+        cacheEverything: true,
+        cacheTtl: 31536000,
+      },
+    });
+
     if (!res.ok) {
-      return c.json({ error: 'Image not found' }, res.status as any);
+      return c.json({ error: 'Image not found' }, res.status as unknown as 404);
     }
     
     const contentType = res.headers.get('content-type') || 'image/webp';
     const body = await res.arrayBuffer();
     
-    return c.body(body, 200, {
+    const responseHeaders = new Headers({
       'Content-Type': contentType,
-      'Cache-Control': 'public, max-age=31536000, immutable',
+      'Cache-Control': 'public, max-age=31536000, s-maxage=31536000, immutable',
       'CDN-Cache-Control': 'public, max-age=31536000, immutable',
       'Cloudflare-CDN-Cache-Control': 'public, max-age=31536000, immutable',
       'X-Content-Type-Options': 'nosniff',
+      'X-CF-Cache': 'MISS',
     });
+
+    const response = new Response(body, {
+      status: 200,
+      headers: responseHeaders,
+    });
+
+    // Save to Cloudflare Edge Cache for future requests
+    if (cfCache) {
+      try {
+        c.executionCtx.waitUntil(cfCache.put(cacheKey, response.clone()));
+      } catch {
+        try {
+          await cfCache.put(cacheKey, response.clone());
+        } catch {}
+      }
+    }
+
+    return response;
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : 'Error streaming image';
     return c.json({ error: msg }, 500);

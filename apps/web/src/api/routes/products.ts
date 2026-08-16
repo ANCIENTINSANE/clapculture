@@ -26,6 +26,7 @@ products.get('/', async (c) => {
     const cachedData = getCached(cacheKey);
     if (cachedData) {
       c.header('X-Cache', 'HIT');
+      c.header('Cache-Control', 'public, max-age=60, s-maxage=300, stale-while-revalidate=600');
       return c.json({ success: true, data: cachedData });
     }
 
@@ -46,8 +47,9 @@ products.get('/', async (c) => {
       ? response.documents 
       : response.documents.filter(isProductActive);
     
-    setCached(cacheKey, documents, 60);
+    setCached(cacheKey, documents, 300);
     c.header('X-Cache', 'MISS');
+    c.header('Cache-Control', 'public, max-age=60, s-maxage=300, stale-while-revalidate=600');
     return c.json({ success: true, data: documents });
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : 'Internal server error';
@@ -96,6 +98,7 @@ products.get('/:slug', async (c) => {
     const cachedData = getCached(cacheKey);
     if (cachedData) {
       c.header('X-Cache', 'HIT');
+      c.header('Cache-Control', 'public, max-age=60, s-maxage=300, stale-while-revalidate=600');
       return c.json({ success: true, data: cachedData });
     }
 
@@ -109,8 +112,9 @@ products.get('/:slug', async (c) => {
         if (!includeHidden && !isProductActive(doc)) {
           return c.json({ success: false, error: 'Product not found' }, 404);
         }
-        setCached(cacheKey, doc, 60);
+        setCached(cacheKey, doc, 300);
         c.header('X-Cache', 'MISS');
+        c.header('Cache-Control', 'public, max-age=60, s-maxage=300, stale-while-revalidate=600');
         return c.json({ success: true, data: doc });
       }
     } catch {
@@ -133,8 +137,9 @@ products.get('/:slug', async (c) => {
       return c.json({ success: false, error: 'Product not found' }, 404);
     }
     
-    setCached(cacheKey, productDoc, 60);
+    setCached(cacheKey, productDoc, 300);
     c.header('X-Cache', 'MISS');
+    c.header('Cache-Control', 'public, max-age=60, s-maxage=300, stale-while-revalidate=600');
     return c.json({ success: true, data: productDoc });
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : 'Internal server error';

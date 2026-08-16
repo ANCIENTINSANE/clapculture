@@ -14,6 +14,7 @@ homepage.get('/', async (c) => {
       const cached = getCached('homepage_config_all');
       if (cached) {
         c.header('X-Cache', 'HIT');
+        c.header('Cache-Control', 'public, max-age=60, s-maxage=300, stale-while-revalidate=600');
         return c.json({ success: true, data: cached });
       }
     }
@@ -44,6 +45,7 @@ homepage.get('/', async (c) => {
       }
     }
 
+    c.header('Cache-Control', 'public, max-age=60, s-maxage=300, stale-while-revalidate=600');
     c.header('X-Cache', 'MISS');
     return c.json({ success: true, data: null });
   } catch (error: unknown) {

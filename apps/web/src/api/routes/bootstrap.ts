@@ -19,8 +19,25 @@ const BOOTSTRAP_TTL = 300; // 5 minutes server cache (busted instantly on mutati
 bootstrap.get('/', async (c) => {
   try {
     const refresh = c.req.query('refresh') === 'true';
+    const cacheUrl = new URL(c.req.url);
+    const cacheKey = new Request(cacheUrl.toString(), { method: 'GET' });
 
+    let cfCache: Cache | undefined;
     if (!refresh) {
+      // 1. Check Cloudflare Edge Cache
+      try {
+        if (typeof caches !== 'undefined' && (caches as unknown as Record<string, Cache>).default) {
+          cfCache = (caches as unknown as Record<string, Cache>).default;
+          const edgeCached = await cfCache.match(cacheKey);
+          if (edgeCached) {
+            const edgeClone = new Response(edgeCached.body, edgeCached);
+            edgeClone.headers.set('X-Cache', 'CF-EDGE-HIT');
+            return edgeClone;
+          }
+        }
+      } catch {}
+
+      // 2. Check In-Memory Isolate Cache
       const cached = getCached<Record<string, unknown>>(BOOTSTRAP_CACHE_KEY);
       if (cached) {
         c.header('X-Cache', 'HIT');
@@ -72,10 +89,30 @@ bootstrap.get('/', async (c) => {
 
     setCached(BOOTSTRAP_CACHE_KEY, payload, BOOTSTRAP_TTL);
 
-    c.header('X-Cache', 'MISS');
-    c.header('Cache-Control', 'public, max-age=60, s-maxage=300, stale-while-revalidate=600');
-    c.header('X-Build-Id', process.env.NEXT_PUBLIC_BUILD_ID || 'dev');
-    return c.json({ success: true, data: payload });
+    const resHeaders = new Headers({
+      'Content-Type': 'application/json',
+      'X-Cache': 'MISS',
+      'Cache-Control': 'public, max-age=60, s-maxage=300, stale-while-revalidate=600',
+      'X-Build-Id': process.env.NEXT_PUBLIC_BUILD_ID || 'dev',
+    });
+
+    const response = new Response(JSON.stringify({ success: true, data: payload }), {
+      status: 200,
+      headers: resHeaders,
+    });
+
+    // Save to Cloudflare Edge Cache
+    if (cfCache && !refresh) {
+      try {
+        c.executionCtx.waitUntil(cfCache.put(cacheKey, response.clone()));
+      } catch {
+        try {
+          await cfCache.put(cacheKey, response.clone());
+        } catch {}
+      }
+    }
+
+    return response;
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : 'Internal server error';
     return c.json({ success: false, error: msg }, 500);
