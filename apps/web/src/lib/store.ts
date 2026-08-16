@@ -90,8 +90,6 @@ export function OrderStoreProvider({ children }: { children: ReactNode }) {
     }
   });
 
-  const isHydrated = typeof window !== 'undefined';
-
   // Persist to sessionStorage on changes
   useEffect(() => {
     if (typeof window !== 'undefined') {

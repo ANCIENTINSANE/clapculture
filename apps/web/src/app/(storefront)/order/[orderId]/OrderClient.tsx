@@ -3,14 +3,14 @@
 import React from 'react';
 import Link from 'next/link';
 import { formatCurrency } from '@/lib/utils';
-import { useOrderStore } from '@/lib/store';
+import { useOrderStore, OrderData, CheckoutInfo } from '@/lib/store';
 
 export default function OrderClient({ orderId }: { orderId: string }) {
   const { getOrder, currentOrder } = useOrderStore();
   const cleanId = orderId.replace('#', '');
   const localOrder = getOrder(cleanId) || (currentOrder?.orderId === cleanId ? currentOrder : null);
 
-  const [dbOrder, setDbOrder] = React.useState<any>(null);
+  const [dbOrder, setDbOrder] = React.useState<OrderData | null>(null);
 
   React.useEffect(() => {
     async function loadDbOrder() {
@@ -45,7 +45,7 @@ export default function OrderClient({ orderId }: { orderId: string }) {
 
   const activeOrder = dbOrder || localOrder;
   const items = activeOrder?.items || [];
-  const customer = activeOrder?.customer || {};
+  const customer: Partial<CheckoutInfo> = activeOrder?.customer || {};
 
   const total = activeOrder?.total || 1099;
   const paymentStatus = activeOrder?.paymentStatus || 'SUBMITTED';
@@ -117,13 +117,13 @@ export default function OrderClient({ orderId }: { orderId: string }) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-[#1a1a1a] p-4 rounded-xl border border-[#262626] print-only-border">
             <div>
               <span className="text-[10px] text-electric-lime font-mono uppercase font-bold tracking-wider">BILLED TO:</span>
-              <p className="font-bold text-sm text-white mt-1 print-black-text">{customer.fullName}</p>
-              <p className="text-xs text-[#a3a3a3]">{customer.address}, {customer.city}, {customer.state} - {customer.pincode}</p>
+              <p className="font-bold text-sm text-white mt-1 print-black-text">{customer.fullName || 'Customer'}</p>
+              <p className="text-xs text-[#a3a3a3]">{customer.address ? `${customer.address}, ${customer.city || ''}, ${customer.state || ''} - ${customer.pincode || ''}` : 'Address on file'}</p>
             </div>
             <div className="md:text-right">
               <span className="text-[10px] text-electric-lime font-mono uppercase font-bold tracking-wider">CONTACT:</span>
-              <p className="text-xs text-white mt-1 print-black-text">{customer.email}</p>
-              <p className="text-xs text-[#a3a3a3]">{customer.phone}</p>
+              <p className="text-xs text-white mt-1 print-black-text">{customer.email || '—'}</p>
+              <p className="text-xs text-[#a3a3a3]">{customer.phone || '—'}</p>
             </div>
           </div>
 

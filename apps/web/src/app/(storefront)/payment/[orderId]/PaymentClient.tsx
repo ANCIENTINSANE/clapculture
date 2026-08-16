@@ -5,7 +5,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { formatCurrency, resolveImageUrl } from '@/lib/utils';
 import { useCart } from '@/components/cart/CartProvider';
-import { useOrderStore } from '@/lib/store';
+import { useOrderStore, OrderData } from '@/lib/store';
 
 import { compressImageFile } from '@/lib/image-compression';
 
@@ -18,7 +18,7 @@ export default function PaymentClient({ orderId }: { orderId: string }) {
   const formattedOrderId = cleanOrderId.startsWith('CLAP') ? cleanOrderId : `CLAP${cleanOrderId}`;
 
   // 1. Initialize from memory or localStorage
-  const [order, setOrder] = useState<any>(() => {
+  const [order, setOrder] = useState<OrderData | null>(() => {
     const memoryOrder = getOrder(cleanOrderId) || currentOrder;
     if (memoryOrder) return memoryOrder;
     if (typeof window !== 'undefined') {
@@ -29,8 +29,6 @@ export default function PaymentClient({ orderId }: { orderId: string }) {
     }
     return null;
   });
-
-  const [loadingOrder, setLoadingOrder] = useState(!order);
 
   // 2. Fetch live confirmed order from database
   React.useEffect(() => {
@@ -60,8 +58,6 @@ export default function PaymentClient({ orderId }: { orderId: string }) {
         }
       } catch (err) {
         console.error('Failed to sync order from DB:', err);
-      } finally {
-        if (isMounted) setLoadingOrder(false);
       }
     }
     syncOrderFromDB();
