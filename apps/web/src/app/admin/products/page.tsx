@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { resolveImageUrl } from '@/lib/utils';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 interface AdminProduct {
   id: string;
@@ -32,7 +32,7 @@ export default function ProductsPage() {
     setTimeout(() => setToast({ show: false, msg: '' }), 3500);
   };
 
-  const loadDynamicProducts = async () => {
+  const loadDynamicProducts = useCallback(async () => {
     try {
       setLoading(true);
       const res = await fetch('/api/products?includeHidden=true&limit=150');
@@ -62,11 +62,11 @@ export default function ProductsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     loadDynamicProducts();
-  }, []);
+  }, [loadDynamicProducts]);
 
   const handleToggleVisibility = async (productId: string, currentIsActive: boolean) => {
     setTogglingId(productId);
@@ -276,7 +276,7 @@ export default function ProductsPage() {
                         <Link 
                           href={`/admin/products/${product.id}/edit`} 
                           title="Edit Product"
-                          className="p-2 bg-[#262626] text-[#a3a3a3] hover:text-white hover:bg-electric-lime hover:text-black rounded-lg transition-colors"
+                          className="p-2 bg-[#262626] text-[#a3a3a3] hover:bg-electric-lime hover:text-black rounded-lg transition-colors"
                         >
                           <span className="material-symbols-outlined text-[18px]">edit</span>
                         </Link>

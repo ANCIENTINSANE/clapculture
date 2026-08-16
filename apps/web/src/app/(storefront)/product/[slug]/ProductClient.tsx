@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Product, Size } from '@clapculture/shared';
@@ -18,11 +18,14 @@ interface ProductClientProps {
 
 export default function ProductClient({ product, relatedProducts }: ProductClientProps) {
   const router = useRouter();
-  const rawImages = Array.isArray(product.images) && product.images.length > 0
-    ? product.images
-    : ['/stock/superstar-mockup1.webp'];
+  const rawImages = useMemo(
+    () => (Array.isArray(product.images) && product.images.length > 0 ? product.images : ['/stock/superstar-mockup1.webp']),
+    [product.images]
+  );
 
-  const [activeImage, setActiveImage] = useState(rawImages[0]);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const activeImage = rawImages[selectedImageIndex] || rawImages[0];
+
   const [selectedSize, setSelectedSize] = useState<Size>(product.sizes[0] || 'M');
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState('description');
@@ -31,13 +34,12 @@ export default function ProductClient({ product, relatedProducts }: ProductClien
 
   // Fullscreen Carousel Lightbox State
   const [isFullscreenOpen, setIsFullscreenOpen] = useState(false);
-  const [carouselIndex, setCarouselIndex] = useState(0);
 
   const { addToCart } = useCart();
   const isOutOfStock = product.stock <= 0;
 
   const openFullscreen = (index: number) => {
-    setCarouselIndex(Math.max(0, Math.min(index, rawImages.length - 1)));
+    setSelectedImageIndex(Math.max(0, Math.min(index, rawImages.length - 1)));
     setIsFullscreenOpen(true);
   };
 
@@ -46,19 +48,12 @@ export default function ProductClient({ product, relatedProducts }: ProductClien
   }, []);
 
   const nextImage = useCallback(() => {
-    setCarouselIndex((prev) => (prev + 1) % rawImages.length);
+    setSelectedImageIndex((prev) => (prev + 1) % rawImages.length);
   }, [rawImages.length]);
 
   const prevImage = useCallback(() => {
-    setCarouselIndex((prev) => (prev - 1 + rawImages.length) % rawImages.length);
+    setSelectedImageIndex((prev) => (prev - 1 + rawImages.length) % rawImages.length);
   }, [rawImages.length]);
-
-  // Sync activeImage with carousel when index changes
-  useEffect(() => {
-    if (rawImages[carouselIndex]) {
-      setActiveImage(rawImages[carouselIndex]);
-    }
-  }, [carouselIndex, rawImages]);
 
   // Fullscreen Keyboard Navigation (Escape, ArrowLeft, ArrowRight)
   useEffect(() => {
@@ -123,10 +118,7 @@ export default function ProductClient({ product, relatedProducts }: ProductClien
         <div className="w-full lg:w-3/5 flex flex-col md:flex-row-reverse gap-4">
           {/* Main Display Image with Fullscreen Click */}
           <div 
-            onClick={() => {
-              const idx = rawImages.indexOf(activeImage);
-              openFullscreen(idx >= 0 ? idx : 0);
-            }}
+            onClick={() => openFullscreen(selectedImageIndex)}
             className="w-full md:w-5/6 bg-charcoal aspect-4/5 relative cursor-zoom-in group overflow-hidden select-none rounded-lg"
             title="Click to view full screen carousel"
           >
@@ -159,12 +151,9 @@ export default function ProductClient({ product, relatedProducts }: ProductClien
                 key={idx}
                 type="button"
                 className={`w-20 md:w-full aspect-4/5 bg-charcoal shrink-0 border-2 rounded transition-all ${
-                  activeImage === img ? 'border-electric-lime scale-95 shadow-md' : 'border-transparent hover:border-gray-500 opacity-80 hover:opacity-100'
+                  selectedImageIndex === idx ? 'border-electric-lime scale-95 shadow-md' : 'border-transparent hover:border-gray-500 opacity-80 hover:opacity-100'
                 }`}
-                onClick={() => {
-                  setActiveImage(img);
-                  setCarouselIndex(idx);
-                }}
+                onClick={() => setSelectedImageIndex(idx)}
               >
                 <img src={resolveImageUrl(img)} alt={`${product.name} ${idx}`} className="w-full h-full object-cover rounded-sm" />
               </button>
@@ -378,7 +367,7 @@ export default function ProductClient({ product, relatedProducts }: ProductClien
                 {product.name}
               </span>
               <span className="px-2.5 py-0.5 rounded-full bg-charcoal border border-gray-700 text-[11px] font-mono font-bold text-electric-lime">
-                {carouselIndex + 1} / {rawImages.length}
+                {selectedImageIndex + 1} / {rawImages.length}
               </span>
             </div>
 
@@ -419,8 +408,8 @@ export default function ProductClient({ product, relatedProducts }: ProductClien
             {/* Active Carousel Image */}
             <div className="relative max-w-full max-h-full flex items-center justify-center">
               <img
-                src={resolveImageUrl(rawImages[carouselIndex])}
-                alt={`${product.name} full view ${carouselIndex + 1}`}
+                src={resolveImageUrl(rawImages[selectedImageIndex])}
+                alt={`${product.name} full view ${selectedImageIndex + 1}`}
                 className="max-h-[70vh] md:max-h-[78vh] max-w-[92vw] object-contain rounded-lg shadow-2xl transition-all duration-300 pointer-events-auto"
               />
             </div>
@@ -450,9 +439,9 @@ export default function ProductClient({ product, relatedProducts }: ProductClien
                 <button
                   key={idx}
                   type="button"
-                  onClick={() => setCarouselIndex(idx)}
+                  onClick={() => setSelectedImageIndex(idx)}
                   className={`w-14 h-18 md:w-16 md:h-20 shrink-0 bg-charcoal rounded overflow-hidden border-2 transition-all cursor-pointer ${
-                    carouselIndex === idx
+                    selectedImageIndex === idx
                       ? 'border-electric-lime ring-2 ring-electric-lime/40 scale-105 opacity-100 shadow-lg'
                       : 'border-transparent opacity-50 hover:opacity-100 hover:border-gray-500'
                   }`}
