@@ -37,7 +37,7 @@ export function ProductCard({ product }: ProductCardProps) {
         onMouseLeave={() => setIsHovered(false)}
       >
         <div className="relative bg-charcoal aspect-4/5 mb-4 overflow-hidden">
-          <Link href={`/product/${product.slug}`}>
+          <Link href={`/product/${product.slug}`} prefetch={false}>
             <img 
               src={isHovered ? secondaryImage : primaryImage} 
               alt={product.name} 
@@ -103,7 +103,7 @@ export function ProductCard({ product }: ProductCardProps) {
         </div>
         
         <div>
-          <Link href={`/product/${product.slug}`}>
+          <Link href={`/product/${product.slug}`} prefetch={false}>
             <h3 className="font-bold text-lg mb-1 hover:text-electric-lime transition-colors line-clamp-1">{product.name}</h3>
           </Link>
           <div className="flex items-center gap-2 mb-3" suppressHydrationWarning>

@@ -236,6 +236,7 @@ export default function Home() {
                   <div className="flex flex-col sm:flex-row flex-wrap items-start sm:items-center gap-3 sm:gap-4">
                     <Link
                       href={currentSlide.primaryCtaLink || '/shop'}
+                      prefetch={false}
                       className="bg-electric-lime text-deep-black font-label-caps text-xs md:text-sm px-6 md:px-8 py-3 md:py-4 uppercase font-bold tracking-wider hover:bg-white transition-colors cursor-pointer"
                     >
                       {currentSlide.primaryCtaText || 'SHOP NOW'}
@@ -244,6 +245,7 @@ export default function Home() {
                     {currentSlide.secondaryCtaText && (
                       <Link
                         href={currentSlide.secondaryCtaLink || '/collections'}
+                        prefetch={false}
                         className="border border-white text-white font-label-caps text-xs md:text-sm px-6 md:px-8 py-3 md:py-4 uppercase tracking-wider hover:border-electric-lime hover:text-electric-lime transition-colors cursor-pointer"
                       >
                         {currentSlide.secondaryCtaText}
@@ -309,6 +311,7 @@ export default function Home() {
             {cmsData.hero.sideBanner.active && (
               <Link
                 href={cmsData.hero.sideBanner.link || '/category/tees'}
+                prefetch={false}
                 className="lg:col-span-4 relative bg-charcoal flex flex-col justify-between p-6 md:p-12 xl:p-16 border-t lg:border-t-0 lg:border-l border-charcoal overflow-hidden min-h-[40vh] lg:min-h-0 cursor-pointer group"
               >
                 <div
@@ -370,6 +373,7 @@ export default function Home() {
                     {section.viewAllText && (
                       <Link
                         href={section.viewAllLink || '/shop'}
+                        prefetch={false}
                         className="font-label-caps text-xs md:text-sm text-gray-400 hover:text-electric-lime flex items-center gap-1 transition-colors group"
                       >
                         {section.viewAllText}{' '}
@@ -389,6 +393,7 @@ export default function Home() {
                       <Link
                         key={tile.id}
                         href={tile.link || '/shop'}
+                        prefetch={false}
                         className="group relative aspect-3/4 bg-charcoal overflow-hidden border border-charcoal flex flex-col justify-between p-4 md:p-6"
                       >
                         <div
@@ -451,6 +456,7 @@ export default function Home() {
                       {section.viewAllText && (
                         <Link
                           href={section.viewAllLink || '/shop'}
+                          prefetch={false}
                           className="font-label-caps text-xs md:text-sm text-gray-400 hover:text-electric-lime flex items-center gap-1 transition-colors mr-2 group"
                         >
                           {section.viewAllText}{' '}
@@ -491,6 +497,7 @@ export default function Home() {
                       <Link
                         key={hero.id}
                         href={hero.link || '/shop'}
+                        prefetch={false}
                         className="w-70 sm:w-80 lg:w-90 2xl:w-100 shrink-0 group relative aspect-4/5 bg-charcoal overflow-hidden border border-charcoal flex flex-col justify-between p-6 md:p-8 hover:border-electric-lime/50 hover:shadow-2xl hover:shadow-electric-lime/10 transition-all rounded-sm"
                       >
                         <div
@@ -574,7 +581,7 @@ export default function Home() {
                   >
                     {activeTiles.map((product) => (
                       <div key={product.id} className="w-65 md:w-80 shrink-0 group">
-                        <Link href={product.link || '/shop'} className="block cursor-pointer">
+                        <Link href={product.link || '/shop'} prefetch={false} className="block cursor-pointer">
                           <div className="relative aspect-3/4 bg-charcoal overflow-hidden border border-charcoal mb-4">
                             <img
                               src={resolveImageUrl(product.imageUrl)}
@@ -656,6 +663,7 @@ export default function Home() {
                   {section.viewAllText && (
                     <Link
                       href={section.viewAllLink || '/shop'}
+                      prefetch={false}
                       className="font-label-caps text-xs md:text-sm text-gray-400 hover:text-electric-lime flex items-center gap-1 transition-colors group"
                     >
                       {section.viewAllText}{' '}
@@ -678,6 +686,7 @@ export default function Home() {
                       <Link
                         key={tile.id}
                         href={tile.link || '/shop'}
+                        prefetch={false}
                         className={`group relative ${
                           isBentoWide ? 'md:col-span-2 aspect-video md:aspect-auto min-h-80' : 'aspect-4/5 min-h-70'
                         } bg-charcoal overflow-hidden border border-charcoal flex flex-col justify-between p-6 md:p-8 hover:border-electric-lime/40 transition-all`}

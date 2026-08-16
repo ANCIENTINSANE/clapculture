@@ -57,6 +57,7 @@ export function Header() {
           >
             <Link 
               href="/shop" 
+              prefetch={false}
               className={`font-nav-link text-xs xl:text-sm transition-colors flex items-center gap-1 py-1 ${
                 activeDropdown === 'SHOP' ? 'text-electric-lime font-bold' : 'text-white hover:text-electric-lime'
               }`}
@@ -129,6 +130,7 @@ export function Header() {
           >
             <Link 
               href="/collections" 
+              prefetch={false}
               className={`font-nav-link text-xs xl:text-sm transition-colors flex items-center gap-1 py-1 ${
                 activeDropdown === 'COLLECTIONS' ? 'text-electric-lime font-bold' : 'text-white hover:text-electric-lime'
               }`}
@@ -152,6 +154,7 @@ export function Header() {
                     <Link
                       key={colId}
                       href={`/collections/${col.slug}`}
+                      prefetch={false}
                       onClick={() => setActiveDropdown(null)}
                       className="block px-3 py-2 text-sm text-gray-300 hover:bg-[#242424] hover:text-electric-lime rounded transition-colors font-medium"
                     >
@@ -163,14 +166,14 @@ export function Header() {
             )}
           </div>
 
-          <Link href="/collections/new-drop" className="font-nav-link text-xs xl:text-sm hover:text-electric-lime transition-colors">NEW ARRIVALS</Link>
-          <Link href="/collections/best-sellers" className="font-nav-link text-xs xl:text-sm hover:text-electric-lime transition-colors">BEST SELLERS</Link>
-          <Link href="/about" className="font-nav-link text-xs xl:text-sm hover:text-electric-lime transition-colors">ABOUT US</Link>
+          <Link href="/collections/new-drop" prefetch={false} className="font-nav-link text-xs xl:text-sm hover:text-electric-lime transition-colors">NEW ARRIVALS</Link>
+          <Link href="/collections/best-sellers" prefetch={false} className="font-nav-link text-xs xl:text-sm hover:text-electric-lime transition-colors">BEST SELLERS</Link>
+          <Link href="/about" prefetch={false} className="font-nav-link text-xs xl:text-sm hover:text-electric-lime transition-colors">ABOUT US</Link>
         </div>
 
         {/* Right Side: Search, Cart, AND Hamburger Menu */}
         <div className="flex items-center gap-3 md:gap-4">
-          <Link href="/search" className="hidden sm:block text-white hover:text-electric-lime transition-colors">
+          <Link href="/search" prefetch={false} className="hidden sm:block text-white hover:text-electric-lime transition-colors">
             <span className="material-symbols-outlined text-xl md:text-2xl">search</span>
           </Link>
           
