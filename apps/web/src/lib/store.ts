@@ -90,42 +90,42 @@ export function OrderStoreProvider({ children }: { children: ReactNode }) {
     }
   });
 
-  const [isHydrated, setIsHydrated] = useState(false);
-
-  useEffect(() => {
-    setIsHydrated(true);
-  }, []);
+  const isHydrated = typeof window !== 'undefined';
 
   // Persist to sessionStorage on changes
   useEffect(() => {
-    if (isHydrated) {
+    if (typeof window !== 'undefined') {
       try {
         sessionStorage.setItem('cc_checkout', JSON.stringify(checkoutInfo));
       } catch (e) {
         console.error('Failed to save checkoutInfo:', e);
       }
     }
-  }, [checkoutInfo, isHydrated]);
+  }, [checkoutInfo]);
 
   useEffect(() => {
-    if (isHydrated) {
+    if (typeof window !== 'undefined') {
       try {
         sessionStorage.setItem('cc_orders', JSON.stringify(orders));
       } catch (e) {
         console.error('Failed to save orders:', e);
       }
     }
-  }, [orders, isHydrated]);
+  }, [orders]);
 
   useEffect(() => {
-    if (isHydrated && currentOrder) {
+    if (typeof window !== 'undefined') {
       try {
-        sessionStorage.setItem('cc_current_order', JSON.stringify(currentOrder));
+        if (currentOrder) {
+          sessionStorage.setItem('cc_current_order', JSON.stringify(currentOrder));
+        } else {
+          sessionStorage.removeItem('cc_current_order');
+        }
       } catch (e) {
-        console.error('Failed to save current order:', e);
+        console.error('Failed to save currentOrder:', e);
       }
     }
-  }, [currentOrder, isHydrated]);
+  }, [currentOrder]);
 
   const setCheckoutInfo = (info: CheckoutInfo) => {
     setCheckoutInfoState(info);

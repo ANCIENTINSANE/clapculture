@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { resolveImageUrl } from '@/lib/utils';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 
 interface AdminProduct {
   id: string;
@@ -31,38 +31,6 @@ export default function ProductsPage() {
     setToast({ show: true, msg, isError });
     setTimeout(() => setToast({ show: false, msg: '' }), 3500);
   };
-
-  const loadDynamicProducts = useCallback(async () => {
-    try {
-      setLoading(true);
-      const res = await fetch('/api/products?includeHidden=true&limit=150');
-      if (res.ok) {
-        const data = await res.json();
-        if (data.success && Array.isArray(data.data)) {
-          const mapped: AdminProduct[] = data.data.map((doc: Record<string, unknown>) => {
-            const isDocActive = doc.isActive !== false && !(Array.isArray(doc.badges) && (doc.badges.includes('HIDDEN') || doc.badges.includes('DISABLED')));
-            return {
-              id: String(doc.$id || doc.id || ''),
-              name: String(doc.name || 'Untitled Product'),
-              slug: String(doc.slug || ''),
-              img: Array.isArray(doc.images) && doc.images[0] ? String(doc.images[0]) : '/stock/superstar-mockup1.webp',
-              category: doc.categoryId === 'c2' || doc.categoryId === 'outerwear' ? 'Hoodies' : 'T-Shirts',
-              price: `₹${doc.price || 699}`,
-              stock: Number(doc.stock) || 0,
-              isActive: isDocActive,
-              stockStatus: (Number(doc.stock) || 0) > 0 ? 'In Stock' : 'Sold Out',
-              created: doc.$createdAt ? new Date(doc.$createdAt as string).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) : 'Recently',
-            };
-          });
-          setProducts(mapped);
-        }
-      }
-    } catch {
-      showNotification('Failed to load products from database', true);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
   useEffect(() => {
     let cancelled = false;
     const load = async () => {

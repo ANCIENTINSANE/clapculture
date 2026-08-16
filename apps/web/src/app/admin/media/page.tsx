@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { compressImageFile } from '@/lib/image-compression';
 
 type MediaItem = {
@@ -36,21 +36,6 @@ export default function MediaLibrary() {
     setToastMessage(message);
     setTimeout(() => setToastMessage(null), 3000);
   };
-
-  const fetchMedia = useCallback(async () => {
-    try {
-      const res = await fetch('/api/media');
-      const json = await res.json();
-      if (json.success && json.data) {
-        setMedia(json.data);
-      }
-    } catch (err) {
-      console.error('Failed to fetch media', err);
-      showToast('Failed to load media');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
 
   useEffect(() => {
     let cancelled = false;
