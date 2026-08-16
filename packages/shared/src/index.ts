@@ -14,6 +14,8 @@ export interface Product {
   stock: number;
   badges?: string[];
   categoryId: string;
+  sizeStock?: string | Record<string, number>;
+  isActive?: boolean;
 }
 
 export interface Category {

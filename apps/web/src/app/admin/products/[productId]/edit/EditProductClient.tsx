@@ -31,6 +31,7 @@ export default function EditProductClient({ productId }: { productId: string }) 
     images: [] as string[],
     newImageUrl: '',
     badges: [] as string[],
+    isActive: true,
   });
 
   const [isUploading, setIsUploading] = useState(false);
@@ -61,7 +62,7 @@ export default function EditProductClient({ productId }: { productId: string }) 
   const loadProduct = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await fetch(`/api/products/${productId}`);
+      const res = await fetch(`/api/products/${productId}?includeHidden=true`);
       if (!res.ok) {
         showNotification('Failed to fetch product details from database', true);
         return;
@@ -112,6 +113,8 @@ export default function EditProductClient({ productId }: { productId: string }) 
           }
         }
 
+        const isDocActive = p.isActive !== false && !(Array.isArray(p.badges) && (p.badges.includes('HIDDEN') || p.badges.includes('DISABLED')));
+
         setSizesList(calculatedList);
         setFormData({
           name: p.name || '',
@@ -124,6 +127,7 @@ export default function EditProductClient({ productId }: { productId: string }) 
           images: Array.isArray(p.images) ? p.images : [],
           newImageUrl: '',
           badges: Array.isArray(p.badges) ? p.badges : [],
+          isActive: isDocActive,
         });
       } else {
         showNotification(json.error || 'Product not found', true);
@@ -298,6 +302,7 @@ export default function EditProductClient({ productId }: { productId: string }) 
         stock: totalStock,
         sizeStock: JSON.stringify(sizeStockMap),
         badges: formData.badges,
+        isActive: formData.isActive,
         images: formData.images.length > 0 ? formData.images : ['/stock/superstar-mockup1.webp'],
       };
 
@@ -414,6 +419,44 @@ export default function EditProductClient({ productId }: { productId: string }) 
         </div>
 
         <form onSubmit={handleSave} className="space-y-6">
+          {/* Visibility & 404 Status Card */}
+          <div className="bg-[#141414] border border-[#262626] rounded-xl p-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-sm font-bold uppercase text-white">Storefront Visibility &amp; 404 Status</h3>
+                  <span className={`text-[10px] px-2 py-0.5 rounded font-mono font-bold uppercase border ${
+                    formData.isActive 
+                      ? 'bg-green-500/10 text-green-400 border-green-500/30' 
+                      : 'bg-amber-500/10 text-amber-400 border-amber-500/30'
+                  }`}>
+                    {formData.isActive ? 'LIVE ON STORE' : 'HIDDEN (404 NOT FOUND)'}
+                  </span>
+                </div>
+                <p className="text-xs text-gray-400 mt-1 font-mono">
+                  {formData.isActive 
+                    ? 'Product is currently active, searchable, and visible to all customers.' 
+                    : `⚠️ Product is hidden. Anyone visiting /product/${formData.slug || 'slug'} will receive a 404 Not Found error.`}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setFormData(p => ({ ...p, isActive: !p.isActive }))}
+                className={`px-4 py-2 rounded-lg font-mono text-xs font-bold uppercase tracking-wider border flex items-center gap-2 transition-all ${
+                  formData.isActive
+                    ? 'bg-green-500/20 text-green-300 border-green-500/40 hover:bg-green-500/30'
+                    : 'bg-amber-500/20 text-amber-300 border-amber-500/40 hover:bg-amber-500/30'
+                }`}
+              >
+                <span className="material-symbols-outlined text-base">
+                  {formData.isActive ? 'visibility' : 'visibility_off'}
+                </span>
+                <span>{formData.isActive ? 'ACTIVE (SHOW)' : 'HIDDEN (404)'}</span>
+              </button>
+            </div>
+          </div>
+
           <div className="bg-[#141414] border border-[#262626] rounded-xl p-6 space-y-4">
             {/* Product Name */}
             <div>

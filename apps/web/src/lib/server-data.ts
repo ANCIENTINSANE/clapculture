@@ -10,6 +10,16 @@ import { Product, Collection, Category } from '@clapculture/shared';
 
 const DB_ID = process.env.APPWRITE_DATABASE_ID || 'clapculture_db';
 
+export function isProductVisible(product: Product | Record<string, unknown> | null | undefined): boolean {
+  if (!product) return false;
+  const p = product as Record<string, unknown>;
+  if (p.isActive === false) return false;
+  if (Array.isArray(p.badges)) {
+    if (p.badges.includes('HIDDEN') || p.badges.includes('DISABLED')) return false;
+  }
+  return true;
+}
+
 export async function getServerProducts(limit = 100): Promise<Product[]> {
   const cacheKey = `server_products_${limit}`;
   const cached = getCached<Product[]>(cacheKey);
@@ -18,10 +28,13 @@ export async function getServerProducts(limit = 100): Promise<Product[]> {
   try {
     const { databases } = getAppwriteClient();
     const res = await databases.listDocuments(DB_ID, 'products', [Query.limit(limit)]);
-    const products = res.documents.map((d) => ({
+    const allProducts = res.documents.map((d) => ({
       ...d,
       id: d.$id || d.id,
     })) as unknown as Product[];
+    
+    // Storefront queries only return visible/active products
+    const products = allProducts.filter(isProductVisible);
     setCached(cacheKey, products, 120);
     return products;
   } catch (e) {
@@ -46,6 +59,11 @@ export async function getServerProductBySlug(slugOrId: string): Promise<Product 
           ...doc,
           id: doc.$id || doc.id,
         } as unknown as Product;
+        
+        // If product is disabled/hidden, return null to trigger 404 page
+        if (!isProductVisible(product)) {
+          return null;
+        }
         setCached(cacheKey, product, 120);
         return product;
       }
@@ -64,6 +82,12 @@ export async function getServerProductBySlug(slugOrId: string): Promise<Product 
       ...doc,
       id: doc.$id || doc.id,
     } as unknown as Product;
+    
+    // If product is disabled/hidden, return null to trigger 404 page
+    if (!isProductVisible(product)) {
+      return null;
+    }
+    
     setCached(cacheKey, product, 120);
     return product;
   } catch (e) {

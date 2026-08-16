@@ -32,6 +32,7 @@ export default function AddProductPage() {
   const [compareAtPrice, setCompareAtPrice] = useState('');
   const [categoryId, setCategoryId] = useState('tees');
   const [badges, setBadges] = useState<string[]>(['NEW DROP', '320 GSM']);
+  const [isActive, setIsActive] = useState(true);
   const [images, setImages] = useState<string[]>([]);
   const [newImageUrl, setNewImageUrl] = useState('');
   const [isUploading, setIsUploading] = useState(false);
@@ -218,6 +219,7 @@ export default function AddProductPage() {
         stock: totalStock,
         sizeStock: JSON.stringify(sizeStockMap),
         badges: badges.length > 0 ? badges : ['NEW DROP', '320 GSM'],
+        isActive,
         images: images,
       };
 
@@ -281,6 +283,44 @@ export default function AddProductPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
+          {/* Visibility & 404 Status Card */}
+          <div className="bg-[#141414] border border-[#262626] rounded-xl p-5">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-sm font-bold uppercase text-white">Storefront Visibility &amp; 404 Status</h3>
+                  <span className={`text-[10px] px-2 py-0.5 rounded font-mono font-bold uppercase border ${
+                    isActive 
+                      ? 'bg-green-500/10 text-green-400 border-green-500/30' 
+                      : 'bg-amber-500/10 text-amber-400 border-amber-500/30'
+                  }`}>
+                    {isActive ? 'LIVE ON STORE' : 'HIDDEN (404 NOT FOUND)'}
+                  </span>
+                </div>
+                <p className="text-xs text-gray-400 mt-1 font-mono">
+                  {isActive 
+                    ? 'Product will be immediately published, searchable, and visible on storefront.' 
+                    : `⚠️ Product will be hidden. Visiting /product/${slug || 'slug'} will return a 404 Not Found error.`}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsActive(p => !p)}
+                className={`px-4 py-2 rounded-lg font-mono text-xs font-bold uppercase tracking-wider border flex items-center gap-2 transition-all ${
+                  isActive
+                    ? 'bg-green-500/20 text-green-300 border-green-500/40 hover:bg-green-500/30'
+                    : 'bg-amber-500/20 text-amber-300 border-amber-500/40 hover:bg-amber-500/30'
+                }`}
+              >
+                <span className="material-symbols-outlined text-base">
+                  {isActive ? 'visibility' : 'visibility_off'}
+                </span>
+                <span>{isActive ? 'ACTIVE (SHOW)' : 'HIDDEN (404)'}</span>
+              </button>
+            </div>
+          </div>
+
           {/* Basic Info */}
           <div className="bg-[#141414] border border-[#262626] rounded-xl p-5 space-y-4">
             <h3 className="text-white font-medium">Basic Information</h3>

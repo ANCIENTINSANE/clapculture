@@ -194,16 +194,23 @@ export function useProducts() {
   const { data: boot, loading, refetch } = useBootstrap();
   const products = boot?.products || [];
 
-  const normalized = products.map((p: Product, idx: number) => {
-    const raw = p as unknown as Record<string, unknown>;
-    return {
-      ...p,
-      id: String(raw.id || raw.$id || raw.slug || `prod-${idx}`),
-      sizes: Array.isArray(p.sizes) ? p.sizes : ['S', 'M', 'L', 'XL', 'XXL'],
-      images: Array.isArray(p.images) ? p.images : [],
-      badges: Array.isArray(p.badges) ? p.badges : [],
-    } as Product;
-  });
+  const normalized = products
+    .filter((p: Product) => {
+      const raw = p as unknown as Record<string, unknown>;
+      if (raw.isActive === false) return false;
+      if (Array.isArray(p.badges) && (p.badges.includes('HIDDEN') || p.badges.includes('DISABLED'))) return false;
+      return true;
+    })
+    .map((p: Product, idx: number) => {
+      const raw = p as unknown as Record<string, unknown>;
+      return {
+        ...p,
+        id: String(raw.id || raw.$id || raw.slug || `prod-${idx}`),
+        sizes: Array.isArray(p.sizes) ? p.sizes : ['S', 'M', 'L', 'XL', 'XXL'],
+        images: Array.isArray(p.images) ? p.images : [],
+        badges: Array.isArray(p.badges) ? p.badges : [],
+      } as Product;
+    });
 
   return { data: normalized, loading, error: null, refetch };
 }
@@ -214,7 +221,11 @@ export function useProduct(slug: string) {
 
   const p = products.find((prod: Product) => {
     const raw = prod as unknown as Record<string, unknown>;
-    return prod.slug === slug || raw.$id === slug;
+    const matches = prod.slug === slug || raw.$id === slug;
+    if (!matches) return false;
+    if (raw.isActive === false) return false;
+    if (Array.isArray(prod.badges) && (prod.badges.includes('HIDDEN') || prod.badges.includes('DISABLED'))) return false;
+    return true;
   }) || null;
 
   const raw = p as unknown as Record<string, unknown> | null;

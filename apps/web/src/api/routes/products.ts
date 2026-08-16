@@ -7,12 +7,21 @@ import { getCached, setCached, clearCache } from '../lib/cache';
 
 const products = new Hono();
 
+function isProductActive(p: Record<string, unknown>): boolean {
+  if (p.isActive === false) return false;
+  if (Array.isArray(p.badges)) {
+    if (p.badges.includes('HIDDEN') || p.badges.includes('DISABLED')) return false;
+  }
+  return true;
+}
+
 products.get('/', async (c) => {
   try {
     const category = c.req.query('category') || '';
     const search = c.req.query('search') || '';
-    const limit = parseInt(c.req.query('limit') || '20');
-    const cacheKey = `products_${category}_${search}_${limit}`;
+    const limit = parseInt(c.req.query('limit') || '100');
+    const includeHidden = c.req.query('includeHidden') === 'true';
+    const cacheKey = `products_${category}_${search}_${limit}_${includeHidden}`;
 
     const cachedData = getCached(cacheKey);
     if (cachedData) {
@@ -33,9 +42,13 @@ products.get('/', async (c) => {
       queries
     );
     
-    setCached(cacheKey, response.documents, 60);
+    const documents = includeHidden 
+      ? response.documents 
+      : response.documents.filter(isProductActive);
+    
+    setCached(cacheKey, documents, 60);
     c.header('X-Cache', 'MISS');
-    return c.json({ success: true, data: response.documents });
+    return c.json({ success: true, data: documents });
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : 'Internal server error';
     return c.json({ success: false, error: msg }, 500);
@@ -77,7 +90,8 @@ products.get('/check/slug', async (c) => {
 products.get('/:slug', async (c) => {
   try {
     const slugOrId = c.req.param('slug') || '';
-    const cacheKey = `product_${slugOrId}`;
+    const includeHidden = c.req.query('includeHidden') === 'true';
+    const cacheKey = `product_${slugOrId}_${includeHidden}`;
 
     const cachedData = getCached(cacheKey);
     if (cachedData) {
@@ -92,6 +106,9 @@ products.get('/:slug', async (c) => {
     try {
       const doc = await databases.getDocument(dbId, 'products', slugOrId);
       if (doc) {
+        if (!includeHidden && !isProductActive(doc)) {
+          return c.json({ success: false, error: 'Product not found' }, 404);
+        }
         setCached(cacheKey, doc, 60);
         c.header('X-Cache', 'MISS');
         return c.json({ success: true, data: doc });
@@ -111,9 +128,14 @@ products.get('/:slug', async (c) => {
       return c.json({ success: false, error: 'Product not found' }, 404);
     }
     
-    setCached(cacheKey, response.documents[0], 60);
+    const productDoc = response.documents[0];
+    if (!includeHidden && !isProductActive(productDoc)) {
+      return c.json({ success: false, error: 'Product not found' }, 404);
+    }
+    
+    setCached(cacheKey, productDoc, 60);
     c.header('X-Cache', 'MISS');
-    return c.json({ success: true, data: response.documents[0] });
+    return c.json({ success: true, data: productDoc });
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : 'Internal server error';
     return c.json({ success: false, error: msg }, 500);
@@ -127,6 +149,9 @@ products.post('/', adminAuth, async (c) => {
     const dbId = getDbId(c);
     
     body.createdAt = new Date().toISOString();
+    if (body.isActive === undefined) {
+      body.isActive = true;
+    }
     
     const response = await databases.createDocument(
       dbId,

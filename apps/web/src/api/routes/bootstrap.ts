@@ -53,8 +53,16 @@ bootstrap.get('/', async (c) => {
       }
     }
 
+    const isProductActive = (d: Record<string, unknown>) => {
+      if (d.isActive === false) return false;
+      if (Array.isArray(d.badges)) {
+        if (d.badges.includes('HIDDEN') || d.badges.includes('DISABLED')) return false;
+      }
+      return true;
+    };
+
     const payload = {
-      products: productsRes.documents,
+      products: productsRes.documents.filter(isProductActive),
       categories: categoriesRes.documents,
       collections: collectionsRes.documents,
       homepage,
