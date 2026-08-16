@@ -191,11 +191,49 @@ export default function CheckoutPage() {
       nextOrderId = generateOrderId().replace('#', '');
     }
 
+    const orderPayload = {
+      orderId: nextOrderId,
+      customer: updatedForm,
+      items: items,
+      subtotal: subtotal,
+      shipping: shipping,
+      total: subtotal + shipping,
+      paymentStatus: 'PENDING',
+      orderStatus: 'PLACED',
+    };
+
+    try {
+      const orderRes = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(orderPayload),
+      });
+      const orderJson = await orderRes.json();
+      if (orderJson.success && orderJson.data?.orderId) {
+        nextOrderId = String(orderJson.data.orderId).replace('#', '');
+      }
+    } catch (err) {
+      console.error('Error creating pending order in DB:', err);
+    }
+
     createOrder(nextOrderId, items, subtotal, shipping, updatedForm);
 
-    setTimeout(() => {
-      router.push(`/payment/${nextOrderId}`);
-    }, 300);
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem(`cc_order_${nextOrderId}`, JSON.stringify({
+          orderId: nextOrderId,
+          customer: updatedForm,
+          items: items,
+          subtotal: subtotal,
+          shipping: shipping,
+          total: subtotal + shipping,
+          paymentStatus: 'PENDING',
+          orderStatus: 'PLACED',
+        }));
+      } catch {}
+    }
+
+    router.push(`/payment/${nextOrderId}`);
   };
 
   const filteredStates = INDIAN_STATES.filter((s) =>

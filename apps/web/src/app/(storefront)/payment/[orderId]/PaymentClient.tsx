@@ -14,8 +14,61 @@ export default function PaymentClient({ orderId }: { orderId: string }) {
   const { clearCart } = useCart();
   const { currentOrder, getOrder, updatePaymentInfo } = useOrderStore();
   
-  const order = getOrder(orderId) || currentOrder;
-  const total = order?.total || 3498;
+  const cleanOrderId = (orderId || '').replace('#', '').trim();
+  const formattedOrderId = cleanOrderId.startsWith('CLAP') ? cleanOrderId : `CLAP${cleanOrderId}`;
+
+  // 1. Initialize from memory or localStorage
+  const [order, setOrder] = useState<any>(() => {
+    const memoryOrder = getOrder(cleanOrderId) || currentOrder;
+    if (memoryOrder) return memoryOrder;
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem(`cc_order_${cleanOrderId}`);
+        if (stored) return JSON.parse(stored);
+      } catch {}
+    }
+    return null;
+  });
+
+  const [loadingOrder, setLoadingOrder] = useState(!order);
+
+  // 2. Fetch live confirmed order from database
+  React.useEffect(() => {
+    let isMounted = true;
+    async function syncOrderFromDB() {
+      try {
+        const res = await fetch(`/api/orders/${cleanOrderId}`);
+        if (res.ok) {
+          const json = await res.json();
+          if (json.success && json.data && isMounted) {
+            const doc = json.data;
+            let parsedCustomer = doc.customer;
+            if (typeof doc.customer === 'string') {
+              try { parsedCustomer = JSON.parse(doc.customer); } catch {}
+            }
+            let parsedItems = doc.items;
+            if (typeof doc.items === 'string') {
+              try { parsedItems = JSON.parse(doc.items); } catch {}
+            }
+            setOrder({
+              ...doc,
+              customer: parsedCustomer,
+              items: parsedItems,
+              total: Number(doc.total) || 1099,
+            });
+          }
+        }
+      } catch (err) {
+        console.error('Failed to sync order from DB:', err);
+      } finally {
+        if (isMounted) setLoadingOrder(false);
+      }
+    }
+    syncOrderFromDB();
+    return () => { isMounted = false; };
+  }, [cleanOrderId]);
+
+  const total = Number(order?.total) || 1099;
 
   const [screenshotUrl, setScreenshotUrl] = useState('');
   const [screenshotFile, setScreenshotFile] = useState<File | null>(null);
@@ -24,8 +77,7 @@ export default function PaymentClient({ orderId }: { orderId: string }) {
   const [copiedUpi, setCopiedUpi] = useState(false);
 
   const upiId = 'paytm.s1qzmi4@pty';
-  const cleanOrderId = (orderId || '').replace('#', '');
-  const upiIntentString = `upi://pay?pa=${upiId}&pn=CLAPCULTURE&am=${total}&cu=INR&tn=Order%20${cleanOrderId}`;
+  const upiIntentString = `upi://pay?pa=${upiId}&pn=CLAPCULTURE&am=${total}&cu=INR&tn=Order%20${formattedOrderId}`;
   const dynamicQrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(upiIntentString)}`;
   const qrCodeUrl = dynamicQrCodeUrl || resolveImageUrl('/qrcode.png');
 
@@ -49,8 +101,6 @@ export default function PaymentClient({ orderId }: { orderId: string }) {
     e.preventDefault();
     setIsSubmitting(true);
 
-    const formattedOrderId = orderId.startsWith('CLAP') ? orderId : `CLAP${orderId}`;
-
     // 1. Upload compressed payment screenshot to Appwrite Storage media bucket
     let uploadedScreenshotUrl = '';
     if (screenshotFile) {
@@ -73,57 +123,43 @@ export default function PaymentClient({ orderId }: { orderId: string }) {
       }
     }
 
-    const rawCustomerData = order?.customer || {
-      fullName: 'Valued Customer',
-      email: 'customer@example.com',
-      phone: '+91 9876543210',
-      address: 'Street address',
-      apartment: '',
-      city: 'Hyderabad',
-      state: 'Telangana',
-      pincode: '500001',
-    };
-
-    const customerObj = typeof rawCustomerData === 'string' ? JSON.parse(rawCustomerData) : { ...rawCustomerData };
-    if (uploadedScreenshotUrl) {
-      customerObj.screenshotUrl = uploadedScreenshotUrl;
-      customerObj.paymentProof = uploadedScreenshotUrl;
-    }
-
-    const itemsData = (order?.items && order.items.length > 0) ? order.items : [];
-
-    const orderPayload = {
-      orderId: formattedOrderId,
-      customer: JSON.stringify(customerObj),
-      items: typeof itemsData === 'string' ? itemsData : JSON.stringify(itemsData),
-      subtotal: order?.subtotal || total,
-      shipping: order?.shipping || 0,
-      total: order?.total || total,
-      paymentStatus: 'SUBMITTED',
-      orderStatus: 'PLACED',
-      transactionId: utrNumber.trim(),
-      trackingNumber: 'TRK-CLAP-PENDING',
-      screenshotUrl: uploadedScreenshotUrl || undefined,
-      paymentProof: uploadedScreenshotUrl || undefined,
-    };
-
+    // 2. Submit payment proof to existing order via PATCH
     try {
-      const res = await fetch('/api/orders', {
-        method: 'POST',
+      const patchRes = await fetch(`/api/orders/${cleanOrderId}/payment`, {
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(orderPayload),
+        body: JSON.stringify({
+          transactionId: utrNumber.trim(),
+          screenshotUrl: uploadedScreenshotUrl || undefined,
+          customer: order?.customer,
+        }),
       });
-
-      const data = await res.json();
-      if (res.ok && data.success) {
-        console.log('✅ Order saved to Appwrite DB successfully:', data.data);
+      
+      if (!patchRes.ok && order) {
+        // Fallback: If document was not yet in DB, create it with REAL customer info
+        await fetch('/api/orders', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            orderId: formattedOrderId,
+            customer: order.customer,
+            items: order.items,
+            subtotal: order.subtotal || total,
+            shipping: order.shipping || 0,
+            total: order.total || total,
+            paymentStatus: 'SUBMITTED',
+            orderStatus: 'PLACED',
+            transactionId: utrNumber.trim(),
+            screenshotUrl: uploadedScreenshotUrl || undefined,
+          }),
+        });
       }
     } catch (err) {
-      console.error('Error posting order to DB:', err);
+      console.error('Error updating payment proof:', err);
     }
 
     if (order) {
-      updatePaymentInfo(utrNumber.trim(), uploadedScreenshotUrl || screenshotUrl || 'https://placehold.co/600x800?text=Payment+Screenshot');
+      updatePaymentInfo(utrNumber.trim(), uploadedScreenshotUrl || screenshotUrl || '');
     }
 
     clearCart();
@@ -131,7 +167,7 @@ export default function PaymentClient({ orderId }: { orderId: string }) {
     setTimeout(() => {
       setIsSubmitting(false);
       router.push(`/order-success/${formattedOrderId}`);
-    }, 600);
+    }, 400);
   };
 
   return (

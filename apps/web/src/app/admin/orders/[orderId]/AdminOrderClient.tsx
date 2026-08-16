@@ -568,10 +568,10 @@ _Team CLAPCULTURE_ ⚡`;
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs font-mono">
               <div>
                 <span className="text-[#737373] block mb-1">Customer Name:</span>
-                <p className="text-sm font-bold text-white">{customer.fullName || 'Valued Rebel'}</p>
-                <p className="text-[#a3a3a3] mt-1">{customer.email || 'customer@example.com'}</p>
+                <p className="text-sm font-bold text-white">{customer.fullName || 'Customer'}</p>
+                <p className="text-[#a3a3a3] mt-1">{customer.email || '—'}</p>
                 <p className="text-[#25D366] font-bold mt-0.5 flex items-center gap-1">
-                  <span>{customer.phone || '+91 9876543210'}</span>
+                  <span>{customer.phone || '—'}</span>
                 </p>
               </div>
               <div>

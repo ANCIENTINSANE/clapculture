@@ -34,20 +34,22 @@ orders.post('/', async (c) => {
     const dbId = getDbId(c);
     
     let customOrderId = (body.orderId || '').replace('#', '').trim();
-    if (!customOrderId) {
-      const nextId = await getNextSequentialOrderId(databases, dbId);
-      customOrderId = nextId.replace('#', '').trim();
-    } else {
-      // Check if this orderId is already taken by another completed order in database
+    let existingDocId: string | null = null;
+
+    if (customOrderId) {
+      // Check if this order exists
       const existing = await databases.listDocuments(dbId, 'orders', [
         Query.equal('orderId', customOrderId),
         Query.limit(1),
       ]);
       if (existing.documents.length > 0) {
-        // ID collision detected! Generate guaranteed next sequence
-        const freshId = await getNextSequentialOrderId(databases, dbId);
-        customOrderId = freshId.replace('#', '').trim();
+        existingDocId = existing.documents[0].$id;
       }
+    }
+
+    if (!customOrderId) {
+      const nextId = await getNextSequentialOrderId(databases, dbId);
+      customOrderId = nextId.replace('#', '').trim();
     }
 
     const customerObj = typeof body.customer === 'string' ? JSON.parse(body.customer) : (body.customer || {});
@@ -56,25 +58,37 @@ orders.post('/', async (c) => {
     const customerStr = JSON.stringify(customerObj);
     const itemsStr = typeof body.items === 'string' ? body.items : JSON.stringify(body.items || []);
 
-    const orderData = {
+    const orderData: Record<string, unknown> = {
       orderId: customOrderId,
       customer: customerStr,
       items: itemsStr,
       subtotal: Number(body.subtotal) || Number(body.total) || 0,
       shipping: Number(body.shipping) || 0,
       total: Number(body.total) || 0,
-      paymentStatus: body.paymentStatus || 'SUBMITTED',
+      paymentStatus: body.paymentStatus || 'PENDING',
       orderStatus: body.orderStatus || 'PLACED',
       transactionId: body.transactionId || 'UPI-REF-PENDING',
       trackingNumber: body.trackingNumber || 'TRK-CLAP-PENDING',
     };
     
-    const response = await databases.createDocument(
-      dbId,
-      'orders',
-      ID.unique(),
-      orderData
-    );
+    let response;
+    if (existingDocId) {
+      // Update existing order without creating duplicate!
+      response = await databases.updateDocument(
+        dbId,
+        'orders',
+        existingDocId,
+        orderData
+      );
+    } else {
+      // Create new order
+      response = await databases.createDocument(
+        dbId,
+        'orders',
+        ID.unique(),
+        orderData
+      );
+    }
 
     // Auto-save/sync customer profile and Appwrite Auth user
     if (customerObj.email) {
@@ -92,36 +106,140 @@ orders.post('/', async (c) => {
     }
     const itemsList = typeof body.items === 'string' ? JSON.parse(body.items) : (body.items || []);
     
-    if (customerObj.email) {
+    if (customerObj.email && orderData.paymentStatus === 'SUBMITTED') {
       sendOrderConfirmationEmail(env, {
         toEmail: customerObj.email,
         customerName: customerObj.fullName || 'Valued Rebel',
         orderId: customOrderId.replace('#', ''),
-        totalAmount: body.total || 0,
+        totalAmount: Number(body.total) || 0,
         items: itemsList,
-        paymentStatus: orderData.paymentStatus,
+        paymentStatus: String(orderData.paymentStatus),
         shippingAddress: `${customerObj.address || ''}, ${customerObj.city || ''}, ${customerObj.state || ''} ${customerObj.pincode || ''}`,
       }).catch((e) => console.log('Email confirmation notice:', e.message));
     }
 
-    // 2. Send Admin New Order Notification Email
-    sendAdminAlertEmail(env, {
-      subject: `New Order Placed #${customOrderId.replace('#', '')} (₹${body.total || 0})`,
-      title: `NEW ORDER #${customOrderId.replace('#', '')}`,
-      message: `A new order has been placed by ${customerObj.fullName || 'Customer'} for ₹${body.total || 0}.`,
-      actionUrl: `/admin/orders/${customOrderId.replace('#', '')}`,
-      actionText: 'VIEW ORDER IN ADMIN',
-      metadata: {
-        orderId: customOrderId,
-        customer: `${customerObj.fullName} (${customerObj.email}, ${customerObj.phone})`,
-        amount: `₹${body.total}`,
-        itemsCount: itemsList.length,
-      },
-    }).catch((e) => console.log('Admin email alert notice:', e.message));
+    if (orderData.paymentStatus === 'SUBMITTED') {
+      // Send Admin New Order Notification Email
+      sendAdminAlertEmail(env, {
+        subject: `New Order Placed #${customOrderId.replace('#', '')} (₹${body.total || 0})`,
+        title: `NEW ORDER #${customOrderId.replace('#', '')}`,
+        message: `A new order has been placed by ${customerObj.fullName || 'Customer'} for ₹${body.total || 0}.`,
+        actionUrl: `/admin/orders/${customOrderId.replace('#', '')}`,
+        actionText: 'VIEW ORDER IN ADMIN',
+        metadata: {
+          orderId: customOrderId,
+          customer: `${customerObj.fullName} (${customerObj.email}, ${customerObj.phone})`,
+          amount: `₹${body.total}`,
+          itemsCount: itemsList.length,
+        },
+      }).catch((e) => console.log('Admin email alert notice:', e.message));
+    }
     
-    return c.json({ success: true, data: response }, 201);
+    return c.json({ success: true, data: response }, existingDocId ? 200 : 201);
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : 'Failed to create order';
+    return c.json({ success: false, error: msg }, 500);
+  }
+});
+
+// Update payment proof for an existing order
+orders.patch('/:orderId/payment', async (c) => {
+  try {
+    const rawId = c.req.param('orderId') || '';
+    const cleanId = rawId.replace('#', '').trim();
+    const body = await c.req.json();
+    const env = getEnv(c);
+    const { databases } = getAppwriteClient(env);
+    const dbId = getDbId(c);
+
+    // Find the order document
+    let existingDoc: Record<string, unknown> | null = null;
+    try {
+      existingDoc = await databases.getDocument(dbId, 'orders', cleanId);
+    } catch {}
+
+    if (!existingDoc) {
+      const variations = [cleanId, `CLAP${cleanId}`, cleanId.toUpperCase(), `#${cleanId}`];
+      for (const v of variations) {
+        const response = await databases.listDocuments(
+          dbId,
+          'orders',
+          [Query.equal('orderId', v), Query.limit(1)]
+        );
+        if (response.documents.length > 0) {
+          existingDoc = response.documents[0];
+          break;
+        }
+      }
+    }
+
+    if (!existingDoc) {
+      return c.json({ success: false, error: 'Order not found' }, 404);
+    }
+
+    let customerObj: Record<string, unknown> = {};
+    if (typeof existingDoc.customer === 'string') {
+      try { customerObj = JSON.parse(existingDoc.customer); } catch {}
+    } else if (existingDoc.customer && typeof existingDoc.customer === 'object') {
+      customerObj = { ...existingDoc.customer as Record<string, unknown> };
+    }
+
+    // If new customer details provided, merge them
+    if (body.customer) {
+      const newCustomer = typeof body.customer === 'string' ? JSON.parse(body.customer) : body.customer;
+      customerObj = { ...customerObj, ...newCustomer };
+    }
+
+    if (body.screenshotUrl) {
+      customerObj.screenshotUrl = body.screenshotUrl;
+      customerObj.paymentProof = body.screenshotUrl;
+    }
+
+    const updateData: Record<string, unknown> = {
+      paymentStatus: 'SUBMITTED',
+      orderStatus: 'PLACED',
+      customer: JSON.stringify(customerObj),
+      transactionId: body.transactionId ? String(body.transactionId).trim() : (existingDoc.transactionId || 'UPI-REF-PENDING'),
+    };
+
+    const updatedDoc = await databases.updateDocument(
+      dbId,
+      'orders',
+      existingDoc.$id as string,
+      updateData
+    );
+
+    // Send notifications
+    const itemsList = typeof existingDoc.items === 'string' ? JSON.parse(existingDoc.items) : (existingDoc.items || []);
+    if (customerObj.email) {
+      sendOrderConfirmationEmail(env, {
+        toEmail: String(customerObj.email),
+        customerName: String(customerObj.fullName || 'Valued Rebel'),
+        orderId: String(existingDoc.orderId).replace('#', ''),
+        totalAmount: Number(existingDoc.total) || 0,
+        items: itemsList,
+        paymentStatus: 'SUBMITTED',
+        shippingAddress: `${customerObj.address || ''}, ${customerObj.city || ''}, ${customerObj.state || ''} ${customerObj.pincode || ''}`,
+      }).catch((e) => console.log('Email confirmation notice:', e.message));
+    }
+
+    sendAdminAlertEmail(env, {
+      subject: `Payment Submitted #${String(existingDoc.orderId).replace('#', '')} (₹${existingDoc.total || 0})`,
+      title: `PAYMENT SUBMITTED #${String(existingDoc.orderId).replace('#', '')}`,
+      message: `Customer ${customerObj.fullName || 'Customer'} has submitted UPI payment proof with UTR ${updateData.transactionId}.`,
+      actionUrl: `/admin/orders/${existingDoc.$id}`,
+      actionText: 'REVIEW & VERIFY PAYMENT',
+      metadata: {
+        orderId: String(existingDoc.orderId),
+        customer: `${customerObj.fullName} (${customerObj.email}, ${customerObj.phone})`,
+        amount: `₹${existingDoc.total}`,
+        utr: String(updateData.transactionId),
+      },
+    }).catch((e) => console.log('Admin email alert notice:', e.message));
+
+    return c.json({ success: true, data: updatedDoc });
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : 'Failed to update payment proof';
     return c.json({ success: false, error: msg }, 500);
   }
 });

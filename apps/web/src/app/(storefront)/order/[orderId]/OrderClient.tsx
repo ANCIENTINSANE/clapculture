@@ -45,17 +45,9 @@ export default function OrderClient({ orderId }: { orderId: string }) {
 
   const activeOrder = dbOrder || localOrder;
   const items = activeOrder?.items || [];
-  const customer = activeOrder?.customer || {
-    fullName: 'Valued Customer',
-    email: 'customer@example.com',
-    phone: '+91 9876543210',
-    address: 'Delivery address',
-    city: 'Hyderabad',
-    state: 'Telangana',
-    pincode: '500081',
-  };
+  const customer = activeOrder?.customer || {};
 
-  const total = activeOrder?.total || 1398;
+  const total = activeOrder?.total || 1099;
   const paymentStatus = activeOrder?.paymentStatus || 'SUBMITTED';
 
   return (
