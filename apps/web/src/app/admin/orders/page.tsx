@@ -7,6 +7,7 @@ const TABS = ['All', 'Payment Pending', 'Payment Submitted', 'Verified', 'Confir
 
 interface AdminOrder {
   id: string;
+  docId: string;
   customer: string;
   email: string;
   date: string;
@@ -37,6 +38,7 @@ export default function OrdersPage() {
               : ((doc.customer || {}) as Record<string, string | undefined>);
             return {
               id: String(doc.orderId || doc.$id || '').replace('#', ''),
+              docId: String(doc.$id || doc.orderId || ''),
               customer: customerObj.fullName || 'Valued Rebel',
               email: customerObj.email || 'customer@example.com',
               date: doc.$createdAt ? new Date(doc.$createdAt as string).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Today',
@@ -73,6 +75,7 @@ export default function OrdersPage() {
                 : ((doc.customer || {}) as Record<string, string | undefined>);
               return {
                 id: String(doc.orderId || doc.$id || '').replace('#', ''),
+                docId: String(doc.$id || doc.orderId || ''),
                 customer: customerObj.fullName || 'Valued Rebel',
                 email: customerObj.email || 'customer@example.com',
                 date: doc.$createdAt ? new Date(doc.$createdAt as string).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Today',
@@ -223,9 +226,9 @@ export default function OrdersPage() {
               </thead>
               <tbody className="divide-y divide-[#262626]">
                 {filteredOrders.map((order) => (
-                  <tr key={order.id} className="hover:bg-[#1a1a1a] transition-colors">
+                  <tr key={order.docId || order.id} className="hover:bg-[#1a1a1a] transition-colors">
                     <td className="p-4">
-                      <Link href={`/admin/orders/${order.id}`} className="text-white font-bold font-mono hover:text-electric-lime">
+                      <Link href={`/admin/orders/${order.docId}`} className="text-white font-bold font-mono hover:text-electric-lime">
                         #{order.id}
                       </Link>
                     </td>
@@ -249,7 +252,7 @@ export default function OrdersPage() {
                       <div className="flex items-center justify-end gap-2">
                         {order.paymentStatus !== 'VERIFIED' && (
                           <button
-                            onClick={(e) => handleQuickVerify(order.id, e)}
+                            onClick={(e) => handleQuickVerify(order.docId || order.id, e)}
                             className="text-xs bg-green-600/20 hover:bg-green-600 text-green-400 hover:text-white border border-green-500/30 px-2.5 py-1.5 rounded font-mono font-bold transition-all"
                             title="Quick Confirm & Verify"
                           >
@@ -257,7 +260,7 @@ export default function OrdersPage() {
                           </button>
                         )}
                         <Link 
-                          href={`/admin/orders/${order.id}`}
+                          href={`/admin/orders/${order.docId}`}
                           className="inline-flex items-center justify-center p-2 rounded-lg bg-[#262626] text-white hover:bg-electric-lime hover:text-black transition-colors"
                           title="View Order Details"
                         >

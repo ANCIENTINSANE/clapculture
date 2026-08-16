@@ -12,21 +12,25 @@ export const getNextSequentialOrderId = async (databases: Databases, dbId: strin
     let highestSeq = 1000;
     for (const doc of list.documents) {
       const raw = String(doc.orderId || '').replace('#', '').trim();
-      // Strictly match sequential series like CLAP01001, CLAP01002, etc. (starts with CLAP0)
-      const match = raw.match(/^CLAP0(1\d{3,})$/i) || raw.match(/^CLAP0(\d{4,})$/i);
+      const match = raw.match(/^CLAP(\d+)$/i);
       if (match) {
         const num = parseInt(match[1], 10);
-        if (num >= 1001 && num < 100000 && num > highestSeq) {
+        if (num >= 1001 && num < 999999 && num > highestSeq) {
           highestSeq = num;
         }
       }
+    }
+
+    // Safety fallback: Ensure sequence is at least 1000 + total orders
+    if (list.total && 1000 + list.total > highestSeq) {
+      highestSeq = 1000 + list.total;
     }
 
     const nextNum = highestSeq + 1;
     const padded = String(nextNum).padStart(5, '0');
     return `#CLAP${padded}`;
   } catch {
-    return '#CLAP01001';
+    return '#CLAP01021';
   }
 };
 

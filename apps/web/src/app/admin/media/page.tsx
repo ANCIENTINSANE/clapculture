@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { compressImageFile } from '@/lib/image-compression';
 
 type MediaItem = {
   id: string;
@@ -107,13 +108,14 @@ export default function MediaLibrary() {
   const uploadFile = async (file: File) => {
     try {
       setUploading(true);
-      showToast('Uploading...');
+      showToast('Optimizing & uploading...');
+      const optimizedFile = await compressImageFile(file, { maxWidth: 1800, maxHeight: 1800, quality: 0.84 });
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append('file', optimizedFile);
       
       const res = await fetch('/api/media/upload', {
         method: 'POST',
-        body: formData
+        body: formData,
       });
       const json = await res.json();
       

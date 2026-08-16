@@ -154,7 +154,13 @@ export function OrderStoreProvider({ children }: { children: ReactNode }) {
   };
 
   const getOrder = (orderId: string): OrderData | null => {
-    return orders.find((o) => o.orderId === orderId) || currentOrder?.orderId === orderId ? currentOrder : null;
+    const clean = orderId.replace('#', '').trim();
+    const found = orders.find((o) => o.orderId.replace('#', '').trim() === clean);
+    if (found) return found;
+    if (currentOrder && currentOrder.orderId.replace('#', '').trim() === clean) {
+      return currentOrder;
+    }
+    return null;
   };
 
   return React.createElement(

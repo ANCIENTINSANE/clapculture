@@ -7,6 +7,8 @@ import { formatCurrency, resolveImageUrl } from '@/lib/utils';
 import { useCart } from '@/components/cart/CartProvider';
 import { useOrderStore } from '@/lib/store';
 
+import { compressImageFile } from '@/lib/image-compression';
+
 export default function PaymentClient({ orderId }: { orderId: string }) {
   const router = useRouter();
   const { clearCart } = useCart();
@@ -33,11 +35,13 @@ export default function PaymentClient({ orderId }: { orderId: string }) {
     setTimeout(() => setCopiedUpi(false), 2000);
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setScreenshotFile(file);
-      setScreenshotUrl(URL.createObjectURL(file));
+      // Compress image client-side to save bandwidth and speed up upload
+      const optimized = await compressImageFile(file, { maxWidth: 1400, quality: 0.82 });
+      setScreenshotFile(optimized);
+      setScreenshotUrl(URL.createObjectURL(optimized));
     }
   };
 
@@ -47,12 +51,13 @@ export default function PaymentClient({ orderId }: { orderId: string }) {
 
     const formattedOrderId = orderId.startsWith('CLAP') ? orderId : `CLAP${orderId}`;
 
-    // 1. Upload payment screenshot to Appwrite Storage media bucket
+    // 1. Upload compressed payment screenshot to Appwrite Storage media bucket
     let uploadedScreenshotUrl = '';
     if (screenshotFile) {
       try {
+        const optimizedFile = await compressImageFile(screenshotFile, { maxWidth: 1400, quality: 0.82 });
         const formData = new FormData();
-        formData.append('file', screenshotFile);
+        formData.append('file', optimizedFile);
         const uploadRes = await fetch('/api/payments/upload-proof', {
           method: 'POST',
           body: formData,

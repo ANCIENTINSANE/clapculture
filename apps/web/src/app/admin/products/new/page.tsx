@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { resolveImageUrl } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 import { BadgeTagSelector } from '@/components/admin/BadgeTagSelector';
+import { compressImageFile } from '@/lib/image-compression';
 
 function slugify(text: string): string {
   return text
@@ -138,8 +139,9 @@ export default function AddProductPage() {
 
     try {
       const uploadPromises = Array.from(files).map(async (file) => {
+        const optimizedFile = await compressImageFile(file, { maxWidth: 1800, maxHeight: 1800, quality: 0.84 });
         const formData = new FormData();
-        formData.append('file', file);
+        formData.append('file', optimizedFile);
         const res = await fetch('/api/media/upload', {
           method: 'POST',
           headers: {

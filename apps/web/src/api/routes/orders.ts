@@ -33,9 +33,21 @@ orders.post('/', async (c) => {
     const { databases } = getAppwriteClient(env);
     const dbId = getDbId(c);
     
-    let customOrderId = body.orderId;
+    let customOrderId = (body.orderId || '').replace('#', '').trim();
     if (!customOrderId) {
-      customOrderId = await getNextSequentialOrderId(databases, dbId);
+      const nextId = await getNextSequentialOrderId(databases, dbId);
+      customOrderId = nextId.replace('#', '').trim();
+    } else {
+      // Check if this orderId is already taken by another completed order in database
+      const existing = await databases.listDocuments(dbId, 'orders', [
+        Query.equal('orderId', customOrderId),
+        Query.limit(1),
+      ]);
+      if (existing.documents.length > 0) {
+        // ID collision detected! Generate guaranteed next sequence
+        const freshId = await getNextSequentialOrderId(databases, dbId);
+        customOrderId = freshId.replace('#', '').trim();
+      }
     }
 
     const customerObj = typeof body.customer === 'string' ? JSON.parse(body.customer) : (body.customer || {});

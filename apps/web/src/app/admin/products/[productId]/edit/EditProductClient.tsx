@@ -4,7 +4,8 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { resolveImageUrl } from '@/lib/utils';
+import { formatCurrency, resolveImageUrl } from '@/lib/utils';
+import { compressImageFile } from '@/lib/image-compression';
 import { BadgeTagSelector } from '@/components/admin/BadgeTagSelector';
 
 function slugify(text: string): string {
@@ -231,8 +232,10 @@ export default function EditProductClient({ productId }: { productId: string }) 
 
     try {
       const uploadPromises = Array.from(files).map(async (file) => {
+        // Compress image client-side to save bandwidth and storage
+        const optimizedFile = await compressImageFile(file, { maxWidth: 1800, maxHeight: 1800, quality: 0.84 });
         const uploadFormData = new FormData();
-        uploadFormData.append('file', file);
+        uploadFormData.append('file', optimizedFile);
         const res = await fetch('/api/media/upload', {
           method: 'POST',
           headers: {
