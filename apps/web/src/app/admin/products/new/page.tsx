@@ -135,7 +135,7 @@ export default function AddProductPage() {
     if (!files || files.length === 0) return;
 
     setIsUploading(true);
-    const token = localStorage.getItem('adminToken');
+    const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
 
     try {
       const uploadPromises = Array.from(files).map(async (file) => {
@@ -150,10 +150,13 @@ export default function AddProductPage() {
           body: formData,
         });
         const data = await res.json();
-        if (data.success) {
+        if (data.success && data.data?.id) {
           return data.data.id;
+        } else {
+          console.error('File upload API error:', data);
+          showNotification(data.error || 'Failed to upload image', true);
+          return null;
         }
-        return null;
       });
 
       const uploadedIds = (await Promise.all(uploadPromises)).filter(Boolean);
@@ -163,7 +166,7 @@ export default function AddProductPage() {
       }
     } catch (err) {
       console.error('Upload failed', err);
-      showNotification('Failed to upload image', true);
+      showNotification('Failed to upload image. Please try again.', true);
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';

@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import { adminAuth } from '../middleware/auth';
-import { uploadFile, getFileUrl } from '../lib/storage';
+import { uploadFile, getFileUrl, deleteFile } from '../lib/storage';
 import { getAppwriteClient } from '../lib/appwrite';
 import { getEnv } from '../lib/utils';
 
@@ -96,10 +96,7 @@ media.post('/upload', adminAuth, async (c) => {
     }
     
     const env = getEnv(c);
-
-    const uploadPayload: File = file;
-
-    const uploaded = await uploadFile(env, BUCKET_ID, uploadPayload);
+    const uploaded = await uploadFile(env, BUCKET_ID, file);
     const url = getFileUrl(env, BUCKET_ID, uploaded.$id);
     
     return c.json({ 
@@ -115,6 +112,7 @@ media.post('/upload', adminAuth, async (c) => {
       } 
     });
   } catch (error: unknown) {
+    console.error('Media upload error:', error);
     const msg = error instanceof Error ? error.message : 'Internal server error';
     return c.json({ success: false, error: msg }, 500);
   }
@@ -123,10 +121,34 @@ media.post('/upload', adminAuth, async (c) => {
 media.get('/', adminAuth, async (c) => {
   try {
     const env = getEnv(c);
-    const { storage } = getAppwriteClient(env);
-    const response = await storage.listFiles(BUCKET_ID);
-    
-    const files = response.files.map(f => ({
+    const endpoint = env?.APPWRITE_ENDPOINT || process.env.APPWRITE_ENDPOINT || 'https://sgp.cloud.appwrite.io/v1';
+    const projectId = env?.APPWRITE_PROJECT_ID || process.env.APPWRITE_PROJECT_ID || '6a7dfa97003713198186';
+    const apiKey = env?.APPWRITE_API_KEY || process.env.APPWRITE_API_KEY || '';
+
+    const limit = c.req.query('limit') || '100';
+    const res = await fetch(`${endpoint}/storage/buckets/${BUCKET_ID}/files?queries[]=${encodeURIComponent(`limit(${limit})`)}&queries[]=${encodeURIComponent('orderDesc("$createdAt")')}`, {
+      headers: {
+        'X-Appwrite-Project': projectId,
+        'X-Appwrite-Key': apiKey,
+      },
+    });
+
+    if (!res.ok) {
+      const { storage } = getAppwriteClient(env);
+      const response = await storage.listFiles(BUCKET_ID);
+      const files = response.files.map(f => ({
+        id: f.$id,
+        name: f.name,
+        size: f.sizeOriginal,
+        type: f.mimeType,
+        url: getFileUrl(env, BUCKET_ID, f.$id),
+        createdAt: f.$createdAt
+      }));
+      return c.json({ success: true, data: files });
+    }
+
+    const json = (await res.json()) as { files: Array<{ $id: string; name: string; sizeOriginal: number; mimeType: string; $createdAt: string }> };
+    const files = (json.files || []).map(f => ({
       id: f.$id,
       name: f.name,
       size: f.sizeOriginal,
@@ -145,9 +167,8 @@ media.get('/', adminAuth, async (c) => {
 media.delete('/:id', adminAuth, async (c) => {
   try {
     const id = c.req.param('id') || '';
-    const { storage } = getAppwriteClient(getEnv(c));
-    
-    await storage.deleteFile(BUCKET_ID, id);
+    const env = getEnv(c);
+    await deleteFile(env, BUCKET_ID, id);
     
     return c.json({ success: true, data: { deleted: true } });
   } catch (error: unknown) {

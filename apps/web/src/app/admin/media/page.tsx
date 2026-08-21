@@ -109,18 +109,22 @@ export default function MediaLibrary() {
     try {
       setUploading(true);
       showToast('Optimizing & uploading...');
+      const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
       const optimizedFile = await compressImageFile(file, { maxWidth: 1800, maxHeight: 1800, quality: 0.84 });
       const formData = new FormData();
       formData.append('file', optimizedFile);
       
       const res = await fetch('/api/media/upload', {
         method: 'POST',
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: formData,
       });
       const json = await res.json();
       
       if (json.success && json.data) {
-        setMedia([json.data, ...media]);
+        setMedia((prev) => [json.data, ...prev]);
         showToast('File uploaded successfully');
       } else {
         showToast(json.error || 'Upload failed');
