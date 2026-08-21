@@ -47,7 +47,7 @@ export default function DashboardPage() {
   const totalOrders = orders.length;
   const totalSales = orders.reduce((sum, o) => sum + (Number(o.total) || 0), 0);
   const pendingPayments = orders.filter(
-    (o) => o.paymentStatus === 'SUBMITTED' || o.paymentStatus === 'PENDING'
+    (o) => o.paymentStatus === 'SUBMITTED'
   ).length;
   const confirmedOrders = orders.filter(
     (o) => o.orderStatus === 'CONFIRMED' || o.paymentStatus === 'VERIFIED'

@@ -17,8 +17,8 @@ export default function SettingsPage() {
   });
 
   const [paymentData, setPaymentData] = useState({
-    upiId: 'paytm.s1qzmi4@pty',
-    qrCodeUrl: 'https://clapculture.com/qrcode.png',
+    upiId: 'BHARATPE.8L0Y0E5R7K56484@fbpe',
+    qrCodeUrl: '/qrcode.png',
     instructions: 'Scan the QR code to pay using any UPI app. Share screenshot on WhatsApp.'
   });
 

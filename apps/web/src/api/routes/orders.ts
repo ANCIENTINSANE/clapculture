@@ -3,6 +3,7 @@ import { ID, Query } from 'node-appwrite';
 import { getAppwriteClient } from '../lib/appwrite';
 import { getDbId, getEnv, getNextSequentialOrderId } from '../lib/utils';
 import { adminAuth } from '../middleware/auth';
+import { verifyAdminToken } from '../lib/jwt';
 import { upsertCustomerAndUser } from './customers';
 import {
   sendOrderConfirmationEmail,
@@ -58,6 +59,16 @@ orders.post('/', async (c) => {
     const customerStr = JSON.stringify(customerObj);
     const itemsStr = typeof body.items === 'string' ? body.items : JSON.stringify(body.items || []);
 
+    // When paymentStatus is SUBMITTED, UTR is mandatory
+    let transactionId = body.transactionId || 'UPI-REF-PENDING';
+    if (body.paymentStatus === 'SUBMITTED') {
+      const cleanTxn = String(body.transactionId || '').replace(/\D/g, '');
+      if (!cleanTxn || cleanTxn.length < 12) {
+        return c.json({ success: false, error: 'A valid 12-digit UTR / Reference number is required to submit payment.' }, 400);
+      }
+      transactionId = cleanTxn;
+    }
+
     const orderData: Record<string, unknown> = {
       orderId: customOrderId,
       customer: customerStr,
@@ -67,7 +78,7 @@ orders.post('/', async (c) => {
       total: Number(body.total) || 0,
       paymentStatus: body.paymentStatus || 'PENDING',
       orderStatus: body.orderStatus || 'PLACED',
-      transactionId: body.transactionId || 'UPI-REF-PENDING',
+      transactionId: transactionId,
       trackingNumber: body.trackingNumber || 'TRK-CLAP-PENDING',
     };
     
@@ -152,6 +163,17 @@ orders.patch('/:orderId/payment', async (c) => {
     const { databases } = getAppwriteClient(env);
     const dbId = getDbId(c);
 
+    // ── MANDATORY: UTR must be a valid 12-digit number ──
+    const cleanTxn = String(body.transactionId || '').replace(/\D/g, '');
+    if (!cleanTxn || cleanTxn.length < 12) {
+      return c.json({ success: false, error: 'A valid 12-digit UTR / Reference number is required.' }, 400);
+    }
+
+    // ── MANDATORY: Screenshot URL must be provided ──
+    if (!body.screenshotUrl) {
+      return c.json({ success: false, error: 'Payment screenshot is required. Please upload your payment confirmation screenshot.' }, 400);
+    }
+
     // Find the order document
     let existingDoc: Record<string, unknown> | null = null;
     try {
@@ -199,7 +221,7 @@ orders.patch('/:orderId/payment', async (c) => {
       paymentStatus: 'SUBMITTED',
       orderStatus: 'PLACED',
       customer: JSON.stringify(customerObj),
-      transactionId: body.transactionId ? String(body.transactionId).trim() : (existingDoc.transactionId || 'UPI-REF-PENDING'),
+      transactionId: cleanTxn,
     };
 
     const updatedDoc = await databases.updateDocument(
@@ -267,7 +289,12 @@ orders.get('/track', async (c) => {
     }
     
     const order = response.documents[0] as Record<string, unknown>;
-    const customer = (order.customer || {}) as Record<string, string | undefined>;
+    let customer: Record<string, string | undefined> = {};
+    if (typeof order.customer === 'string') {
+      try { customer = JSON.parse(order.customer); } catch {}
+    } else {
+      customer = (order.customer || {}) as Record<string, string | undefined>;
+    }
     
     if (customer.email !== contact && customer.phone !== contact) {
       return c.json({ success: false, error: 'Contact details do not match order' }, 403);
@@ -298,6 +325,17 @@ function enrichOrderDoc(doc: Record<string, unknown>) {
   };
 }
 
+/**
+ * Helper to check if the request has a valid admin JWT token.
+ */
+function isAdminRequest(c: { req: { header: (name: string) => string | undefined } }): boolean {
+  const authHeader = c.req.header('Authorization');
+  if (!authHeader || !authHeader.startsWith('Bearer ')) return false;
+  const token = authHeader.split(' ')[1];
+  const payload = verifyAdminToken(token);
+  return payload !== null;
+}
+
 orders.get('/:orderId', async (c) => {
   try {
     c.header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
@@ -309,26 +347,62 @@ orders.get('/:orderId', async (c) => {
     const { databases } = getAppwriteClient(getEnv(c));
     const dbId = getDbId(c);
     
+    // Find the order document
+    let orderDoc: Record<string, unknown> | null = null;
+
     // 1. Try finding by document ID
     try {
       const doc = await databases.getDocument(dbId, 'orders', cleanId);
-      if (doc) return c.json({ success: true, data: enrichOrderDoc(doc) });
+      if (doc) orderDoc = doc;
     } catch {}
 
     // 2. Try querying by orderId (case-insensitive variations)
-    const variations = [cleanId, `CLAP${cleanId}`, cleanId.toUpperCase(), `#${cleanId}`];
-    for (const v of variations) {
-      const response = await databases.listDocuments(
-        dbId,
-        'orders',
-        [Query.equal('orderId', v), Query.limit(1)]
-      );
-      if (response.documents.length > 0) {
-        return c.json({ success: true, data: enrichOrderDoc(response.documents[0]) });
+    if (!orderDoc) {
+      const variations = [cleanId, `CLAP${cleanId}`, cleanId.toUpperCase(), `#${cleanId}`];
+      for (const v of variations) {
+        const response = await databases.listDocuments(
+          dbId,
+          'orders',
+          [Query.equal('orderId', v), Query.limit(1)]
+        );
+        if (response.documents.length > 0) {
+          orderDoc = response.documents[0];
+          break;
+        }
       }
     }
+
+    if (!orderDoc) {
+      return c.json({ success: false, error: 'Order not found' }, 404);
+    }
+
+    // ── CONTACT VERIFICATION: Prevent cross-user data leakage ──
+    // Admin requests (with valid JWT) bypass this check
+    if (!isAdminRequest(c)) {
+      const contact = c.req.query('contact');
+      if (contact) {
+        // Verify the contact matches the order's customer
+        let customerObj: Record<string, string | undefined> = {};
+        if (typeof orderDoc.customer === 'string') {
+          try { customerObj = JSON.parse(orderDoc.customer); } catch {}
+        } else if (orderDoc.customer && typeof orderDoc.customer === 'object') {
+          customerObj = orderDoc.customer as Record<string, string | undefined>;
+        }
+
+        const contactLower = contact.toLowerCase().trim();
+        const emailMatch = customerObj.email && customerObj.email.toLowerCase().trim() === contactLower;
+        const phoneMatch = customerObj.phone && customerObj.phone.replace(/\s/g, '').includes(contactLower.replace(/\s/g, ''));
+
+        if (!emailMatch && !phoneMatch) {
+          return c.json({ success: false, error: 'You do not have permission to view this order.' }, 403);
+        }
+      }
+      // Note: We still allow access without contact param for the payment flow
+      // where the user just created the order and needs to view it immediately.
+      // The contact param is added by client pages to enforce isolation.
+    }
     
-    return c.json({ success: false, error: 'Order not found' }, 404);
+    return c.json({ success: true, data: enrichOrderDoc(orderDoc) });
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : 'Failed to get order';
     return c.json({ success: false, error: msg }, 500);
@@ -417,6 +491,7 @@ orders.get('/', adminAuth, async (c) => {
     const dbId = getDbId(c);
     const status = c.req.query('status');
     const paymentStatus = c.req.query('paymentStatus');
+    const includePending = c.req.query('includePending') === 'true';
     const limit = parseInt(c.req.query('limit') || '50');
     
     const queries = [Query.limit(limit), Query.orderDesc('$createdAt')];
@@ -428,8 +503,17 @@ orders.get('/', adminAuth, async (c) => {
       'orders',
       queries
     );
+
+    // By default, exclude PENDING (unpaid) orders from admin views
+    // Only include them if explicitly requested with ?includePending=true
+    let filteredDocs = response.documents;
+    if (!includePending && !paymentStatus) {
+      filteredDocs = response.documents.filter(
+        (d) => (d as Record<string, unknown>).paymentStatus !== 'PENDING'
+      );
+    }
     
-    return c.json({ success: true, data: response.documents.map((d) => enrichOrderDoc(d)) });
+    return c.json({ success: true, data: filteredDocs.map((d) => enrichOrderDoc(d)) });
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : 'Failed to list orders';
     return c.json({ success: false, error: msg }, 500);

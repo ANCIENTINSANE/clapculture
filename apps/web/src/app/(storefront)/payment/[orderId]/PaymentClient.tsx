@@ -12,7 +12,7 @@ import { compressImageFile } from '@/lib/image-compression';
 export default function PaymentClient({ orderId }: { orderId: string }) {
   const router = useRouter();
   const { clearCart } = useCart();
-  const { currentOrder, getOrder, updatePaymentInfo } = useOrderStore();
+  const { currentOrder, getOrder, updatePaymentInfo, checkoutInfo } = useOrderStore();
   
   const cleanOrderId = (orderId || '').replace('#', '').trim();
   const formattedOrderId = cleanOrderId.startsWith('CLAP') ? cleanOrderId : `CLAP${cleanOrderId}`;
@@ -30,12 +30,17 @@ export default function PaymentClient({ orderId }: { orderId: string }) {
     return null;
   });
 
-  // 2. Fetch live confirmed order from database
+  // 2. Fetch live confirmed order from database (with contact verification)
   React.useEffect(() => {
     let isMounted = true;
     async function syncOrderFromDB() {
       try {
-        const res = await fetch(`/api/orders/${cleanOrderId}`);
+        // Pass contact info for user-scoped access
+        const contact = order?.customer?.email || checkoutInfo?.email || '';
+        const url = contact
+          ? `/api/orders/${cleanOrderId}?contact=${encodeURIComponent(contact)}`
+          : `/api/orders/${cleanOrderId}`;
+        const res = await fetch(url);
         if (res.ok) {
           const json = await res.json();
           if (json.success && json.data && isMounted) {
@@ -62,7 +67,7 @@ export default function PaymentClient({ orderId }: { orderId: string }) {
     }
     syncOrderFromDB();
     return () => { isMounted = false; };
-  }, [cleanOrderId]);
+  }, [cleanOrderId, order?.customer?.email, checkoutInfo?.email]);
 
   const total = Number(order?.total) || 1099;
 
@@ -71,11 +76,12 @@ export default function PaymentClient({ orderId }: { orderId: string }) {
   const [utrNumber, setUtrNumber] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [copiedUpi, setCopiedUpi] = useState(false);
+  const [errors, setErrors] = useState<{ utr?: string; screenshot?: string }>({});
 
-  const upiId = 'paytm.s1qzmi4@pty';
-  const upiIntentString = `upi://pay?pa=${upiId}&pn=CLAPCULTURE&am=${total}&cu=INR&tn=Order%20${formattedOrderId}`;
-  const dynamicQrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(upiIntentString)}`;
-  const qrCodeUrl = dynamicQrCodeUrl || resolveImageUrl('/qrcode.png');
+  const upiId = 'BHARATPE.8L0Y0E5R7K56484@fbpe';
+  const upiIntentString = `upi://pay?pa=${upiId}&pn=JULLESWAR%20PENDY&am=${total}&cu=INR&tn=Order%20${formattedOrderId}`;
+  // Use the static BharatPe QR code image as primary display
+  const qrCodeUrl = resolveImageUrl('/qrcode.png');
 
   const handleCopyUpi = () => {
     navigator.clipboard.writeText(upiId);
@@ -90,11 +96,35 @@ export default function PaymentClient({ orderId }: { orderId: string }) {
       const optimized = await compressImageFile(file, { maxWidth: 1400, quality: 0.82 });
       setScreenshotFile(optimized);
       setScreenshotUrl(URL.createObjectURL(optimized));
+      // Clear screenshot error on upload
+      setErrors((prev) => { const next = { ...prev }; delete next.screenshot; return next; });
     }
+  };
+
+  const validatePayment = (): boolean => {
+    const newErrors: { utr?: string; screenshot?: string } = {};
+
+    if (!screenshotUrl || !screenshotFile) {
+      newErrors.screenshot = 'Payment screenshot is required. Please upload your payment confirmation screenshot.';
+    }
+
+    const cleanUtr = utrNumber.replace(/\D/g, '');
+    if (!cleanUtr) {
+      newErrors.utr = 'UTR / Reference number is required.';
+    } else if (cleanUtr.length !== 12) {
+      newErrors.utr = `UTR must be exactly 12 digits (you entered ${cleanUtr.length} digits).`;
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validate both UTR and screenshot before submitting
+    if (!validatePayment()) return;
+
     setIsSubmitting(true);
 
     // 1. Upload compressed payment screenshot to Appwrite Storage media bucket
@@ -224,12 +254,11 @@ export default function PaymentClient({ orderId }: { orderId: string }) {
             <label className="block text-xs font-label-caps uppercase text-gray-300 mb-2">
               1. UPLOAD PAYMENT SCREENSHOT *
             </label>
-            <div className="border-2 border-dashed border-charcoal hover:border-electric-lime rounded-xl p-6 text-center cursor-pointer transition-all bg-[#1a1a1a]">
+            <div className={`border-2 border-dashed ${errors.screenshot ? 'border-red-500' : 'border-charcoal hover:border-electric-lime'} rounded-xl p-6 text-center cursor-pointer transition-all bg-[#1a1a1a]`}>
               <input
                 type="file"
                 accept="image/*"
                 onChange={handleFileUpload}
-                required
                 className="hidden"
                 id="screenshot-upload"
               />
@@ -249,6 +278,7 @@ export default function PaymentClient({ orderId }: { orderId: string }) {
                 )}
               </label>
             </div>
+            {errors.screenshot && <p className="text-red-500 text-xs mt-1.5 font-semibold">{errors.screenshot}</p>}
           </div>
 
           <div>
@@ -259,14 +289,13 @@ export default function PaymentClient({ orderId }: { orderId: string }) {
               type="text"
               placeholder="e.g. 423987123984"
               value={utrNumber}
-              onChange={(e) => setUtrNumber(e.target.value.replace(/\D/g, '').slice(0, 12))}
-              required
-              minLength={12}
-              maxLength={12}
-              pattern="\d{12}"
-              title="Please enter a valid 12-digit UTR number"
-              className="w-full bg-[#1a1a1a] border border-charcoal rounded-lg p-3 text-white font-mono focus:border-electric-lime outline-none"
+              onChange={(e) => {
+                setUtrNumber(e.target.value.replace(/\D/g, '').slice(0, 12));
+                if (errors.utr) setErrors((prev) => { const next = { ...prev }; delete next.utr; return next; });
+              }}
+              className={`w-full bg-[#1a1a1a] border ${errors.utr ? 'border-red-500' : 'border-charcoal'} rounded-lg p-3 text-white font-mono focus:border-electric-lime outline-none`}
             />
+            {errors.utr && <p className="text-red-500 text-xs mt-1.5 font-semibold">{errors.utr}</p>}
           </div>
 
           <button

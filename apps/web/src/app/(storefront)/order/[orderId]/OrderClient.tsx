@@ -6,16 +6,26 @@ import { formatCurrency } from '@/lib/utils';
 import { useOrderStore, OrderData, CheckoutInfo } from '@/lib/store';
 
 export default function OrderClient({ orderId }: { orderId: string }) {
-  const { getOrder, currentOrder } = useOrderStore();
+  const { getOrder, currentOrder, checkoutInfo } = useOrderStore();
   const cleanId = orderId.replace('#', '');
   const localOrder = getOrder(cleanId) || (currentOrder?.orderId === cleanId ? currentOrder : null);
 
   const [dbOrder, setDbOrder] = React.useState<OrderData | null>(null);
+  const [accessDenied, setAccessDenied] = React.useState(false);
 
   React.useEffect(() => {
     async function loadDbOrder() {
       try {
-        const res = await fetch(`/api/orders/${cleanId}`);
+        // Pass contact info for user-scoped access verification
+        const contact = localOrder?.customer?.email || checkoutInfo?.email || '';
+        const url = contact
+          ? `/api/orders/${cleanId}?contact=${encodeURIComponent(contact)}`
+          : `/api/orders/${cleanId}`;
+        const res = await fetch(url);
+        if (res.status === 403) {
+          setAccessDenied(true);
+          return;
+        }
         if (res.ok) {
           const json = await res.json();
           if (json.success && json.data) {
@@ -41,7 +51,7 @@ export default function OrderClient({ orderId }: { orderId: string }) {
       }
     }
     loadDbOrder();
-  }, [cleanId]);
+  }, [cleanId, localOrder?.customer?.email, checkoutInfo?.email]);
 
   const activeOrder = dbOrder || localOrder;
   const items = activeOrder?.items || [];
@@ -49,6 +59,21 @@ export default function OrderClient({ orderId }: { orderId: string }) {
 
   const total = activeOrder?.total || 1099;
   const paymentStatus = activeOrder?.paymentStatus || 'SUBMITTED';
+
+  if (accessDenied) {
+    return (
+      <div className="bg-[#0a0a0a] min-h-screen text-white pt-24 pb-16 px-4 md:px-8 flex flex-col items-center justify-center">
+        <span className="material-symbols-outlined text-6xl text-red-500 mb-4">lock</span>
+        <h1 className="text-2xl font-headline-md mb-2">ACCESS DENIED</h1>
+        <p className="text-gray-400 text-sm text-center max-w-md mb-6">
+          You do not have permission to view this order. Orders can only be viewed by the person who placed them.
+        </p>
+        <Link href="/track-order" className="bg-electric-lime text-black px-6 py-3 font-bold font-label-caps rounded-lg hover:bg-white transition-colors">
+          TRACK YOUR ORDER
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-[#0a0a0a] min-h-screen text-white pt-24 pb-16 px-4 md:px-8">
