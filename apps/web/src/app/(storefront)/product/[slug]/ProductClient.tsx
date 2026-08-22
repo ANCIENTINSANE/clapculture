@@ -308,46 +308,56 @@ export default function ProductClient({ product, relatedProducts }: ProductClien
 
       {/* Size Guide Modal */}
       <Modal isOpen={isSizeGuideOpen} onClose={() => setIsSizeGuideOpen(false)} title="SIZE GUIDE (OVERSIZED FIT)">
-        <div className="text-sm space-y-4">
+        <div className="text-sm space-y-5">
           <p className="text-gray-300 text-xs md:text-sm">
-            All measurements are in <span className="text-electric-lime font-bold">inches</span>. Our garments feature a signature relaxed streetwear fit.
+            All measurements are in <span className="text-electric-lime font-bold">inches</span>. Our garments feature a signature relaxed streetwear oversized fit.
           </p>
 
-          <div className="overflow-x-auto border border-gray-700 rounded-lg shadow-inner">
+          {/* Size Chart Table */}
+          <div className="overflow-x-auto border border-gray-700 rounded-xl shadow-2xl bg-[#141414]">
             <table className="w-full text-center border-collapse text-xs md:text-sm">
               <thead>
-                <tr className="bg-[#2b3240] text-white divide-x divide-gray-700">
-                  <th className="p-3 bg-[#1e2430] text-left font-bold text-gray-300 w-24 tracking-wider">SIZE</th>
-                  <th className="p-3 font-bold">S</th>
-                  <th className="p-3 font-bold">M</th>
-                  <th className="p-3 font-bold">L</th>
-                  <th className="p-3 font-bold">XL</th>
+                <tr className="bg-[#242b38] text-white divide-x divide-gray-700 border-b border-gray-700">
+                  <th className="p-3.5 bg-[#181d26] text-left font-bold text-gray-300 w-28 tracking-wider font-mono">SIZE</th>
+                  <th className="p-3.5 font-bold font-mono text-base">S</th>
+                  <th className="p-3.5 font-bold font-mono text-base">M</th>
+                  <th className="p-3.5 font-bold font-mono text-base">L</th>
+                  <th className="p-3.5 font-bold font-mono text-base">XL</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-700 bg-[#161a22]">
+              <tbody className="divide-y divide-gray-700/80 bg-[#12151b]">
                 <tr className="divide-x divide-gray-700">
-                  <td className="p-3 bg-[#1e2430] text-left font-bold text-gray-300 tracking-wider">CHEST</td>
-                  <td className="p-3 text-white font-mono font-medium">43</td>
-                  <td className="p-3 text-white font-mono font-medium">45</td>
-                  <td className="p-3 text-white font-mono font-medium">47</td>
-                  <td className="p-3 text-white font-mono font-medium">49</td>
+                  <td className="p-3.5 bg-[#181d26] text-left font-bold text-gray-300 tracking-wider font-mono">CHEST</td>
+                  <td className="p-3.5 text-white font-mono font-bold text-base">42</td>
+                  <td className="p-3.5 text-white font-mono font-bold text-base">44</td>
+                  <td className="p-3.5 text-white font-mono font-bold text-base">46</td>
+                  <td className="p-3.5 text-white font-mono font-bold text-base">48</td>
                 </tr>
                 <tr className="divide-x divide-gray-700">
-                  <td className="p-3 bg-[#1e2430] text-left font-bold text-gray-300 tracking-wider">LENGTH</td>
-                  <td className="p-3 text-white font-mono font-medium">27.5</td>
-                  <td className="p-3 text-white font-mono font-medium">28.5</td>
-                  <td className="p-3 text-white font-mono font-medium">29.5</td>
-                  <td className="p-3 text-white font-mono font-medium">30.5</td>
+                  <td className="p-3.5 bg-[#181d26] text-left font-bold text-gray-300 tracking-wider font-mono">LENGTH</td>
+                  <td className="p-3.5 text-white font-mono font-bold text-base">27</td>
+                  <td className="p-3.5 text-white font-mono font-bold text-base">27.5</td>
+                  <td className="p-3.5 text-white font-mono font-bold text-base">28.5</td>
+                  <td className="p-3.5 text-white font-mono font-bold text-base">29.5</td>
                 </tr>
               </tbody>
             </table>
           </div>
 
-          <div className="bg-soft-charcoal border border-gray-800 rounded-lg p-3 text-xs text-gray-400 space-y-1.5">
-            <p className="text-gray-300 font-semibold flex items-center gap-1.5">
-              <span className="text-electric-lime">📏</span> Fit Note:
+          {/* Size Chart Image Preview */}
+          <div className="border border-gray-800 rounded-xl overflow-hidden bg-white/95 p-2">
+            <img src="/size-chart.png" alt="Official Size Chart" className="w-full h-auto object-contain rounded" />
+          </div>
+
+          <div className="bg-soft-charcoal border border-gray-800 rounded-xl p-4 text-xs text-gray-400 space-y-2">
+            <p className="text-gray-200 font-bold flex items-center gap-1.5 text-sm font-mono">
+              <span className="text-electric-lime">📏</span> HOW TO MEASURE &amp; FIT NOTE:
             </p>
-            <p>• If you prefer a classic/regular fit instead of oversized, order one size down.</p>
+            <ul className="list-disc pl-5 space-y-1 text-gray-300 leading-relaxed font-mono text-[11px]">
+              <li><strong className="text-white">Chest:</strong> Measure around the fullest part of your chest, keeping the tape horizontal.</li>
+              <li><strong className="text-white">Length:</strong> Measure from the highest point of the shoulder down to the bottom hem.</li>
+              <li>If you prefer a regular/standard fit instead of oversized, we recommend ordering one size down.</li>
+            </ul>
           </div>
         </div>
       </Modal>
