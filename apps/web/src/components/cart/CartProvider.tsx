@@ -4,6 +4,12 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { CartItem, Product, Size } from '@clapculture/shared';
 import { generateOrderId } from '@/lib/utils';
 
+export interface ShippingCalculation {
+  fee: number;
+  isFree: boolean;
+  reason: 'all_free' | 'threshold' | 'custom' | 'standard';
+}
+
 interface CartContextType {
   items: CartItem[];
   addToCart: (product: Product, size: Size, quantity: number) => void;
@@ -12,6 +18,7 @@ interface CartContextType {
   clearCart: () => void;
   getCartTotal: () => number;
   getCartCount: () => number;
+  getShippingFee: (threshold?: number, defaultFee?: number) => ShippingCalculation;
   isDrawerOpen: boolean;
   setIsDrawerOpen: (isOpen: boolean) => void;
 }
@@ -52,17 +59,28 @@ export function CartProvider({ children }: { children: ReactNode }) {
       const existing = prev.find((item) => item.productId === product.id && item.size === size);
       if (existing) {
         return prev.map((item) =>
-          item.id === existing.id ? { ...item, quantity: item.quantity + quantity } : item
+          item.id === existing.id
+            ? {
+                ...item,
+                quantity: item.quantity + quantity,
+                freeShipping: product.freeShipping,
+                deliveryChargeEnabled: product.deliveryChargeEnabled,
+                deliveryFee: product.deliveryFee,
+              }
+            : item
         );
       }
       const newItem: CartItem = {
-        id: generateOrderId(), // Just reusing this to generate a random ID for the cart item
+        id: generateOrderId(),
         productId: product.id,
         name: product.name,
         image: product.images[0] || '',
         size,
         price: product.price,
         quantity,
+        freeShipping: product.freeShipping || false,
+        deliveryChargeEnabled: product.deliveryChargeEnabled || false,
+        deliveryFee: typeof product.deliveryFee === 'number' ? product.deliveryFee : undefined,
       };
       return [...prev, newItem];
     });
@@ -89,6 +107,35 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const getCartCount = () => items.reduce((count, item) => count + item.quantity, 0);
 
+  const getShippingFee = (threshold = 999, defaultFee = 49): ShippingCalculation => {
+    if (items.length === 0) {
+      return { fee: 0, isFree: true, reason: 'all_free' };
+    }
+
+    // 1. If ALL items in cart have freeShipping: true
+    const allFreeShipping = items.every((item) => item.freeShipping === true);
+    if (allFreeShipping) {
+      return { fee: 0, isFree: true, reason: 'all_free' };
+    }
+
+    // 2. If any items have custom delivery charge enabled
+    const itemsWithCustomFee = items.filter(
+      (item) => item.deliveryChargeEnabled && typeof item.deliveryFee === 'number' && item.deliveryFee > 0
+    );
+    if (itemsWithCustomFee.length > 0) {
+      const maxCustomFee = Math.max(...itemsWithCustomFee.map((i) => i.deliveryFee || 0));
+      return { fee: maxCustomFee, isFree: false, reason: 'custom' };
+    }
+
+    // 3. Store threshold policy (Free above threshold, otherwise default shipping fee)
+    const subtotal = getCartTotal();
+    if (subtotal >= threshold) {
+      return { fee: 0, isFree: true, reason: 'threshold' };
+    }
+
+    return { fee: defaultFee, isFree: false, reason: 'standard' };
+  };
+
   return (
     <CartContext.Provider
       value={{
@@ -99,6 +146,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         clearCart,
         getCartTotal,
         getCartCount,
+        getShippingFee,
         isDrawerOpen,
         setIsDrawerOpen,
       }}

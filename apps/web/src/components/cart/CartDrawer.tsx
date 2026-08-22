@@ -23,9 +23,10 @@ export function CartDrawer() {
   }
 
   const total = getCartTotal();
+  const shippingInfo = useCart().getShippingFee();
   const freeShippingThreshold = 999;
   const progress = Math.min((total / freeShippingThreshold) * 100, 100);
-  const remainingForFreeShipping = freeShippingThreshold - total;
+  const remainingForFreeShipping = Math.max(0, freeShippingThreshold - total);
 
   return (
     <>
@@ -51,21 +52,29 @@ export function CartDrawer() {
 
         {/* Free Shipping Bar */}
         <div className="p-4 bg-charcoal/50 border-b border-charcoal">
-          {remainingForFreeShipping > 0 ? (
-            <p className="text-xs text-center mb-2 font-bold uppercase">
-              You are <span className="text-electric-lime">{formatCurrency(remainingForFreeShipping)}</span> away from free shipping!
+          {shippingInfo.isFree ? (
+            <p className="text-xs text-center mb-2 font-bold uppercase text-electric-lime flex items-center justify-center gap-1">
+              <span>🚚</span> {shippingInfo.reason === 'all_free' ? 'Free Delivery on all items in your cart!' : 'You unlocked free shipping!'}
             </p>
           ) : (
-            <p className="text-xs text-center mb-2 font-bold uppercase text-electric-lime">
-              You got free shipping!
-            </p>
+            <>
+              <p className="text-xs text-center mb-2 font-bold uppercase">
+                {shippingInfo.reason === 'custom' ? (
+                  <span>Standard Delivery: <strong className="text-electric-lime">{formatCurrency(shippingInfo.fee)}</strong></span>
+                ) : (
+                  <>Add <span className="text-electric-lime">{formatCurrency(remainingForFreeShipping)}</span> more for free shipping!</>
+                )}
+              </p>
+              {shippingInfo.reason !== 'custom' && (
+                <div className="h-1.5 w-full bg-deep-black rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-electric-lime transition-all duration-500 ease-out"
+                    style={{ width: `${progress}%` }}
+                  />
+                </div>
+              )}
+            </>
           )}
-          <div className="h-1.5 w-full bg-deep-black rounded-full overflow-hidden">
-            <div 
-              className="h-full bg-electric-lime transition-all duration-500 ease-out"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
         </div>
 
         <div className="flex-1 overflow-y-auto p-4 hide-scrollbar">

@@ -1,13 +1,14 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 type Tab = 'store' | 'payment' | 'shipping' | 'notifications' | 'social';
 
 export default function SettingsPage() {
-  const [activeTab, setActiveTab] = useState<Tab>('store');
-  const [toast, setToast] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<Tab>('shipping');
+  const [toast, setToast] = useState<{ msg: string; isError?: boolean } | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  // Mock State
+  // State
   const [storeData, setStoreData] = useState({
     name: 'CLAPCULTURE',
     logoUrl: 'https://clapculture.com/logo.png',
@@ -23,8 +24,8 @@ export default function SettingsPage() {
   });
 
   const [shippingData, setShippingData] = useState({
-    shippingFee: 100,
-    freeThreshold: 1500
+    shippingFee: 49,
+    freeThreshold: 999
   });
 
   const [notificationData, setNotificationData] = useState({
@@ -41,14 +42,65 @@ export default function SettingsPage() {
     twitter: 'https://x.com/clapculture'
   });
 
-  const showToast = () => {
-    setToast('Settings saved successfully');
+  useEffect(() => {
+    fetch('/api/settings')
+      .then(res => res.json())
+      .then(json => {
+        if (json.success && json.data) {
+          const d = json.data;
+          if (d.storeName) setStoreData(p => ({ ...p, name: d.storeName }));
+          if (d.upiId) setPaymentData(p => ({ ...p, upiId: d.upiId }));
+          if (d.qrCodeUrl) setPaymentData(p => ({ ...p, qrCodeUrl: d.qrCodeUrl }));
+          if (typeof d.freeShippingThreshold === 'number') {
+            setShippingData(p => ({ ...p, freeThreshold: d.freeShippingThreshold }));
+          }
+          if (typeof d.shippingFee === 'number') {
+            setShippingData(p => ({ ...p, shippingFee: d.shippingFee }));
+          }
+        }
+      })
+      .catch(e => console.error('Failed to load settings:', e));
+  }, []);
+
+  const showToast = (msg: string, isError = false) => {
+    setToast({ msg, isError });
     setTimeout(() => setToast(null), 3000);
   };
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    showToast();
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+      const payload = {
+        storeName: storeData.name,
+        currency: 'INR',
+        freeShippingThreshold: Number(shippingData.freeThreshold) || 999,
+        shippingFee: Number(shippingData.shippingFee) || 49,
+        upiId: paymentData.upiId,
+        qrCodeUrl: paymentData.qrCodeUrl,
+      };
+
+      const res = await fetch('/api/settings', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const json = await res.json();
+      if (res.ok && json.success) {
+        showToast('✨ Settings & Delivery rates saved successfully!');
+      } else {
+        showToast(json.error || 'Failed to save settings', true);
+      }
+    } catch {
+      showToast('Error connecting to server', true);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const tabs: { id: Tab; label: string; icon: string }[] = [
@@ -361,9 +413,13 @@ export default function SettingsPage() {
 
       {/* Toast */}
       {toast && (
-        <div className="fixed bottom-4 right-4 bg-[#1a1a1a] border border-[#262626] text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-2 animate-fade-in z-50">
-          <span className="material-symbols-outlined text-green-500 text-[20px]">check_circle</span>
-          <span className="text-sm font-medium">{toast}</span>
+        <div className={`fixed bottom-4 right-4 border text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-2 animate-fade-in z-50 ${
+          toast.isError ? 'bg-red-950/90 border-red-500/50' : 'bg-[#1a1a1a] border-[#262626]'
+        }`}>
+          <span className={`material-symbols-outlined text-[20px] ${toast.isError ? 'text-red-400' : 'text-green-500'}`}>
+            {toast.isError ? 'error' : 'check_circle'}
+          </span>
+          <span className="text-sm font-medium">{toast.msg}</span>
         </div>
       )}
     </div>

@@ -172,7 +172,7 @@ export default function ProductClient({ product, relatedProducts }: ProductClien
             )}
           </div>
 
-          <div className="flex items-center gap-2 mb-8 text-electric-lime">
+          <div className="flex items-center gap-2 mb-4 text-electric-lime">
             <div className="flex">
               {[1, 2, 3, 4, 5].map(i => (
                 <span key={i} className="material-symbols-outlined text-xl">{i === 5 ? 'star_half' : 'star'}</span>
@@ -180,6 +180,24 @@ export default function ProductClient({ product, relatedProducts }: ProductClien
             </div>
             <span className="text-white text-sm font-label-caps ml-2">4.8 (124 REVIEWS)</span>
           </div>
+
+          {/* Delivery Badge Card */}
+          {product.freeShipping ? (
+            <div className="flex items-center gap-2 p-3 bg-electric-lime/10 border border-electric-lime/30 rounded-lg text-xs font-mono text-electric-lime mb-6">
+              <span className="material-symbols-outlined text-base">local_shipping</span>
+              <span className="font-bold">FREE PAN-INDIA DELIVERY ON THIS ITEM</span>
+            </div>
+          ) : product.deliveryChargeEnabled && typeof product.deliveryFee === 'number' && product.deliveryFee > 0 ? (
+            <div className="flex items-center gap-2 p-3 bg-purple-500/10 border border-purple-500/30 rounded-lg text-xs font-mono text-purple-300 mb-6">
+              <span className="material-symbols-outlined text-base">local_shipping</span>
+              <span>Standard Delivery Fee: <strong className="text-white font-bold">₹{product.deliveryFee}</strong></span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 p-3 bg-charcoal/60 border border-charcoal rounded-lg text-xs font-mono text-gray-400 mb-6">
+              <span className="material-symbols-outlined text-base text-electric-lime">local_shipping</span>
+              <span>Free Delivery on orders above <strong className="text-white">₹999</strong> (Standard: ₹49)</span>
+            </div>
+          )}
 
           <div className="mb-6">
             <div className="flex justify-between items-center mb-4">

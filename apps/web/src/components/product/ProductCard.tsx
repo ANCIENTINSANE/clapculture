@@ -52,19 +52,31 @@ export function ProductCard({ product }: ProductCardProps) {
                 SOLD OUT
               </span>
             ) : (
-              product.badges?.map((badge, idx) => {
-                let bgColor = 'bg-white';
-                let textColor = 'text-black';
-                if (badge.toUpperCase() === 'NEW' || badge.toUpperCase() === 'IN STOCK') { bgColor = 'bg-electric-lime'; textColor = 'text-black'; }
-                if (badge.toUpperCase() === 'LIMITED' || badge.toUpperCase() === 'SOLD OUT') { bgColor = 'bg-rose-600'; textColor = 'text-white'; }
-                if (badge.toUpperCase() === '320 GSM') { bgColor = 'bg-black/80 text-electric-lime border border-electric-lime/50'; textColor = 'text-electric-lime'; }
-                
-                return (
-                  <span key={idx} className={`${bgColor} ${textColor} text-[10px] md:text-xs font-black tracking-wider px-2.5 py-1 uppercase shadow-md`}>
-                    {badge}
+              <>
+                {product.freeShipping && (
+                  <span className="bg-electric-lime text-black text-[10px] md:text-xs font-black tracking-wider px-2 py-0.5 uppercase shadow-md flex items-center gap-1 font-mono">
+                    <span>🚚</span> FREE DELIVERY
                   </span>
-                );
-              })
+                )}
+                {product.deliveryChargeEnabled && typeof product.deliveryFee === 'number' && product.deliveryFee > 0 && (
+                  <span className="bg-black/90 text-purple-300 border border-purple-500/50 text-[10px] md:text-xs font-mono font-bold tracking-wider px-2 py-0.5 uppercase shadow-md">
+                    Delivery: ₹{product.deliveryFee}
+                  </span>
+                )}
+                {product.badges?.map((badge, idx) => {
+                  let bgColor = 'bg-white';
+                  let textColor = 'text-black';
+                  if (badge.toUpperCase() === 'NEW' || badge.toUpperCase() === 'IN STOCK') { bgColor = 'bg-electric-lime'; textColor = 'text-black'; }
+                  if (badge.toUpperCase() === 'LIMITED' || badge.toUpperCase() === 'SOLD OUT') { bgColor = 'bg-rose-600'; textColor = 'text-white'; }
+                  if (badge.toUpperCase() === '320 GSM') { bgColor = 'bg-black/80 text-electric-lime border border-electric-lime/50'; textColor = 'text-electric-lime'; }
+                  
+                  return (
+                    <span key={idx} className={`${bgColor} ${textColor} text-[10px] md:text-xs font-black tracking-wider px-2.5 py-1 uppercase shadow-md`}>
+                      {badge}
+                    </span>
+                  );
+                })}
+              </>
             )}
           </div>
 

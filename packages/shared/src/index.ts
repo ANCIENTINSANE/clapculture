@@ -16,6 +16,9 @@ export interface Product {
   categoryId: string;
   sizeStock?: string | Record<string, number>;
   isActive?: boolean;
+  freeShipping?: boolean;
+  deliveryChargeEnabled?: boolean;
+  deliveryFee?: number;
 }
 
 export interface Category {
@@ -43,6 +46,9 @@ export interface CartItem {
   size: Size;
   price: number;
   quantity: number;
+  freeShipping?: boolean;
+  deliveryChargeEnabled?: boolean;
+  deliveryFee?: number;
 }
 
 export interface OrderItem {
@@ -52,6 +58,9 @@ export interface OrderItem {
   size: Size;
   price: number;
   quantity: number;
+  freeShipping?: boolean;
+  deliveryChargeEnabled?: boolean;
+  deliveryFee?: number;
 }
 
 export interface Order {
@@ -59,6 +68,7 @@ export interface Order {
   customerId: string;
   items: OrderItem[];
   total: number;
+  shipping?: number;
   status: OrderStatus;
   paymentStatus: PaymentStatus;
   createdAt: string;
@@ -84,6 +94,7 @@ export interface Settings {
   storeName: string;
   currency: string;
   freeShippingThreshold: number;
+  shippingFee?: number;
 }
 
 export interface HomepageSection {

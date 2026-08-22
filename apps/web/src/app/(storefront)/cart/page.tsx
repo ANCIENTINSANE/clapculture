@@ -8,13 +8,16 @@ import { useCart } from '@/components/cart/CartProvider';
 import { formatCurrency } from '@/lib/utils';
 
 export default function CartPage() {
-  const { items, removeFromCart, updateQuantity, getCartTotal, getCartCount } = useCart();
+  const { items, removeFromCart, updateQuantity, getCartTotal, getCartCount, getShippingFee } = useCart();
   
-  const total = getCartTotal();
+  const subtotal = getCartTotal();
+  const shippingInfo = getShippingFee();
+  const shipping = shippingInfo.fee;
+  const grandTotal = subtotal + shipping;
+  
   const threshold = 999;
-  const isFreeShipping = total >= threshold;
-  const remainingForFreeShipping = isFreeShipping ? 0 : threshold - total;
-  const progressPercentage = Math.min(100, (total / threshold) * 100);
+  const remainingForFreeShipping = Math.max(0, threshold - subtotal);
+  const progressPercentage = Math.min(100, (subtotal / threshold) * 100);
 
   if (items.length === 0) {
     return (
@@ -37,18 +40,30 @@ export default function CartPage() {
         {/* Cart Items */}
         <div className="grow">
           {/* Free Shipping Progress */}
-          <div className="bg-charcoal p-4 mb-8">
-            <p className="font-label-caps text-sm text-center mb-3 text-electric-lime">
-              {isFreeShipping 
-                ? "YOU'VE UNLOCKED FREE SHIPPING!" 
-                : `ADD ${formatCurrency(remainingForFreeShipping)} MORE TO GET FREE SHIPPING`}
-            </p>
-            <div className="w-full bg-black h-2 rounded-full overflow-hidden">
-              <div 
-                className="bg-electric-lime h-full transition-all duration-500 ease-in-out" 
-                style={{ width: `${progressPercentage}%` }}
-              ></div>
-            </div>
+          <div className="bg-charcoal p-4 mb-8 rounded-xl border border-gray-800">
+            {shippingInfo.isFree ? (
+              <p className="font-label-caps text-sm text-center mb-1 text-electric-lime font-bold flex items-center justify-center gap-1.5">
+                <span>🚚</span> {shippingInfo.reason === 'all_free' ? 'FREE DELIVERY APPLIED TO ALL ITEMS!' : "YOU'VE UNLOCKED FREE SHIPPING!"}
+              </p>
+            ) : (
+              <>
+                <p className="font-label-caps text-sm text-center mb-3 text-white font-bold">
+                  {shippingInfo.reason === 'custom' ? (
+                    <span>Standard Shipping: <strong className="text-electric-lime">{formatCurrency(shippingInfo.fee)}</strong></span>
+                  ) : (
+                    <>ADD <span className="text-electric-lime">{formatCurrency(remainingForFreeShipping)}</span> MORE TO GET FREE SHIPPING</>
+                  )}
+                </p>
+                {shippingInfo.reason !== 'custom' && (
+                  <div className="w-full bg-black h-2 rounded-full overflow-hidden">
+                    <div 
+                      className="bg-electric-lime h-full transition-all duration-500 ease-in-out" 
+                      style={{ width: `${progressPercentage}%` }}
+                    ></div>
+                  </div>
+                )}
+              </>
+            )}
           </div>
 
           {/* Items List */}
@@ -68,8 +83,22 @@ export default function CartPage() {
                     <img src={resolveImageUrl(item.image)} alt={item.name} className="w-full h-full object-cover" />
                   </div>
                   <div className="flex flex-col justify-center">
-                    <h3 className="font-bold text-sm md:text-base uppercase line-clamp-2 hover:text-electric-lime"><Link href={`/product/${item.productId}`}>{item.name}</Link></h3>
-                    <p className="text-gray-400 text-sm mt-1">SIZE: {item.size}</p>
+                    <h3 className="font-bold text-sm md:text-base uppercase line-clamp-2 hover:text-electric-lime">
+                      <Link href={`/product/${item.productId}`}>{item.name}</Link>
+                    </h3>
+                    <div className="flex items-center gap-2 mt-1 flex-wrap">
+                      <span className="text-gray-400 text-sm font-mono">SIZE: {item.size}</span>
+                      {item.freeShipping && (
+                        <span className="text-[10px] bg-electric-lime/10 text-electric-lime border border-electric-lime/30 px-1.5 py-0.5 rounded font-mono font-bold">
+                          FREE DELIVERY
+                        </span>
+                      )}
+                      {item.deliveryChargeEnabled && typeof item.deliveryFee === 'number' && item.deliveryFee > 0 && (
+                        <span className="text-[10px] bg-purple-500/15 text-purple-300 border border-purple-500/30 px-1.5 py-0.5 rounded font-mono">
+                          Delivery: ₹{item.deliveryFee}
+                        </span>
+                      )}
+                    </div>
                     <p className="text-white font-bold mt-2 md:hidden">{formatCurrency(item.price)}</p>
                   </div>
                 </div>
@@ -100,28 +129,30 @@ export default function CartPage() {
 
         {/* Order Summary */}
         <div className="w-full lg:w-100 shrink-0">
-          <div className="bg-charcoal p-6 lg:sticky lg:top-24">
+          <div className="bg-charcoal p-6 lg:sticky lg:top-24 rounded-2xl border border-gray-800">
             <h2 className="font-headline-md text-2xl mb-6 uppercase border-b border-gray-700 pb-4">Order Summary</h2>
             
             <div className="space-y-4 mb-6 text-sm">
               <div className="flex justify-between text-gray-300">
                 <span>SUBTOTAL</span>
-                <span>{formatCurrency(total)}</span>
+                <span className="font-mono font-bold">{formatCurrency(subtotal)}</span>
               </div>
               <div className="flex justify-between text-gray-300">
                 <span>SHIPPING</span>
-                <span>{isFreeShipping ? 'FREE' : formatCurrency(49)}</span>
+                <span className="font-mono font-bold text-electric-lime">
+                  {shipping === 0 ? 'FREE' : formatCurrency(shipping)}
+                </span>
               </div>
             </div>
             
             <div className="flex justify-between items-center border-t border-gray-700 pt-4 mb-8">
               <span className="font-bold text-lg">TOTAL</span>
-              <span className="font-bold text-2xl text-electric-lime">{formatCurrency(total + (isFreeShipping ? 0 : 49))}</span>
+              <span className="font-bold text-2xl text-electric-lime font-mono">{formatCurrency(grandTotal)}</span>
             </div>
 
             <Link 
               href="/checkout"
-              className="block w-full bg-electric-lime text-black text-center font-headline-md text-xl py-4 hover:bg-white transition-colors mb-4"
+              className="block w-full bg-electric-lime text-black text-center font-headline-md text-xl py-4 hover:bg-white transition-colors mb-4 rounded-xl font-bold"
             >
               PROCEED TO CHECKOUT
             </Link>

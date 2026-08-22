@@ -34,6 +34,9 @@ export default function AddProductPage() {
   const [categoryId, setCategoryId] = useState('tees');
   const [badges, setBadges] = useState<string[]>(['NEW DROP', '320 GSM']);
   const [isActive, setIsActive] = useState(true);
+  const [freeShipping, setFreeShipping] = useState(false);
+  const [deliveryChargeEnabled, setDeliveryChargeEnabled] = useState(false);
+  const [deliveryFee, setDeliveryFee] = useState('');
   const [images, setImages] = useState<string[]>([]);
   const [newImageUrl, setNewImageUrl] = useState('');
   const [isUploading, setIsUploading] = useState(false);
@@ -225,6 +228,9 @@ export default function AddProductPage() {
         sizeStock: JSON.stringify(sizeStockMap),
         badges: badges.length > 0 ? badges : ['NEW DROP', '320 GSM'],
         isActive,
+        freeShipping,
+        deliveryChargeEnabled,
+        deliveryFee: deliveryChargeEnabled && deliveryFee ? Number(deliveryFee) : 0,
         images: images,
       };
 
@@ -586,6 +592,101 @@ export default function AddProductPage() {
                 onChange={(newBadges) => setBadges(newBadges)}
               />
             </div>
+          </div>
+
+          {/* Delivery & Shipping Charges */}
+          <div className="bg-[#141414] border border-[#262626] rounded-xl p-5 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-white font-medium flex items-center gap-1.5 text-sm">
+                <span className="material-symbols-outlined text-electric-lime text-base">local_shipping</span>
+                Delivery Charges
+              </h3>
+            </div>
+
+            {/* Mode selection */}
+            <div className="space-y-2">
+              <label className="block text-xs font-mono text-[#a3a3a3] uppercase">Delivery Setting</label>
+              <div className="grid grid-cols-3 gap-1.5 bg-[#1a1a1a] p-1 rounded-lg border border-[#262626]">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFreeShipping(false);
+                    setDeliveryChargeEnabled(false);
+                    setDeliveryFee('');
+                  }}
+                  className={`py-2 px-2 rounded text-[11px] font-mono font-bold uppercase transition-all ${
+                    !freeShipping && !deliveryChargeEnabled
+                      ? 'bg-[#262626] text-white border border-gray-600'
+                      : 'text-gray-400 hover:text-white'
+                  }`}
+                >
+                  Default
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFreeShipping(true);
+                    setDeliveryChargeEnabled(false);
+                    setDeliveryFee('0');
+                  }}
+                  className={`py-2 px-2 rounded text-[11px] font-mono font-bold uppercase transition-all ${
+                    freeShipping
+                      ? 'bg-electric-lime text-black border border-electric-lime'
+                      : 'text-gray-400 hover:text-white'
+                  }`}
+                >
+                  Free Delivery
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFreeShipping(false);
+                    setDeliveryChargeEnabled(true);
+                    if (!deliveryFee) setDeliveryFee('49');
+                  }}
+                  className={`py-2 px-2 rounded text-[11px] font-mono font-bold uppercase transition-all ${
+                    deliveryChargeEnabled
+                      ? 'bg-purple-600 text-white border border-purple-500'
+                      : 'text-gray-400 hover:text-white'
+                  }`}
+                >
+                  Custom Fee
+                </button>
+              </div>
+            </div>
+
+            {/* Custom Fee Input */}
+            {deliveryChargeEnabled && (
+              <div className="space-y-1.5 pt-2 border-t border-[#262626]">
+                <label className="block text-xs text-[#a3a3a3] font-mono">Custom Delivery Fee (₹)</label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-mono text-sm">₹</span>
+                  <input
+                    type="number"
+                    min="0"
+                    value={deliveryFee}
+                    onChange={(e) => setDeliveryFee(e.target.value)}
+                    placeholder="49"
+                    className="w-full bg-[#1a1a1a] border border-[#262626] rounded-lg pl-8 pr-3 py-2 text-white font-mono text-sm focus:border-electric-lime outline-none"
+                  />
+                </div>
+                <p className="text-[11px] text-purple-300 font-mono">
+                  📦 Product will charge ₹{deliveryFee || '0'} for shipping at checkout.
+                </p>
+              </div>
+            )}
+
+            {freeShipping && (
+              <div className="p-3 bg-electric-lime/10 border border-electric-lime/30 rounded-lg text-[11px] text-electric-lime font-mono">
+                ✓ Free Delivery enabled. Customers will see a &quot;FREE DELIVERY&quot; badge and won&apos;t pay shipping for this item.
+              </div>
+            )}
+
+            {!freeShipping && !deliveryChargeEnabled && (
+              <p className="text-[11px] text-gray-400 font-mono">
+                Uses standard store shipping policy (Free above ₹999, otherwise standard shipping).
+              </p>
+            )}
           </div>
         </div>
       </div>

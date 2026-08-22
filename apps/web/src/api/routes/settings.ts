@@ -20,7 +20,8 @@ settings.get('/', async (c) => {
     const data = response.documents[0] || {
       storeName: 'CLAPCULTURE',
       currency: 'INR',
-      freeShippingThreshold: 999
+      freeShippingThreshold: 999,
+      shippingFee: 49,
     };
     
     return c.json({ success: true, data });

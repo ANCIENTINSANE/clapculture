@@ -40,7 +40,7 @@ const INDIAN_STATES = [
 ];
 
 export default function CheckoutPage() {
-  const { items, getCartTotal } = useCart();
+  const { items, getCartTotal, getShippingFee } = useCart();
   const { createOrder, checkoutInfo, setCheckoutInfo } = useOrderStore();
   const router = useRouter();
 
@@ -69,7 +69,8 @@ export default function CheckoutPage() {
   });
 
   const subtotal = getCartTotal();
-  const shipping = subtotal >= 999 ? 0 : 49;
+  const shippingInfo = getShippingFee();
+  const shipping = shippingInfo.fee;
   const total = subtotal + shipping;
 
   // Click outside handlers

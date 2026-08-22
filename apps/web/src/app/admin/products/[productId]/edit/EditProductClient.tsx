@@ -29,6 +29,9 @@ export default function EditProductClient({ productId }: { productId: string }) 
     tags: '',
     price: '',
     compareAtPrice: '',
+    freeShipping: false,
+    deliveryChargeEnabled: false,
+    deliveryFee: '',
     images: [] as string[],
     newImageUrl: '',
     badges: [] as string[],
@@ -125,6 +128,9 @@ export default function EditProductClient({ productId }: { productId: string }) 
           tags: Array.isArray(p.badges) ? p.badges.join(', ') : '',
           price: p.price ? String(p.price) : '',
           compareAtPrice: p.compareAtPrice ? String(p.compareAtPrice) : '',
+          freeShipping: Boolean(p.freeShipping),
+          deliveryChargeEnabled: Boolean(p.deliveryChargeEnabled),
+          deliveryFee: typeof p.deliveryFee === 'number' && p.deliveryFee > 0 ? String(p.deliveryFee) : '',
           images: Array.isArray(p.images) ? p.images : [],
           newImageUrl: '',
           badges: Array.isArray(p.badges) ? p.badges : [],
@@ -309,6 +315,9 @@ export default function EditProductClient({ productId }: { productId: string }) 
         sizeStock: JSON.stringify(sizeStockMap),
         badges: formData.badges,
         isActive: formData.isActive,
+        freeShipping: formData.freeShipping,
+        deliveryChargeEnabled: formData.deliveryChargeEnabled,
+        deliveryFee: formData.deliveryChargeEnabled && formData.deliveryFee ? Number(formData.deliveryFee) : 0,
         images: formData.images.length > 0 ? formData.images : ['/stock/superstar-mockup1.webp'],
       };
 
@@ -593,6 +602,115 @@ export default function EditProductClient({ productId }: { productId: string }) 
                 />
               </div>
             </div>
+          </div>
+
+          {/* Delivery & Shipping Charges */}
+          <div className="bg-[#141414] border border-[#262626] rounded-xl p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-bold uppercase text-white flex items-center gap-1.5">
+                  <span className="material-symbols-outlined text-electric-lime text-base">local_shipping</span>
+                  Delivery &amp; Shipping Charges
+                </h3>
+                <p className="text-xs text-gray-400 mt-0.5 font-mono">
+                  Customize free shipping or specific delivery fee for this product.
+                </p>
+              </div>
+            </div>
+
+            {/* Mode selection */}
+            <div className="space-y-2">
+              <label className="block text-xs font-mono text-[#a3a3a3] uppercase">Delivery Setting</label>
+              <div className="grid grid-cols-3 gap-2 bg-[#1a1a1a] p-1.5 rounded-lg border border-[#262626]">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFormData(p => ({
+                      ...p,
+                      freeShipping: false,
+                      deliveryChargeEnabled: false,
+                      deliveryFee: '',
+                    }));
+                  }}
+                  className={`py-2 px-3 rounded text-xs font-mono font-bold uppercase transition-all ${
+                    !formData.freeShipping && !formData.deliveryChargeEnabled
+                      ? 'bg-[#262626] text-white border border-gray-600'
+                      : 'text-gray-400 hover:text-white'
+                  }`}
+                >
+                  Default
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFormData(p => ({
+                      ...p,
+                      freeShipping: true,
+                      deliveryChargeEnabled: false,
+                      deliveryFee: '0',
+                    }));
+                  }}
+                  className={`py-2 px-3 rounded text-xs font-mono font-bold uppercase transition-all ${
+                    formData.freeShipping
+                      ? 'bg-electric-lime text-black border border-electric-lime'
+                      : 'text-gray-400 hover:text-white'
+                  }`}
+                >
+                  Free Delivery
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFormData(p => ({
+                      ...p,
+                      freeShipping: false,
+                      deliveryChargeEnabled: true,
+                      deliveryFee: p.deliveryFee || '49',
+                    }));
+                  }}
+                  className={`py-2 px-3 rounded text-xs font-mono font-bold uppercase transition-all ${
+                    formData.deliveryChargeEnabled
+                      ? 'bg-purple-600 text-white border border-purple-500'
+                      : 'text-gray-400 hover:text-white'
+                  }`}
+                >
+                  Custom Fee
+                </button>
+              </div>
+            </div>
+
+            {/* Custom Fee Input */}
+            {formData.deliveryChargeEnabled && (
+              <div className="space-y-2 pt-2 border-t border-[#262626]">
+                <label className="block text-xs text-[#a3a3a3] font-mono">Custom Delivery Fee (₹)</label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-mono text-sm">₹</span>
+                  <input
+                    type="number"
+                    min="0"
+                    value={formData.deliveryFee}
+                    onChange={(e) => setFormData(p => ({ ...p, deliveryFee: e.target.value }))}
+                    placeholder="49"
+                    className="w-full bg-[#1a1a1a] border border-[#262626] rounded-lg pl-8 pr-3 py-2 text-white font-mono text-sm focus:border-electric-lime outline-none"
+                  />
+                </div>
+                <p className="text-xs text-purple-300 font-mono">
+                  📦 This product will charge ₹{formData.deliveryFee || '0'} for shipping.
+                </p>
+              </div>
+            )}
+
+            {formData.freeShipping && (
+              <div className="p-3 bg-electric-lime/10 border border-electric-lime/30 rounded-lg text-xs text-electric-lime font-mono">
+                ✓ Free Delivery enabled. Customers will see a &quot;FREE DELIVERY&quot; badge on storefront and won&apos;t be charged shipping for this item.
+              </div>
+            )}
+
+            {!formData.freeShipping && !formData.deliveryChargeEnabled && (
+              <p className="text-xs text-gray-400 font-mono">
+                Uses standard store shipping policy (Free above ₹999, otherwise standard shipping fee).
+              </p>
+            )}
           </div>
 
           {/* Images Section */}
